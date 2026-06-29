@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { FileText, UploadCloud, X } from "lucide-react"
 import { createFile } from "@/components/file_service/file"
 
-const QUICK_TYPES = ["Summary", "Lesson", "Quiz", "Exam", "Video", "Notes", "Exercise", "TD", "TP"]
+const QUICK_TYPES = ["Summary", "Lesson", "Quiz", "Exam", "Video", "Notes", "Exercise", "TD", "TP"] 
 
 interface PickedFile {
   name: string

@@ -1,9 +1,106 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { X } from "lucide-react"
 import { readFileBuffer, type AppFile } from "@/components/file_service/file"
+import type { Highlighter } from "shiki"
 
 const IMAGE_TYPES = new Set(["png", "jpg", "jpeg", "gif", "webp", "svg", "bmp"])
 const VIDEO_TYPES = new Set(["mp4", "mov", "avi", "mkv", "webm"])
+
+const EXT_TO_LANG: Record<string, string> = {
+  js: "javascript", mjs: "javascript", cjs: "javascript",
+  ts: "typescript", mts: "typescript", cts: "typescript",
+  jsx: "jsx", tsx: "tsx",
+  py: "python", pyw: "python",
+  rb: "ruby", rbw: "ruby",
+  java: "java",
+  c: "c", h: "c",
+  cpp: "cpp", cc: "cpp", cxx: "cpp", hpp: "cpp", hxx: "cpp",
+  cs: "csharp",
+  go: "go",
+  rs: "rust",
+  swift: "swift",
+  kt: "kotlin", kts: "kotlin",
+  php: "php",
+  r: "r",
+  scala: "scala",
+  dart: "dart",
+  lua: "lua",
+  pl: "perl", pm: "perl",
+  hs: "haskell",
+  ex: "elixir", exs: "elixir",
+  erl: "erlang", hrl: "erlang",
+  html: "html", htm: "html",
+  css: "css",
+  scss: "scss",
+  less: "less",
+  json: "json",
+  yaml: "yaml", yml: "yaml",
+  toml: "toml",
+  xml: "xml",
+  svg: "xml",
+  md: "markdown", mdx: "markdown",
+  sql: "sql",
+  sh: "bash", bash: "bash", zsh: "bash",
+  ps1: "powershell", psm1: "powershell",
+  dockerfile: "dockerfile",
+  vue: "vue",
+  svelte: "svelte",
+  graphql: "graphql", gql: "graphql",
+  tf: "hcl", hcl: "hcl",
+  ini: "ini", cfg: "ini",
+  makefile: "makefile",
+  zig: "zig",
+  nim: "nim",
+  v: "v",
+  txt: "text", log: "text",
+}
+
+const CODE_TYPES = new Set(Object.keys(EXT_TO_LANG))
+
+let highlighterPromise: Promise<Highlighter> | null = null
+
+function getHighlighter(): Promise<Highlighter> {
+  if (!highlighterPromise) {
+    highlighterPromise = import("shiki").then(({ createHighlighter }) =>
+      createHighlighter({ themes: ["github-dark"], langs: [] })
+    )
+  }
+  return highlighterPromise
+}
+
+function CodeViewer({ code, lang }: { code: string; lang: string }) {
+  const [html, setHtml] = useState<string>("")
+  const abortRef = useRef(false)
+
+  useEffect(() => {
+    abortRef.current = false
+    setHtml("")
+    getHighlighter().then(async (hl) => {
+      if (abortRef.current) return
+      try {
+        await hl.loadLanguage(lang as never)
+      } catch {
+        // unsupported lang, fall back to plain text
+      }
+      if (abortRef.current) return
+      const safeLang = hl.getLoadedLanguages().includes(lang as never) ? lang : "text"
+      const out = hl.codeToHtml(code, { lang: safeLang, theme: "github-dark" })
+      setHtml(out)
+    })
+    return () => { abortRef.current = true }
+  }, [code, lang])
+
+  if (!html) return (
+    <span style={{ color: "var(--muted-foreground)", fontSize: 13 }}>Highlighting…</span>
+  )
+
+  return (
+    <div
+      dangerouslySetInnerHTML={{ __html: html }}
+      style={{ width: "100%", height: "100%", overflow: "auto" }}
+    />
+  )
+}
 
 const MIME: Record<string, string> = {
   png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg",
@@ -19,7 +116,7 @@ function getExt(file: AppFile): string {
 
 export function canPreview(file: AppFile): boolean {
   const ext = getExt(file)
-  return IMAGE_TYPES.has(ext) || VIDEO_TYPES.has(ext)
+  return IMAGE_TYPES.has(ext) || VIDEO_TYPES.has(ext) || CODE_TYPES.has(ext)
 }
 
 interface Props {
@@ -29,20 +126,32 @@ interface Props {
 
 export function FilePreviewModal({ file, onClose }: Props) {
   const [blobUrl, setBlobUrl] = useState<string | null>(null)
+  const [codeText, setCodeText] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+
+  const ext = file ? getExt(file) : ""
+  const isCode = CODE_TYPES.has(ext)
+  const isVideo = VIDEO_TYPES.has(ext)
 
   useEffect(() => {
     setBlobUrl(prev => { if (prev) URL.revokeObjectURL(prev); return null })
+    setCodeText(null)
     if (!file) return
 
     let cancelled = false
     setLoading(true)
-    const ext = getExt(file)
+
     readFileBuffer(file.file_path)
       .then(buf => {
         if (cancelled) return
-        const blob = new Blob([buf], { type: MIME[ext] ?? "application/octet-stream" })
-        setBlobUrl(URL.createObjectURL(blob))
+        if (isCode) {
+          setCodeText(new TextDecoder().decode(buf))
+        } else {
+          const blob = new Blob([new Uint8Array(buf.buffer as ArrayBuffer)], {
+            type: MIME[ext] ?? "application/octet-stream",
+          })
+          setBlobUrl(URL.createObjectURL(blob))
+        }
       })
       .catch(() => {})
       .finally(() => { if (!cancelled) setLoading(false) })
@@ -56,8 +165,7 @@ export function FilePreviewModal({ file, onClose }: Props) {
 
   if (!file) return null
 
-  const ext = getExt(file)
-  const isVideo = VIDEO_TYPES.has(ext)
+  const lang = EXT_TO_LANG[ext] ?? "text"
 
   return (
     <div
@@ -109,15 +217,18 @@ export function FilePreviewModal({ file, onClose }: Props) {
         <div style={{
           flex: 1, minHeight: 0, display: "flex",
           alignItems: "center", justifyContent: "center",
-          background: isVideo ? "#000" : undefined,
+          background: isVideo ? "#000" : isCode ? "#0d1117" : undefined,
         }}>
           {loading && (
             <span style={{ color: "var(--muted-foreground)", fontSize: 13 }}>Loading…</span>
           )}
-          {!loading && blobUrl && isVideo && (
+          {!loading && isCode && codeText !== null && (
+            <CodeViewer code={codeText} lang={lang} />
+          )}
+          {!loading && !isCode && blobUrl && isVideo && (
             <video src={blobUrl} controls style={{ maxWidth: "100%", maxHeight: "100%" }} />
           )}
-          {!loading && blobUrl && !isVideo && (
+          {!loading && !isCode && blobUrl && !isVideo && (
             <div style={{
               width: "100%", height: "100%",
               display: "flex", alignItems: "center", justifyContent: "center",
@@ -130,7 +241,7 @@ export function FilePreviewModal({ file, onClose }: Props) {
               />
             </div>
           )}
-          {!loading && !blobUrl && (
+          {!loading && !isCode && !blobUrl && (
             <span style={{ color: "var(--muted-foreground)", fontSize: 13 }}>Could not load file.</span>
           )}
         </div>
