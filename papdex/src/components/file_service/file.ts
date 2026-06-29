@@ -63,3 +63,7 @@ export async function deleteFilesBySubject(subject_id: number): Promise<number> 
 export async function openFile(file_path: string): Promise<void> {
   await window.ipcRenderer.invoke('files:open', file_path)
 }
+
+export async function readFileBuffer(file_path: string): Promise<Uint8Array> {
+  return await window.ipcRenderer.invoke('files:readBuffer', file_path)
+}

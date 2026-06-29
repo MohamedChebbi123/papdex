@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import {
-  Calendar, ChevronRight, ExternalLink, File, FileText,
+  Calendar, ChevronRight, ExternalLink, Eye, File, FileText,
   Folder, Image, Pencil, Plus, Star, Trash2, Video,
 } from "lucide-react"
 import {
@@ -17,6 +17,7 @@ import {
 import { VirtualFolderUpdate } from "@/components/inputs/virtual_folder_update"
 import { DeleteConfirm } from "@/components/inputs/Delete_confirm"
 import { FileCreationInput } from "@/components/inputs/file_creation_input"
+import { FilePreviewModal, canPreview } from "@/components/inputs/file_preview_modal"
 
 interface VirtualFolder {
   id: number
@@ -76,6 +77,7 @@ export function VirtualFolderDashboard({
   const [deletingFile, setDeletingFile] = useState<AppFile | null>(null)
   const [hoveredFileId, setHoveredFileId] = useState<number | null>(null)
   const [addFileOpen, setAddFileOpen] = useState(false)
+  const [previewFile, setPreviewFile] = useState<AppFile | null>(null)
 
   useEffect(() => {
     getVirtualFolderById(folderId).then(setFolder)
@@ -251,6 +253,14 @@ export function VirtualFolderDashboard({
                 </span>
                 {hoveredFileId === file.id ? (
                   <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    {canPreview(file) && (
+                      <button
+                        onClick={() => setPreviewFile(file)}
+                        style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex", borderRadius: 6 }}
+                      >
+                        <Eye size={13} color={muted} />
+                      </button>
+                    )}
                     <button
                       onClick={() => openFile(file.file_path)}
                       style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex", borderRadius: 6 }}
@@ -298,6 +308,7 @@ export function VirtualFolderDashboard({
         label={deletingFile?.file_name ?? ""}
         onConfirmed={handleDeleteFile}
       />
+      <FilePreviewModal file={previewFile} onClose={() => setPreviewFile(null)} />
     </div>
   )
 }

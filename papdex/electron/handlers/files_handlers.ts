@@ -100,6 +100,12 @@ function open_file_picker() {
     })
 }
 
+function read_file_buffer() {
+    ipcMain.handle("files:readBuffer", (_event, file_path: string) => {
+        return fs.readFileSync(file_path)
+    })
+}
+
 function open_file() {
     ipcMain.handle("files:open", async (_event, file_path: string) => {
         const error = await shell.openPath(file_path)
@@ -134,5 +140,6 @@ export function file_handlers() {
     delete_files_by_subject()
     open_file_picker()
     pick_single_file()
+    read_file_buffer()
     open_file()
 }
