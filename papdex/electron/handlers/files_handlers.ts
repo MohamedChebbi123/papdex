@@ -1,4 +1,4 @@
-import { ipcMain, dialog } from "electron"
+import { ipcMain, dialog, shell } from "electron"
 import fs from "node:fs"
 import path from "node:path"
 import database from "../database/connection"
@@ -100,6 +100,13 @@ function open_file_picker() {
     })
 }
 
+function open_file() {
+    ipcMain.handle("files:open", async (_event, file_path: string) => {
+        const error = await shell.openPath(file_path)
+        if (error) throw new Error(error)
+    })
+}
+
 function pick_single_file() {
     ipcMain.handle("files:pickSingle", async () => {
         const { filePaths, canceled } = await dialog.showOpenDialog({
@@ -127,4 +134,5 @@ export function file_handlers() {
     delete_files_by_subject()
     open_file_picker()
     pick_single_file()
+    open_file()
 }

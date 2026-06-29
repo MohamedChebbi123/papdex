@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import {
-  Calendar, ChevronRight, File, FileText,
+  Calendar, ChevronRight, ExternalLink, File, FileText,
   Folder, Image, Pencil, Plus, Star, Trash2, Video,
 } from "lucide-react"
 import {
@@ -11,6 +11,7 @@ import {
 import {
   getFilesByFolder,
   deleteFile,
+  openFile,
   type AppFile,
 } from "@/components/file_service/file"
 import { VirtualFolderUpdate } from "@/components/inputs/virtual_folder_update"
@@ -249,14 +250,22 @@ export function VirtualFolderDashboard({
                   {formatSize(file.file_size)}
                 </span>
                 {hoveredFileId === file.id ? (
-                  <button
-                    onClick={() => setDeletingFile(file)}
-                    style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex", borderRadius: 6 }}
-                  >
-                    <Trash2 size={13} color="#ef4444" />
-                  </button>
+                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    <button
+                      onClick={() => openFile(file.file_path)}
+                      style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex", borderRadius: 6 }}
+                    >
+                      <ExternalLink size={13} color={muted} />
+                    </button>
+                    <button
+                      onClick={() => setDeletingFile(file)}
+                      style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex", borderRadius: 6 }}
+                    >
+                      <Trash2 size={13} color="#ef4444" />
+                    </button>
+                  </div>
                 ) : (
-                  <div style={{ width: 21 }} />
+                  <div style={{ width: 46 }} />
                 )}
               </div>
             </div>

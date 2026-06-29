@@ -59,3 +59,7 @@ export async function deleteFile(id: number): Promise<number> {
 export async function deleteFilesBySubject(subject_id: number): Promise<number> {
   return await window.ipcRenderer.invoke('files:deleteBySubject', subject_id)
 }
+
+export async function openFile(file_path: string): Promise<void> {
+  await window.ipcRenderer.invoke('files:open', file_path)
+}
