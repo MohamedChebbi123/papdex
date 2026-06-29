@@ -46,11 +46,14 @@ function TagPill({ tag }: { tag: string }) {
   )
 }
 
+type Semester = { id: number; name: string; start_date: string; end_date: string }
+
 interface Props {
   year: { id: number; name: string; start_date: string; end_date: string } | null
+  onSelectSemester: (semester: Semester) => void
 }
 
-export function Academicyeardashaboard({ year }: Props) {
+export function Academicyeardashaboard({ year, onSelectSemester }: Props) {
   const [favorites, setFavorites] = useState<string[]>(
     subjects.filter(s => s.favorite).map(s => s.name)
   )
@@ -177,9 +180,10 @@ export function Academicyeardashaboard({ year }: Props) {
               key={sem.id}
               onMouseEnter={() => setHoveredSemId(sem.id)}
               onMouseLeave={() => setHoveredSemId(null)}
+              onClick={() => onSelectSemester(sem)}
               style={{
                 background: card, border: `1px solid ${border}`,
-                borderRadius: 14, padding: 18, cursor: "default", position: "relative",
+                borderRadius: 14, padding: 18, cursor: "pointer", position: "relative",
               }}
             >
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
