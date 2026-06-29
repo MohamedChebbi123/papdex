@@ -6,6 +6,10 @@ export async function getSubjectsBySemester(semester_id: number): Promise<any[]>
   return await window.ipcRenderer.invoke('subjects:getBySemester', semester_id)
 }
 
+export async function getSubjectById(id: number): Promise<any> {
+  return await window.ipcRenderer.invoke('subjects:getById', id)
+}
+
 export async function updateSubject(id: number, name: string): Promise<number> {
   return await window.ipcRenderer.invoke('subjects:update', id, name)
 }

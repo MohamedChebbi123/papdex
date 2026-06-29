@@ -6,6 +6,8 @@ import './database/schema'
 import { academic_years_handlers } from './handlers/academic_years_handlers'
 import { semester_handlers } from './handlers/semester_handler'
 import { subject_handlers } from './handlers/subjects'
+import { virtual_folder_handlers } from './handlers/virtual_folders_handler'
+import { file_handlers } from './handlers/files_handlers'
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -24,6 +26,8 @@ let win: BrowserWindow | null
 academic_years_handlers()
 semester_handlers()
 subject_handlers()
+virtual_folder_handlers()
+file_handlers()
 function createWindow() {
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),

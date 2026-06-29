@@ -68,9 +68,10 @@ interface Props {
   semester: Semester
   year: Year
   onBack: () => void
+  onSelectSubject: (subject: Subject) => void
 }
 
-export function SemesterDashboard({ semester, year, onBack }: Props) {
+export function SemesterDashboard({ semester, year, onBack, onSelectSubject }: Props) {
   const [subjects, setSubjects] = useState<Subject[]>([])
   const [subjectModalOpen, setSubjectModalOpen] = useState(false)
   const [deletingSubject, setDeletingSubject] = useState<Subject | null>(null)
@@ -198,7 +199,8 @@ export function SemesterDashboard({ semester, year, onBack }: Props) {
                 key={subject.id}
                 onMouseEnter={() => setHoveredId(subject.id)}
                 onMouseLeave={() => setHoveredId(null)}
-                style={{ background: card, border: `1px solid ${border}`, borderRadius: 14, padding: 16, cursor: "default", position: "relative" }}
+                onClick={() => onSelectSubject(subject)}
+                style={{ background: card, border: `1px solid ${border}`, borderRadius: 14, padding: 16, cursor: "pointer", position: "relative" }}
               >
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
