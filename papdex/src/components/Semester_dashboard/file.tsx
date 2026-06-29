@@ -1,17 +1,19 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Calendar, ChevronRight, FileText,
   Folder, Pencil, Plus, Star, Trash2, Video,
 } from "lucide-react"
 import { DeleteConfirm } from "@/components/inputs/Delete_confirm"
+import { SubjectCreation } from "@/components/inputs/subject_creation"
+import {
+  getSubjectsBySemester,
+  toggleFavoriteSubject,
+  deleteSubject,
+} from "@/components/subjects_service/file"
 
-const MOCK_SUBJECTS = [
-  { name: "Data Structures", color: "#6366f1", files: 28, favorite: true,  tags: ["Exam", "Lecture", "Summary"] },
-  { name: "Networks",        color: "#0891b2", files: 17, favorite: true,  tags: ["Exam", "Lecture"] },
-  { name: "Calculus II",     color: "#059669", files: 34, favorite: false, tags: ["Summary", "Reference"] },
-  { name: "Linear Algebra",  color: "#d97706", files: 11, favorite: false, tags: ["Lecture"] },
-  { name: "Algorithms",      color: "#7c3aed", files: 22, favorite: false, tags: ["Exam", "Assignment"] },
-  { name: "Databases",       color: "#dc2626", files:  9, favorite: false, tags: ["Lecture", "Reference"] },
+const COLORS = [
+  "#6366f1", "#0891b2", "#059669", "#d97706",
+  "#7c3aed", "#dc2626", "#0d9488", "#db2777",
 ]
 
 const MOCK_RECENT = [
@@ -27,8 +29,6 @@ const TAG_COLORS: Record<string, { bg: string; text: string }> = {
   Summary:   { bg: "#14532d", text: "#4ade80" },
   Important: { bg: "#450a0a", text: "#f87171" },
   Lecture:   { bg: "#1e3a5f", text: "#60a5fa" },
-  Reference: { bg: "#1c1917", text: "#a8a29e" },
-  Assignment:{ bg: "#2e1065", text: "#c084fc" },
 }
 
 function TagPill({ tag }: { tag: string }) {
@@ -43,6 +43,13 @@ function TagPill({ tag }: { tag: string }) {
       {tag}
     </span>
   )
+}
+
+interface Subject {
+  id: number
+  semester_id: number
+  name: string
+  is_favorite: number
 }
 
 interface Semester {
@@ -64,29 +71,35 @@ interface Props {
 }
 
 export function SemesterDashboard({ semester, year, onBack }: Props) {
-  const [subjects, setSubjects] = useState(MOCK_SUBJECTS)
-  const [favorites, setFavorites] = useState<string[]>(
-    MOCK_SUBJECTS.filter(s => s.favorite).map(s => s.name)
-  )
-  const [deletingSubject, setDeletingSubject] = useState<string | null>(null)
-  const [hoveredSubject, setHoveredSubject] = useState<string | null>(null)
+  const [subjects, setSubjects] = useState<Subject[]>([])
+  const [subjectModalOpen, setSubjectModalOpen] = useState(false)
+  const [deletingSubject, setDeletingSubject] = useState<Subject | null>(null)
+  const [hoveredId, setHoveredId] = useState<number | null>(null)
   const [notes, setNotes] = useState("")
   const [editingNotes, setEditingNotes] = useState(false)
 
-  function toggleFavorite(name: string) {
-    setFavorites(prev =>
-      prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]
-    )
+  useEffect(() => {
+    getSubjectsBySemester(semester.id).then(setSubjects)
+  }, [semester.id])
+
+  function refresh() {
+    getSubjectsBySemester(semester.id).then(setSubjects)
   }
 
-  function handleDeleteSubject() {
+  async function handleToggleFavorite(subject: Subject) {
+    const next = subject.is_favorite ? 0 : 1
+    await toggleFavoriteSubject(subject.id, next)
+    setSubjects(prev => prev.map(s => s.id === subject.id ? { ...s, is_favorite: next } : s))
+  }
+
+  async function handleDeleteSubject() {
     if (!deletingSubject) return
-    setSubjects(prev => prev.filter(s => s.name !== deletingSubject))
+    await deleteSubject(deletingSubject.id)
     setDeletingSubject(null)
+    refresh()
   }
 
-  const totalFiles = subjects.reduce((acc, s) => acc + s.files, 0)
-  const examCount  = subjects.filter(s => s.tags.includes("Exam")).length
+  const favoritesCount = subjects.filter(s => s.is_favorite).length
 
   const muted  = "var(--muted-foreground)"
   const border = "var(--border)"
@@ -123,10 +136,11 @@ export function SemesterDashboard({ semester, year, onBack }: Props) {
             {semester.name}
           </h1>
           <p style={{ color: muted, fontSize: 13, margin: "4px 0 0" }}>
-            {semester.start_date} — {semester.end_date} · {subjects.length} subjects · {totalFiles} files indexed
+            {semester.start_date} — {semester.end_date} · {subjects.length} subjects
           </p>
         </div>
         <button
+          onClick={() => setSubjectModalOpen(true)}
           style={{
             background: card, border: `1px solid ${border}`, borderRadius: 10,
             color: fg, fontSize: 14, padding: "10px 20px",
@@ -139,12 +153,11 @@ export function SemesterDashboard({ semester, year, onBack }: Props) {
       </div>
 
       {/* Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 28 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 28 }}>
         {[
           { value: subjects.length,  label: "Subjects" },
-          { value: totalFiles,       label: "Files indexed" },
-          { value: examCount,        label: "Exam tags" },
-          { value: favorites.length, label: "Favorites" },
+          { value: favoritesCount,   label: "Favorites" },
+          { value: 0,                label: "Files indexed" },
         ].map(stat => (
           <div key={stat.label} style={{ background: card, borderRadius: 12, padding: 20, border: `1px solid ${border}` }}>
             <div style={{ fontSize: 28, fontWeight: 700, color: fg }}>{stat.value}</div>
@@ -156,7 +169,6 @@ export function SemesterDashboard({ semester, year, onBack }: Props) {
       {/* Subjects */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
         <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Subjects</span>
-        <button style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer" }}>Manage</button>
       </div>
 
       {subjects.length === 0 ? (
@@ -165,6 +177,7 @@ export function SemesterDashboard({ semester, year, onBack }: Props) {
           <p style={{ color: fg, fontSize: 15, fontWeight: 500, marginTop: 12, marginBottom: 4 }}>No subjects yet</p>
           <p style={{ color: muted, fontSize: 13, margin: 0 }}>Add your first subject to start organizing files</p>
           <button
+            onClick={() => setSubjectModalOpen(true)}
             style={{
               background: card, border: `1px solid ${border}`, borderRadius: 10,
               color: fg, fontSize: 14, padding: "10px 20px", marginTop: 16,
@@ -177,50 +190,39 @@ export function SemesterDashboard({ semester, year, onBack }: Props) {
         </div>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 28 }}>
-          {subjects.map(subject => {
-            const isFav = favorites.includes(subject.name)
+          {subjects.map((subject, i) => {
+            const color = COLORS[i % COLORS.length]
+            const isFav = subject.is_favorite === 1
             return (
               <div
-                key={subject.name}
-                onMouseEnter={() => setHoveredSubject(subject.name)}
-                onMouseLeave={() => setHoveredSubject(null)}
+                key={subject.id}
+                onMouseEnter={() => setHoveredId(subject.id)}
+                onMouseLeave={() => setHoveredId(null)}
                 style={{ background: card, border: `1px solid ${border}`, borderRadius: 14, padding: 16, cursor: "default", position: "relative" }}
               >
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <div style={{ width: 10, height: 10, borderRadius: "50%", background: subject.color, flexShrink: 0 }} />
+                    <div style={{ width: 10, height: 10, borderRadius: "50%", background: color, flexShrink: 0 }} />
                     <span style={{ color: fg, fontSize: 13, fontWeight: 500 }}>{subject.name}</span>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                    {hoveredSubject === subject.name && (
-                      <>
-                        <button
-                          onClick={() => {}}
-                          style={{ background: "none", border: "none", cursor: "pointer", padding: 4, borderRadius: 6, display: "flex" }}
-                        >
-                          <Pencil size={13} color={muted} />
-                        </button>
-                        <button
-                          onClick={() => setDeletingSubject(subject.name)}
-                          style={{ background: "none", border: "none", cursor: "pointer", padding: 4, borderRadius: 6, display: "flex" }}
-                        >
-                          <Trash2 size={13} color="#ef4444" />
-                        </button>
-                      </>
+                    {hoveredId === subject.id && (
+                      <button
+                        onClick={() => setDeletingSubject(subject)}
+                        style={{ background: "none", border: "none", cursor: "pointer", padding: 4, borderRadius: 6, display: "flex" }}
+                      >
+                        <Trash2 size={13} color="#ef4444" />
+                      </button>
                     )}
-                    <button onClick={() => toggleFavorite(subject.name)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}>
+                    <button
+                      onClick={() => handleToggleFavorite(subject)}
+                      style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}
+                    >
                       <Star size={16} fill={isFav ? "#f59e0b" : "none"} color={isFav ? "#f59e0b" : muted} />
                     </button>
                   </div>
                 </div>
-                <p style={{ color: muted, fontSize: 11, margin: "4px 0 0" }}>· {subject.files} files</p>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 12 }}>
-                  {subject.tags.slice(0, 3).map(tag => (
-                    <span key={tag} style={{ background: "var(--muted)", border: `1px solid ${border}`, borderRadius: 6, color: muted, fontSize: 10, padding: "2px 8px" }}>
-                      {tag}
-                    </span>
-                  ))}
-                </div>
+                <p style={{ color: muted, fontSize: 11, margin: "6px 0 0" }}>0 files</p>
               </div>
             )
           })}
@@ -280,10 +282,16 @@ export function SemesterDashboard({ semester, year, onBack }: Props) {
         )}
       </div>
 
+      <SubjectCreation
+        open={subjectModalOpen}
+        onOpenChange={setSubjectModalOpen}
+        semesterId={semester.id}
+        onCreated={refresh}
+      />
       <DeleteConfirm
         open={deletingSubject !== null}
         onOpenChange={open => { if (!open) setDeletingSubject(null) }}
-        label={deletingSubject ?? ""}
+        label={deletingSubject?.name ?? ""}
         onConfirmed={handleDeleteSubject}
       />
     </div>
