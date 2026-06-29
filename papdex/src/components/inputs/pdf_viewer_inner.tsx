@@ -1,23 +1,24 @@
 import { useState, useEffect } from "react"
-import { Worker, Viewer } from "@react-pdf-viewer/core"
-import { defaultLayoutPlugin } from "@react-pdf-viewer/default-layout"
-import "@react-pdf-viewer/core/lib/styles/index.css"
-import "@react-pdf-viewer/default-layout/lib/styles/index.css"
 import { readFileBuffer } from "@/components/file_service/file"
 
-import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.js?url"
-
 export default function PdfViewerInner({ filePath }: { filePath: string }) {
-  const [defaultLayout] = useState(() => defaultLayoutPlugin())
-  const [data, setData] = useState<Uint8Array | null>(null)
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    setData(null)
+    let url: string | null = null
     setError(null)
+    setPdfUrl(null)
+
     readFileBuffer(filePath)
-      .then(setData)
+      .then(buf => {
+        const blob = new Blob([new Uint8Array(buf)], { type: "application/pdf" })
+        url = URL.createObjectURL(blob)
+        setPdfUrl(url)
+      })
       .catch(() => setError("Could not read file."))
+
+    return () => { if (url) URL.revokeObjectURL(url) }
   }, [filePath])
 
   if (error) return (
@@ -26,17 +27,17 @@ export default function PdfViewerInner({ filePath }: { filePath: string }) {
     </div>
   )
 
-  if (!data) return (
+  if (!pdfUrl) return (
     <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--muted-foreground)", fontSize: 13 }}>
       Loading…
     </div>
   )
 
   return (
-    <Worker workerUrl={pdfWorkerUrl}>
-      <div style={{ position: "absolute", inset: 0 }}>
-        <Viewer fileUrl={data} plugins={[defaultLayout]} />
-      </div>
-    </Worker>
+    <iframe
+      src={pdfUrl}
+      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" }}
+      title="PDF Viewer"
+    />
   )
 }

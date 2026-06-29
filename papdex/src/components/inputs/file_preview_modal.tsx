@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { X } from "lucide-react"
 import { readFileBuffer, type AppFile } from "@/components/file_service/file"
 import type { Highlighter } from "shiki"
+import PdfViewerInner from "@/components/inputs/pdf_viewer_inner"
 
 const IMAGE_TYPES = new Set(["png", "jpg", "jpeg", "gif", "webp", "svg", "bmp"])
 const VIDEO_TYPES = new Set(["mp4", "mov", "avi", "mkv", "webm"])
@@ -116,7 +117,7 @@ function getExt(file: AppFile): string {
 
 export function canPreview(file: AppFile): boolean {
   const ext = getExt(file)
-  return IMAGE_TYPES.has(ext) || VIDEO_TYPES.has(ext) || CODE_TYPES.has(ext)
+  return IMAGE_TYPES.has(ext) || VIDEO_TYPES.has(ext) || CODE_TYPES.has(ext) || ext === "pdf"
 }
 
 interface Props {
@@ -132,11 +133,12 @@ export function FilePreviewModal({ file, onClose }: Props) {
   const ext = file ? getExt(file) : ""
   const isCode = CODE_TYPES.has(ext)
   const isVideo = VIDEO_TYPES.has(ext)
+  const isPdf = ext === "pdf"
 
   useEffect(() => {
     setBlobUrl(prev => { if (prev) URL.revokeObjectURL(prev); return null })
     setCodeText(null)
-    if (!file) return
+    if (!file || isPdf) return
 
     let cancelled = false
     setLoading(true)
@@ -218,17 +220,21 @@ export function FilePreviewModal({ file, onClose }: Props) {
           flex: 1, minHeight: 0, display: "flex",
           alignItems: "center", justifyContent: "center",
           background: isVideo ? "#000" : isCode ? "#0d1117" : undefined,
+          position: "relative",
         }}>
-          {loading && (
+          {isPdf && (
+            <PdfViewerInner filePath={file.file_path} />
+          )}
+          {!isPdf && loading && (
             <span style={{ color: "var(--muted-foreground)", fontSize: 13 }}>Loading…</span>
           )}
-          {!loading && isCode && codeText !== null && (
+          {!isPdf && !loading && isCode && codeText !== null && (
             <CodeViewer code={codeText} lang={lang} />
           )}
-          {!loading && !isCode && blobUrl && isVideo && (
+          {!isPdf && !loading && !isCode && blobUrl && isVideo && (
             <video src={blobUrl} controls style={{ maxWidth: "100%", maxHeight: "100%" }} />
           )}
-          {!loading && !isCode && blobUrl && !isVideo && (
+          {!isPdf && !loading && !isCode && blobUrl && !isVideo && (
             <div style={{
               width: "100%", height: "100%",
               display: "flex", alignItems: "center", justifyContent: "center",
@@ -241,7 +247,7 @@ export function FilePreviewModal({ file, onClose }: Props) {
               />
             </div>
           )}
-          {!loading && !isCode && !blobUrl && (
+          {!isPdf && !loading && !isCode && !blobUrl && (
             <span style={{ color: "var(--muted-foreground)", fontSize: 13 }}>Could not load file.</span>
           )}
         </div>
