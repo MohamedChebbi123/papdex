@@ -1,4 +1,6 @@
-import { ipcMain } from "electron"
+import { ipcMain, dialog } from "electron"
+import fs from "node:fs"
+import path from "node:path"
 import database from "../database/connection"
 
 function create_file() {
@@ -71,6 +73,50 @@ function delete_files_by_subject() {
     })
 }
 
+function open_file_picker() {
+    ipcMain.handle("files:openPicker", async (_event, subject_id: number, folder_id: number | null) => {
+        const { filePaths, canceled } = await dialog.showOpenDialog({
+            properties: ["openFile", "multiSelections"],
+        })
+        if (canceled || filePaths.length === 0) return []
+
+        const inserted: object[] = []
+        for (const fp of filePaths) {
+            const stat      = fs.statSync(fp)
+            const file_name = path.basename(fp)
+            const file_type = path.extname(fp).replace(".", "").toLowerCase()
+            const file_size = stat.size
+
+            const result = database.prepare(`
+                INSERT OR IGNORE INTO files (subject_id, folder_id, file_name, file_path, file_type, file_size)
+                VALUES (?, ?, ?, ?, ?, ?)
+            `).run(subject_id, folder_id ?? null, file_name, fp, file_type, file_size)
+
+            if (result.changes > 0) {
+                inserted.push({ id: Number(result.lastInsertRowid), file_name, file_path: fp, file_type, file_size })
+            }
+        }
+        return inserted
+    })
+}
+
+function pick_single_file() {
+    ipcMain.handle("files:pickSingle", async () => {
+        const { filePaths, canceled } = await dialog.showOpenDialog({
+            properties: ["openFile"],
+        })
+        if (canceled || filePaths.length === 0) return null
+        const fp   = filePaths[0]
+        const stat = fs.statSync(fp)
+        return {
+            file_name: path.basename(fp),
+            file_path: fp,
+            file_ext:  path.extname(fp).replace(".", "").toLowerCase(),
+            file_size: stat.size,
+        }
+    })
+}
+
 export function file_handlers() {
     create_file()
     fetch_files_by_subject()
@@ -79,4 +125,6 @@ export function file_handlers() {
     update_file()
     delete_file()
     delete_files_by_subject()
+    open_file_picker()
+    pick_single_file()
 }
