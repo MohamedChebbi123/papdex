@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import {
-  Calendar, ChevronRight, ExternalLink, Eye, File, FileText,
+  Calendar, ChevronRight, ExternalLink, Eye, File, FileText, Folder,
   FolderInput, Image, Star, Trash2, Video,
 } from "lucide-react"
 import { Group, Panel, Separator } from "react-resizable-panels"
@@ -57,6 +57,30 @@ function FileIcon({ type }: { type: string }) {
   return <File size={15} />
 }
 
+function getChildrenAtPath(files: ImportedFolderFile[], currentPath: string) {
+  const prefix = currentPath ? `${currentPath}/` : ""
+  const folderCounts = new Map<string, number>()
+  const directFiles: ImportedFolderFile[] = []
+
+  for (const f of files) {
+    if (prefix && !f.relative_path.startsWith(prefix)) continue
+    const rest = prefix ? f.relative_path.slice(prefix.length) : f.relative_path
+    const slashIndex = rest.indexOf("/")
+    if (slashIndex === -1) {
+      directFiles.push(f)
+    } else {
+      const folderName = rest.slice(0, slashIndex)
+      folderCounts.set(folderName, (folderCounts.get(folderName) ?? 0) + 1)
+    }
+  }
+
+  const folders = [...folderCounts.entries()]
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => a.name.localeCompare(b.name))
+
+  return { folders, files: directFiles }
+}
+
 function toAppFile(f: ImportedFolderFile): AppFile {
   return {
     id:         f.id,
@@ -81,10 +105,12 @@ export function ImportedFolderDashboard({
   const [hoveredFileId, setHoveredFileId] = useState<number | null>(null)
   const [previewFile, setPreviewFile] = useState<AppFile | null>(null)
   const [extFilter, setExtFilter] = useState<string>("all")
+  const [currentPath, setCurrentPath] = useState<string>("")
 
   useEffect(() => {
     getImportedFolderById(folderId).then(setFolder)
     getImportedFolderFiles(folderId).then(setFiles)
+    setCurrentPath("")
   }, [folderId])
 
   async function handleDelete() {
@@ -105,11 +131,19 @@ export function ImportedFolderDashboard({
   const card   = "var(--card)"
   const fg     = "var(--foreground)"
 
+  const { folders: childFolders, files: childFiles } = useMemo(
+    () => getChildrenAtPath(files, currentPath),
+    [files, currentPath]
+  )
+
   const allExts = [...new Set(files.map(f => f.file_type).filter(Boolean))].sort()
 
   const filteredFiles = extFilter === "all"
-    ? files
-    : files.filter(f => f.file_type === extFilter)
+    ? childFiles
+    : childFiles.filter(f => f.file_type === extFilter)
+
+  const pathSegments = currentPath ? currentPath.split("/") : []
+  const isEmptyDir = childFolders.length === 0 && childFiles.length === 0
 
   const dashboardContent = (
     <div style={{ padding: "28px 32px", fontFamily: "inherit", minHeight: "100%" }}>
@@ -183,10 +217,40 @@ export function ImportedFolderDashboard({
         </div>
       </div>
 
+      {/* In-folder breadcrumb */}
+      {currentPath && (
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 14, color: muted, fontSize: 12, flexWrap: "wrap" }}>
+          <button onClick={() => setCurrentPath("")} style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}>
+            {folder?.name ?? "Root"}
+          </button>
+          {pathSegments.map((seg, i) => {
+            const segPath = pathSegments.slice(0, i + 1).join("/")
+            const isLast = i === pathSegments.length - 1
+            return (
+              <span key={segPath} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <ChevronRight size={13} />
+                {isLast ? (
+                  <span style={{ color: fg }}>{seg}</span>
+                ) : (
+                  <button onClick={() => setCurrentPath(segPath)} style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}>
+                    {seg}
+                  </button>
+                )}
+              </span>
+            )
+          })}
+        </div>
+      )}
+
       {/* Files */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-        <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Files</span>
-        <span style={{ color: muted, fontSize: 11 }}>{filteredFiles.length} of {files.length}</span>
+        <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+          {currentPath ? pathSegments[pathSegments.length - 1] : "Files"}
+        </span>
+        <span style={{ color: muted, fontSize: 11 }}>
+          {childFolders.length > 0 && `${childFolders.length} folder${childFolders.length !== 1 ? "s" : ""} · `}
+          {filteredFiles.length} of {childFiles.length} file{childFiles.length !== 1 ? "s" : ""}
+        </span>
       </div>
 
       {/* Filter chips */}
@@ -221,13 +285,37 @@ export function ImportedFolderDashboard({
           <p style={{ color: fg, fontSize: 15, fontWeight: 500, marginTop: 12, marginBottom: 4 }}>Folder is empty</p>
           <p style={{ color: muted, fontSize: 13, margin: 0 }}>No files were found in the imported folder</p>
         </div>
-      ) : filteredFiles.length === 0 ? (
+      ) : isEmptyDir ? (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 0", color: muted }}>
           <File size={32} />
           <p style={{ marginTop: 10, fontSize: 13 }}>No files match the selected filter</p>
         </div>
       ) : (
         <div style={{ background: card, borderRadius: 14, border: `1px solid ${border}`, overflow: "hidden" }}>
+          {childFolders.map((cf, i) => (
+            <div
+              key={cf.name}
+              onClick={() => setCurrentPath(currentPath ? `${currentPath}/${cf.name}` : cf.name)}
+              style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                padding: "11px 16px", cursor: "pointer",
+                borderBottom: (i < childFolders.length - 1 || filteredFiles.length > 0) ? `1px solid ${border}` : "none",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                <span style={{ color: muted, flexShrink: 0 }}>
+                  <Folder size={15} />
+                </span>
+                <div style={{ color: fg, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {cf.name}
+                </div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+                <span style={{ color: muted, fontSize: 11 }}>{cf.count} file{cf.count !== 1 ? "s" : ""}</span>
+                <ChevronRight size={14} color={muted} />
+              </div>
+            </div>
+          ))}
           {filteredFiles.map((file, i) => {
             const appFile = toAppFile(file)
             return (
@@ -250,11 +338,6 @@ export function ImportedFolderDashboard({
                     <div style={{ color: fg, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {file.file_name}
                     </div>
-                    {file.relative_path !== file.file_name && (
-                      <div style={{ color: muted, fontSize: 10, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: "monospace" }}>
-                        {file.relative_path}
-                      </div>
-                    )}
                   </div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
