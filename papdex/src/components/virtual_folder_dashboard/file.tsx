@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react"
 import {
   Calendar, ChevronRight, ExternalLink, Eye, File, FileText,
-  Folder, Image, Pencil, Plus, Star, Trash2, Video,
+  Folder, Image, Pencil, Plus, Trash2, Video,
 } from "lucide-react"
 import { Group, Panel, Separator } from "react-resizable-panels"
 import {
   getVirtualFolderById,
-  toggleFavoriteVirtualFolder,
   deleteVirtualFolder,
 } from "@/components/virtual_folders_service/file"
 import {
@@ -53,7 +52,6 @@ interface VirtualFolder {
   id: number
   subject_id: number
   name: string
-  is_favorite: number
 }
 
 interface Subject {
@@ -116,13 +114,6 @@ export function VirtualFolderDashboard({
     getFilesByFolder(folderId).then(setFiles)
   }, [folderId])
 
-  async function handleToggleFavorite() {
-    if (!folder) return
-    const next = folder.is_favorite ? 0 : 1
-    await toggleFavoriteVirtualFolder(folder.id, next)
-    setFolder(prev => prev ? { ...prev, is_favorite: next } : prev)
-  }
-
   async function handleDelete() {
     await deleteVirtualFolder(folderId)
     setDeleteOpen(false)
@@ -181,12 +172,6 @@ export function VirtualFolderDashboard({
             <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0, lineHeight: 1.2, color: fg }}>
               {folder?.name ?? "Loading..."}
             </h1>
-            <button
-              onClick={handleToggleFavorite}
-              style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", marginTop: 2 }}
-            >
-              <Star size={20} fill={folder?.is_favorite ? "#f59e0b" : "none"} color={folder?.is_favorite ? "#f59e0b" : muted} />
-            </button>
           </div>
           <p style={{ color: muted, fontSize: 13, margin: 0 }}>
             {subject.name} · {semester.name} · {files.length} file{files.length !== 1 ? "s" : ""}
@@ -231,16 +216,11 @@ export function VirtualFolderDashboard({
       </div>
 
       {/* Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, marginBottom: 28 }}>
-        {[
-          { value: files.length,                 label: "Files" },
-          { value: folder?.is_favorite ? 1 : 0,  label: "Favorited" },
-        ].map(stat => (
-          <div key={stat.label} style={{ background: card, borderRadius: 12, padding: 20, border: `1px solid ${border}` }}>
-            <div style={{ fontSize: 28, fontWeight: 700, color: fg }}>{stat.value}</div>
-            <div style={{ color: muted, fontSize: 12, marginTop: 2 }}>{stat.label}</div>
-          </div>
-        ))}
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ background: card, borderRadius: 12, padding: 20, border: `1px solid ${border}`, display: "inline-block" }}>
+          <div style={{ fontSize: 28, fontWeight: 700, color: fg }}>{files.length}</div>
+          <div style={{ color: muted, fontSize: 12, marginTop: 2 }}>Files</div>
+        </div>
       </div>
 
       {/* Files */}
