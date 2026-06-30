@@ -48,4 +48,13 @@ database.exec(`
         created_at      TEXT NOT NULL DEFAULT (datetime('now')),
         updated_at      TEXT NOT NULL DEFAULT (datetime('now'))
     );
+
+    CREATE TABLE IF NOT EXISTS user (
+        id           INTEGER PRIMARY KEY DEFAULT 1,
+        display_name TEXT NOT NULL DEFAULT 'Student',
+        avatar_path  TEXT,
+        theme        TEXT NOT NULL DEFAULT 'dark'
+    );
 `)
+
+database.prepare("INSERT OR IGNORE INTO user (id) VALUES (1)").run()
