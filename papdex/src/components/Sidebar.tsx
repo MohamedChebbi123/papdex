@@ -49,9 +49,10 @@ interface Props {
   onSelectYear: (year: AcademicYear) => void
   onSelectSemester: (year: AcademicYear, semester: Semester) => void
   onSelectSubject: (year: AcademicYear, semester: Semester, subject: Subject) => void
+  onShowFavorites: () => void
 }
 
-export function AppSidebar({ onSelectYear, onSelectSemester, onSelectSubject }: Props) {
+export function AppSidebar({ onSelectYear, onSelectSemester, onSelectSubject, onShowFavorites }: Props) {
   const [academicYears, setAcademicYears] = useState<AcademicYear[]>([])
   const [dark, setDark] = useState(false)
   const [showCreateYear, setShowCreateYear] = useState(false)
@@ -162,7 +163,7 @@ export function AppSidebar({ onSelectYear, onSelectSemester, onSelectSubject }: 
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton>
+                <SidebarMenuButton onClick={onShowFavorites}>
                   <Star className="size-4" />
                   <span>Favorites</span>
                 </SidebarMenuButton>

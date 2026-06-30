@@ -18,6 +18,7 @@ export function AcademicYearCreation({ open, onOpenChange, onCreated }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (startDate && endDate && endDate < startDate) return
     setLoading(true)
     try {
       const id = await createAcademicYear(name, startDate, endDate)
@@ -59,6 +60,7 @@ export function AcademicYearCreation({ open, onOpenChange, onCreated }: Props) {
                   <Input
                     type="date"
                     value={startDate}
+                    max={endDate || undefined}
                     onChange={e => setStartDate(e.target.value)}
                     required
                   />
@@ -69,6 +71,7 @@ export function AcademicYearCreation({ open, onOpenChange, onCreated }: Props) {
                   <Input
                     type="date"
                     value={endDate}
+                    min={startDate || undefined}
                     onChange={e => setEndDate(e.target.value)}
                     required
                   />

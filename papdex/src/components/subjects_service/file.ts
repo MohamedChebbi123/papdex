@@ -18,6 +18,10 @@ export async function toggleFavoriteSubject(id: number, is_favorite: number): Pr
   return await window.ipcRenderer.invoke('subjects:toggleFavorite', id, is_favorite)
 }
 
+export async function getFavoriteSubjects(): Promise<any[]> {
+  return await window.ipcRenderer.invoke('subjects:getFavorites')
+}
+
 export async function deleteSubject(id: number): Promise<number> {
   return await window.ipcRenderer.invoke('subjects:delete', id)
 }

@@ -33,7 +33,6 @@ database.exec(`
         id          INTEGER PRIMARY KEY AUTOINCREMENT,
         subject_id  INTEGER NOT NULL REFERENCES subjects(id) ON DELETE CASCADE,
         name        TEXT NOT NULL,
-        is_favorite INTEGER NOT NULL DEFAULT 0,
         created_at  TEXT NOT NULL DEFAULT (datetime('now')),
         updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
     );

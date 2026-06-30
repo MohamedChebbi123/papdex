@@ -28,6 +28,7 @@ export function AcademicYearUpdate({ open, onOpenChange, year, onUpdated }: Prop
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!year) return
+    if (startDate && endDate && endDate < startDate) return
     setLoading(true)
     try {
       await updateAcademicYear(year.id, name, startDate, endDate)
@@ -66,6 +67,7 @@ export function AcademicYearUpdate({ open, onOpenChange, year, onUpdated }: Prop
                   <Input
                     type="date"
                     value={startDate}
+                    max={endDate || undefined}
                     onChange={e => setStartDate(e.target.value)}
                     required
                   />
@@ -76,6 +78,7 @@ export function AcademicYearUpdate({ open, onOpenChange, year, onUpdated }: Prop
                   <Input
                     type="date"
                     value={endDate}
+                    min={startDate || undefined}
                     onChange={e => setEndDate(e.target.value)}
                     required
                   />

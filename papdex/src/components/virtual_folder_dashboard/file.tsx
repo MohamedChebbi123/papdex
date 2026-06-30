@@ -3,6 +3,7 @@ import {
   Calendar, ChevronRight, ExternalLink, Eye, File, FileText,
   Folder, Image, Pencil, Plus, Star, Trash2, Video,
 } from "lucide-react"
+import { Group, Panel, Separator } from "react-resizable-panels"
 import {
   getVirtualFolderById,
   toggleFavoriteVirtualFolder,
@@ -17,7 +18,7 @@ import {
 import { VirtualFolderUpdate } from "@/components/inputs/virtual_folder_update"
 import { DeleteConfirm } from "@/components/inputs/Delete_confirm"
 import { FileCreationInput } from "@/components/inputs/file_creation_input"
-import { FilePreviewModal, canPreview } from "@/components/inputs/file_preview_modal"
+import { FilePreviewPanel, canPreview } from "@/components/inputs/file_preview_modal"
 
 interface VirtualFolder {
   id: number
@@ -109,8 +110,8 @@ export function VirtualFolderDashboard({
   const card   = "var(--card)"
   const fg     = "var(--foreground)"
 
-  return (
-    <div style={{ minHeight: "100vh", padding: "28px 32px", fontFamily: "inherit" }}>
+  const dashboardContent = (
+    <div style={{ padding: "28px 32px", fontFamily: "inherit", minHeight: "100%" }}>
 
       {/* Breadcrumb */}
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 20, color: muted, fontSize: 12 }}>
@@ -230,6 +231,7 @@ export function VirtualFolderDashboard({
                 display: "flex", alignItems: "center", justifyContent: "space-between",
                 padding: "11px 16px",
                 borderBottom: i < files.length - 1 ? `1px solid ${border}` : "none",
+                background: previewFile?.id === file.id ? "var(--muted)" : undefined,
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
@@ -255,10 +257,10 @@ export function VirtualFolderDashboard({
                   <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                     {canPreview(file) && (
                       <button
-                        onClick={() => setPreviewFile(file)}
+                        onClick={() => setPreviewFile(prev => prev?.id === file.id ? null : file)}
                         style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex", borderRadius: 6 }}
                       >
-                        <Eye size={13} color={muted} />
+                        <Eye size={13} color={previewFile?.id === file.id ? "var(--primary)" : muted} />
                       </button>
                     )}
                     <button
@@ -280,6 +282,28 @@ export function VirtualFolderDashboard({
               </div>
             </div>
           ))}
+        </div>
+      )}
+    </div>
+  )
+
+  return (
+    <>
+      {previewFile ? (
+        <Group orientation="horizontal" style={{ height: "100vh" }}>
+          <Panel defaultSize={40} minSize={20} style={{ overflow: "auto" }}>
+            {dashboardContent}
+          </Panel>
+          <Separator style={{
+            width: 5, background: "var(--border)", cursor: "col-resize", flexShrink: 0,
+          }} />
+          <Panel defaultSize={60} minSize={25}>
+            <FilePreviewPanel file={previewFile} onClose={() => setPreviewFile(null)} />
+          </Panel>
+        </Group>
+      ) : (
+        <div style={{ minHeight: "100vh" }}>
+          {dashboardContent}
         </div>
       )}
 
@@ -308,7 +332,6 @@ export function VirtualFolderDashboard({
         label={deletingFile?.file_name ?? ""}
         onConfirmed={handleDeleteFile}
       />
-      <FilePreviewModal file={previewFile} onClose={() => setPreviewFile(null)} />
-    </div>
+    </>
   )
 }

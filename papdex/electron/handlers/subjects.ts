@@ -40,6 +40,27 @@ function toggle_favorite_subject() {
     })
 }
 
+function fetch_favorite_subjects() {
+    ipcMain.handle("subjects:getFavorites", () => {
+        return database.prepare(`
+            SELECT
+                s.id, s.name, s.semester_id, s.is_favorite,
+                sem.name        AS semester_name,
+                sem.start_date  AS semester_start_date,
+                sem.end_date    AS semester_end_date,
+                ay.id           AS year_id,
+                ay.name         AS year_name,
+                ay.start_date   AS year_start_date,
+                ay.end_date     AS year_end_date
+            FROM subjects s
+            JOIN semesters sem ON s.semester_id = sem.id
+            JOIN academic_years ay ON sem.year_id = ay.id
+            WHERE s.is_favorite = 1
+            ORDER BY ay.name, sem.name, s.name
+        `).all()
+    })
+}
+
 function delete_subject() {
     ipcMain.handle("subjects:delete", (_event, id: number) => {
         const result = database.prepare("DELETE FROM subjects WHERE id = ?").run(id)
@@ -53,5 +74,6 @@ export function subject_handlers() {
     fetch_subject_by_id()
     update_subject()
     toggle_favorite_subject()
+    fetch_favorite_subjects()
     delete_subject()
 }

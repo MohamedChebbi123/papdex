@@ -19,6 +19,7 @@ export function SemesterCreation({ open, onOpenChange, yearId, onCreated }: Prop
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (startDate && endDate && endDate < startDate) return
     setLoading(true)
     try {
       const id = await createSemester(yearId, name, startDate, endDate)
@@ -60,6 +61,7 @@ export function SemesterCreation({ open, onOpenChange, yearId, onCreated }: Prop
                   <Input
                     type="date"
                     value={startDate}
+                    max={endDate || undefined}
                     onChange={e => setStartDate(e.target.value)}
                     required
                   />
@@ -70,6 +72,7 @@ export function SemesterCreation({ open, onOpenChange, yearId, onCreated }: Prop
                   <Input
                     type="date"
                     value={endDate}
+                    min={startDate || undefined}
                     onChange={e => setEndDate(e.target.value)}
                     required
                   />

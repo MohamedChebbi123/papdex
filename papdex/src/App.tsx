@@ -5,6 +5,7 @@ import { Academicyeardashaboard } from "@/components/academeic_year_dashboard/fi
 import { SemesterDashboard } from "@/components/Semester_dashboard/file"
 import { SubjectDashboard } from "@/components/subject_dashboard/file"
 import { VirtualFolderDashboard } from "@/components/virtual_folder_dashboard/file"
+import { FavoritesDashboard } from "@/components/favorites_dashboard/file"
 
 type Semester = { id: number; name: string; start_date: string; end_date: string }
 type Subject  = { id: number; name: string; is_favorite: number }
@@ -15,12 +16,14 @@ function App() {
   const [selectedSemester, setSelectedSemester] = useState<Semester | null>(null)
   const [selectedSubject,  setSelectedSubject]  = useState<Subject | null>(null)
   const [selectedFolder,   setSelectedFolder]   = useState<Folder | null>(null)
+  const [showFavorites,    setShowFavorites]    = useState(false)
 
   function handleSelectYear(year: AcademicYear) {
     setSelectedYear(year)
     setSelectedSemester(null)
     setSelectedSubject(null)
     setSelectedFolder(null)
+    setShowFavorites(false)
   }
 
   function handleSelectSemester(year: AcademicYear, semester: Semester) {
@@ -28,6 +31,7 @@ function App() {
     setSelectedSemester(semester)
     setSelectedSubject(null)
     setSelectedFolder(null)
+    setShowFavorites(false)
   }
 
   function handleSelectSubject(year: AcademicYear, semester: Semester, subject: Subject) {
@@ -35,6 +39,7 @@ function App() {
     setSelectedSemester(semester)
     setSelectedSubject(subject)
     setSelectedFolder(null)
+    setShowFavorites(false)
   }
 
   return (
@@ -43,9 +48,25 @@ function App() {
         onSelectYear={handleSelectYear}
         onSelectSemester={handleSelectSemester}
         onSelectSubject={handleSelectSubject}
+        onShowFavorites={() => {
+          setShowFavorites(true)
+          setSelectedYear(null)
+          setSelectedSemester(null)
+          setSelectedSubject(null)
+          setSelectedFolder(null)
+        }}
       />
       <main className="flex-1 overflow-auto bg-background">
-        {selectedFolder && selectedSubject && selectedSemester && selectedYear ? (
+        {showFavorites ? (
+          <FavoritesDashboard
+            onSelectSubject={(subject, semester, year) => {
+              setSelectedYear(year)
+              setSelectedSemester(semester)
+              setSelectedSubject(subject)
+              setShowFavorites(false)
+            }}
+          />
+        ) : selectedFolder && selectedSubject && selectedSemester && selectedYear ? (
           <VirtualFolderDashboard
             folderId={selectedFolder.id}
             subject={selectedSubject}
