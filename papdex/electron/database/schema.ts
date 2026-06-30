@@ -56,6 +56,27 @@ database.exec(`
         theme        TEXT NOT NULL DEFAULT 'dark',
         onboarded    INTEGER NOT NULL DEFAULT 0
     );
+
+    CREATE TABLE IF NOT EXISTS imported_folders (
+        id            INTEGER PRIMARY KEY AUTOINCREMENT,
+        subject_id    INTEGER NOT NULL REFERENCES subjects(id) ON DELETE CASCADE,
+        name          TEXT NOT NULL,
+        original_path TEXT NOT NULL,
+        is_favorite   INTEGER NOT NULL DEFAULT 0,
+        created_at    TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at    TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS imported_folder_files (
+        id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+        imported_folder_id INTEGER NOT NULL REFERENCES imported_folders(id) ON DELETE CASCADE,
+        file_name          TEXT NOT NULL,
+        file_path          TEXT NOT NULL,
+        file_type          TEXT NOT NULL,
+        file_size          INTEGER,
+        relative_path      TEXT NOT NULL,
+        created_at         TEXT NOT NULL DEFAULT (datetime('now'))
+    );
 `)
 
 database.prepare("INSERT OR IGNORE INTO user (id) VALUES (1)").run()

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import {
   Calendar, ChevronRight, FileText,
-  Folder, Pencil, Plus, Star, Trash2,
+  Folder, FolderInput, Pencil, Plus, Star, Trash2,
 } from "lucide-react"
 import { getSubjectById, toggleFavoriteSubject } from "@/components/subjects_service/file"
 import {
@@ -9,6 +9,13 @@ import {
   toggleFavoriteVirtualFolder,
   deleteVirtualFolder,
 } from "@/components/virtual_folders_service/file"
+import {
+  getImportedFoldersBySubject,
+  toggleFavoriteImportedFolder,
+  deleteImportedFolder,
+  importFolder,
+  type ImportedFolder,
+} from "@/components/imported_folders_service/file"
 import { VirtualFolderCreation } from "@/components/inputs/virtual_folder_creation"
 import { VirtualFolderUpdate } from "@/components/inputs/virtual_folder_update"
 import { DeleteConfirm } from "@/components/inputs/Delete_confirm"
@@ -43,24 +50,31 @@ interface Props {
   onBack: () => void
   onBackToYear: () => void
   onSelectFolder: (folder: VirtualFolder) => void
+  onSelectImportedFolder: (folder: ImportedFolder) => void
 }
 
-export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYear, onSelectFolder }: Props) {
+export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYear, onSelectFolder, onSelectImportedFolder }: Props) {
   const [subject, setSubject] = useState<Subject | null>(null)
   const [folders, setFolders] = useState<VirtualFolder[]>([])
+  const [importedFolders, setImportedFolders] = useState<ImportedFolder[]>([])
   const [createOpen, setCreateOpen] = useState(false)
   const [editingFolder, setEditingFolder] = useState<VirtualFolder | null>(null)
   const [deletingFolder, setDeletingFolder] = useState<VirtualFolder | null>(null)
+  const [deletingImported, setDeletingImported] = useState<ImportedFolder | null>(null)
   const [hoveredId, setHoveredId] = useState<number | null>(null)
+  const [hoveredImportedId, setHoveredImportedId] = useState<number | null>(null)
+  const [importing, setImporting] = useState(false)
 
   useEffect(() => {
     getSubjectById(subjectId).then(setSubject)
     getVirtualFoldersBySubject(subjectId).then(setFolders)
+    getImportedFoldersBySubject(subjectId).then(setImportedFolders)
   }, [subjectId])
 
   function refresh() {
     getSubjectById(subjectId).then(setSubject)
     getVirtualFoldersBySubject(subjectId).then(setFolders)
+    getImportedFoldersBySubject(subjectId).then(setImportedFolders)
   }
 
   async function handleToggleSubjectFavorite() {
@@ -76,11 +90,34 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
     setFolders(prev => prev.map(f => f.id === folder.id ? { ...f, is_favorite: next } : f))
   }
 
+  async function handleToggleImportedFavorite(folder: ImportedFolder) {
+    const next = folder.is_favorite ? 0 : 1
+    await toggleFavoriteImportedFolder(folder.id, next)
+    setImportedFolders(prev => prev.map(f => f.id === folder.id ? { ...f, is_favorite: next } : f))
+  }
+
   async function handleDeleteFolder() {
     if (!deletingFolder) return
     await deleteVirtualFolder(deletingFolder.id)
     setDeletingFolder(null)
     getVirtualFoldersBySubject(subjectId).then(setFolders)
+  }
+
+  async function handleDeleteImported() {
+    if (!deletingImported) return
+    await deleteImportedFolder(deletingImported.id)
+    setDeletingImported(null)
+    getImportedFoldersBySubject(subjectId).then(setImportedFolders)
+  }
+
+  async function handleImportFolder() {
+    setImporting(true)
+    try {
+      const result = await importFolder(subjectId)
+      if (result) setImportedFolders(prev => [result, ...prev])
+    } finally {
+      setImporting(false)
+    }
   }
 
   const favFolders = folders.filter(f => f.is_favorite).length
@@ -131,28 +168,43 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
             </button>
           </h1>
           <p style={{ color: muted, fontSize: 13, margin: "4px 0 0" }}>
-            {semester.name} · {folders.length} folders
+            {semester.name} · {folders.length} folders · {importedFolders.length} imported
           </p>
         </div>
-        <button
-          onClick={() => setCreateOpen(true)}
-          style={{
-            background: card, border: `1px solid ${border}`, borderRadius: 10,
-            color: fg, fontSize: 14, padding: "10px 20px",
-            display: "flex", alignItems: "center", gap: 6, cursor: "pointer",
-          }}
-        >
-          <Plus size={14} />
-          New folder
-        </button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            onClick={handleImportFolder}
+            disabled={importing}
+            style={{
+              background: card, border: `1px solid ${border}`, borderRadius: 10,
+              color: fg, fontSize: 14, padding: "10px 20px",
+              display: "flex", alignItems: "center", gap: 6, cursor: importing ? "not-allowed" : "pointer",
+              opacity: importing ? 0.6 : 1,
+            }}
+          >
+            <FolderInput size={14} />
+            {importing ? "Importing..." : "Import folder"}
+          </button>
+          <button
+            onClick={() => setCreateOpen(true)}
+            style={{
+              background: card, border: `1px solid ${border}`, borderRadius: 10,
+              color: fg, fontSize: 14, padding: "10px 20px",
+              display: "flex", alignItems: "center", gap: 6, cursor: "pointer",
+            }}
+          >
+            <Plus size={14} />
+            New folder
+          </button>
+        </div>
       </div>
 
       {/* Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 28 }}>
         {[
-          { value: folders.length, label: "Folders" },
-          { value: favFolders,     label: "Favorites" },
-          { value: 0,              label: "Files" },
+          { value: folders.length,         label: "Folders" },
+          { value: favFolders,             label: "Favorites" },
+          { value: importedFolders.length, label: "Imported" },
         ].map(stat => (
           <div key={stat.label} style={{ background: card, borderRadius: 12, padding: 20, border: `1px solid ${border}` }}>
             <div style={{ fontSize: 28, fontWeight: 700, color: fg }}>{stat.value}</div>
@@ -161,7 +213,7 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
         ))}
       </div>
 
-      {/* Folders */}
+      {/* Virtual Folders */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
         <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Folders</span>
       </div>
@@ -233,7 +285,74 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
         </div>
       )}
 
-      {/* Files */}
+      {/* Imported Folders */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+        <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Imported Folders</span>
+      </div>
+
+      {importedFolders.length === 0 ? (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 0", marginBottom: 28 }}>
+          <FolderInput size={40} color={muted} />
+          <p style={{ color: fg, fontSize: 15, fontWeight: 500, marginTop: 12, marginBottom: 4 }}>No imported folders yet</p>
+          <p style={{ color: muted, fontSize: 13, margin: 0 }}>Import an OS folder to bring in all its files at once</p>
+          <button
+            onClick={handleImportFolder}
+            disabled={importing}
+            style={{
+              background: card, border: `1px solid ${border}`, borderRadius: 10,
+              color: fg, fontSize: 14, padding: "10px 20px", marginTop: 16,
+              display: "flex", alignItems: "center", gap: 6, cursor: "pointer",
+            }}
+          >
+            <FolderInput size={14} />
+            Import folder
+          </button>
+        </div>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 28 }}>
+          {importedFolders.map(folder => (
+            <div
+              key={folder.id}
+              onMouseEnter={() => setHoveredImportedId(folder.id)}
+              onMouseLeave={() => setHoveredImportedId(null)}
+              onClick={() => onSelectImportedFolder(folder)}
+              style={{ background: card, border: `1px solid ${border}`, borderRadius: 14, padding: 16, cursor: "pointer", position: "relative" }}
+            >
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                  <FolderInput size={15} color={muted} style={{ flexShrink: 0 }} />
+                  <span style={{ color: fg, fontSize: 13, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{folder.name}</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+                  {hoveredImportedId === folder.id && (
+                    <button
+                      onClick={e => { e.stopPropagation(); setDeletingImported(folder) }}
+                      style={{ background: "none", border: "none", cursor: "pointer", padding: 4, borderRadius: 6, display: "flex" }}
+                    >
+                      <Trash2 size={13} color="#ef4444" />
+                    </button>
+                  )}
+                  <button
+                    onClick={e => { e.stopPropagation(); handleToggleImportedFavorite(folder) }}
+                    style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}
+                  >
+                    <Star
+                      size={15}
+                      fill={folder.is_favorite ? "#f59e0b" : "none"}
+                      color={folder.is_favorite ? "#f59e0b" : muted}
+                    />
+                  </button>
+                </div>
+              </div>
+              <p style={{ color: muted, fontSize: 11, margin: "6px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {folder.file_count} file{folder.file_count !== 1 ? "s" : ""} · {folder.original_path}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Files placeholder */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
         <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Files</span>
       </div>
@@ -260,6 +379,12 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
         onOpenChange={open => { if (!open) setDeletingFolder(null) }}
         label={deletingFolder?.name ?? ""}
         onConfirmed={handleDeleteFolder}
+      />
+      <DeleteConfirm
+        open={deletingImported !== null}
+        onOpenChange={open => { if (!open) setDeletingImported(null) }}
+        label={deletingImported?.name ?? ""}
+        onConfirmed={handleDeleteImported}
       />
     </div>
   )

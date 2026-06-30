@@ -5,21 +5,24 @@ import { Academicyeardashaboard } from "@/components/academeic_year_dashboard/fi
 import { SemesterDashboard } from "@/components/Semester_dashboard/file"
 import { SubjectDashboard } from "@/components/subject_dashboard/file"
 import { VirtualFolderDashboard } from "@/components/virtual_folder_dashboard/file"
+import { ImportedFolderDashboard } from "@/components/imported_folder_dashboard/file"
 import { FavoritesDashboard } from "@/components/favorites_dashboard/file"
 import { Onboarding } from "@/components/onboarding/file"
 import { getUser } from "@/components/user_service/file"
+import type { ImportedFolder } from "@/components/imported_folders_service/file"
 
 type Semester = { id: number; name: string; start_date: string; end_date: string }
 type Subject  = { id: number; name: string; is_favorite: number }
 type Folder   = { id: number; name: string; is_favorite: number }
 
 function App() {
-  const [onboarded,        setOnboarded]        = useState<boolean | null>(null)
-  const [selectedYear,     setSelectedYear]     = useState<AcademicYear | null>(null)
-  const [selectedSemester, setSelectedSemester] = useState<Semester | null>(null)
-  const [selectedSubject,  setSelectedSubject]  = useState<Subject | null>(null)
-  const [selectedFolder,   setSelectedFolder]   = useState<Folder | null>(null)
-  const [showFavorites,    setShowFavorites]    = useState(false)
+  const [onboarded,              setOnboarded]              = useState<boolean | null>(null)
+  const [selectedYear,           setSelectedYear]           = useState<AcademicYear | null>(null)
+  const [selectedSemester,       setSelectedSemester]       = useState<Semester | null>(null)
+  const [selectedSubject,        setSelectedSubject]        = useState<Subject | null>(null)
+  const [selectedFolder,         setSelectedFolder]         = useState<Folder | null>(null)
+  const [selectedImportedFolder, setSelectedImportedFolder] = useState<ImportedFolder | null>(null)
+  const [showFavorites,          setShowFavorites]          = useState(false)
 
   useEffect(() => {
     getUser().then(user => {
@@ -36,6 +39,7 @@ function App() {
     setSelectedSemester(null)
     setSelectedSubject(null)
     setSelectedFolder(null)
+    setSelectedImportedFolder(null)
     setShowFavorites(false)
   }
 
@@ -44,6 +48,7 @@ function App() {
     setSelectedSemester(semester)
     setSelectedSubject(null)
     setSelectedFolder(null)
+    setSelectedImportedFolder(null)
     setShowFavorites(false)
   }
 
@@ -52,6 +57,7 @@ function App() {
     setSelectedSemester(semester)
     setSelectedSubject(subject)
     setSelectedFolder(null)
+    setSelectedImportedFolder(null)
     setShowFavorites(false)
   }
 
@@ -70,6 +76,7 @@ function App() {
           setSelectedSemester(null)
           setSelectedSubject(null)
           setSelectedFolder(null)
+          setSelectedImportedFolder(null)
         }}
       />
       <main className="flex-1 overflow-auto bg-background">
@@ -81,6 +88,16 @@ function App() {
               setSelectedSubject(subject)
               setShowFavorites(false)
             }}
+          />
+        ) : selectedImportedFolder && selectedSubject && selectedSemester && selectedYear ? (
+          <ImportedFolderDashboard
+            folderId={selectedImportedFolder.id}
+            subject={selectedSubject}
+            semester={selectedSemester}
+            year={selectedYear}
+            onBack={() => setSelectedImportedFolder(null)}
+            onBackToSemester={() => { setSelectedSubject(null); setSelectedImportedFolder(null) }}
+            onBackToYear={() => { setSelectedSemester(null); setSelectedSubject(null); setSelectedImportedFolder(null) }}
           />
         ) : selectedFolder && selectedSubject && selectedSemester && selectedYear ? (
           <VirtualFolderDashboard
@@ -100,6 +117,7 @@ function App() {
             onBack={() => setSelectedSubject(null)}
             onBackToYear={() => { setSelectedSemester(null); setSelectedSubject(null) }}
             onSelectFolder={setSelectedFolder}
+            onSelectImportedFolder={setSelectedImportedFolder}
           />
         ) : selectedSemester && selectedYear ? (
           <SemesterDashboard

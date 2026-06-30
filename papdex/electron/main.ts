@@ -9,6 +9,7 @@ import { subject_handlers } from './handlers/subjects'
 import { virtual_folder_handlers } from './handlers/virtual_folders_handler'
 import { file_handlers } from './handlers/files_handlers'
 import { user_handlers } from './handlers/user_handler'
+import { imported_folder_handlers } from './handlers/imported_folders_handler'
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -30,6 +31,7 @@ subject_handlers()
 virtual_folder_handlers()
 file_handlers()
 user_handlers()
+imported_folder_handlers()
 function createWindow() {
   win = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
