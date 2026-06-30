@@ -53,7 +53,8 @@ database.exec(`
         id           INTEGER PRIMARY KEY DEFAULT 1,
         display_name TEXT NOT NULL DEFAULT 'Student',
         avatar_path  TEXT,
-        theme        TEXT NOT NULL DEFAULT 'dark'
+        theme        TEXT NOT NULL DEFAULT 'dark',
+        onboarded    INTEGER NOT NULL DEFAULT 0
     );
 `)
 

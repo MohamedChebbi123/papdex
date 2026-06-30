@@ -22,6 +22,7 @@ import { DeleteConfirm } from "./inputs/Delete_confirm"
 import { deleteAcademicYear, getAllAcademicYears } from "./academic_year_service/file"
 import { getSemestersByYear } from "./semester_service/file"
 import { getSubjectsBySemester } from "./subjects_service/file"
+import { getUser, updateUser, type User } from "./user_service/file"
 
 type AcademicYear = {
   id: number
@@ -54,7 +55,8 @@ interface Props {
 
 export function AppSidebar({ onSelectYear, onSelectSemester, onSelectSubject, onShowFavorites }: Props) {
   const [academicYears, setAcademicYears] = useState<AcademicYear[]>([])
-  const [dark, setDark] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
+  const [dark, setDark] = useState(document.documentElement.classList.contains("dark"))
   const [showCreateYear, setShowCreateYear] = useState(false)
   const [editingYear, setEditingYear] = useState<AcademicYear | null>(null)
   const [deletingYear, setDeletingYear] = useState<AcademicYear | null>(null)
@@ -70,7 +72,14 @@ export function AppSidebar({ onSelectYear, onSelectSemester, onSelectSubject, on
 
   useEffect(() => {
     getAllAcademicYears().then(setAcademicYears)
+    getUser().then(setUser)
   }, [])
+
+  function toggleTheme() {
+    const next = !dark
+    setDark(next)
+    updateUser({ theme: next ? "dark" : "light" })
+  }
 
   function refresh() {
     getAllAcademicYears().then(setAcademicYears)
@@ -144,7 +153,7 @@ export function AppSidebar({ onSelectYear, onSelectSemester, onSelectSubject, on
             <p className="text-xs text-muted-foreground">{new Date().toLocaleDateString()}</p>
           </div>
           <button
-            onClick={() => setDark(d => !d)}
+            onClick={toggleTheme}
             className="rounded-md p-1.5 hover:bg-accent transition-colors"
           >
             {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
@@ -301,15 +310,28 @@ export function AppSidebar({ onSelectYear, onSelectSemester, onSelectSubject, on
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton>
-              <Settings className="size-4" />
-              <span>Settings</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+      <SidebarFooter className="border-t p-3">
+        <div className="flex items-center gap-3">
+          {/* Avatar */}
+          <div className="size-8 rounded-full overflow-hidden flex-shrink-0 bg-muted flex items-center justify-center">
+            {user?.avatar_path ? (
+              <img src={user.avatar_path} alt="avatar" className="size-full object-cover" />
+            ) : (
+              <span className="text-xs font-semibold text-muted-foreground">
+                {user?.display_name?.[0]?.toUpperCase() ?? "?"}
+              </span>
+            )}
+          </div>
+          {/* Name */}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">{user?.display_name ?? "—"}</p>
+            <p className="text-xs text-muted-foreground">Student</p>
+          </div>
+          {/* Settings */}
+          <button className="rounded-md p-1.5 hover:bg-accent transition-colors flex-shrink-0">
+            <Settings className="size-4 text-muted-foreground" />
+          </button>
+        </div>
       </SidebarFooter>
     </Sidebar>
     </>
