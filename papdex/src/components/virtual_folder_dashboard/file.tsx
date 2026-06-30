@@ -20,6 +20,35 @@ import { DeleteConfirm } from "@/components/inputs/Delete_confirm"
 import { FileCreationInput } from "@/components/inputs/file_creation_input"
 import { FilePreviewPanel, canPreview } from "@/components/inputs/file_preview_modal"
 
+const CATEGORY_COLORS: Record<string, { bg: string; text: string; border: string }> = {
+  Summary:  { bg: "#14532d", text: "#4ade80", border: "#166534" },
+  Lesson:   { bg: "#1e3a5f", text: "#60a5fa", border: "#1d4ed8" },
+  Quiz:     { bg: "#3b1f6e", text: "#c084fc", border: "#7c3aed" },
+  Exam:     { bg: "#431407", text: "#fb923c", border: "#c2410c" },
+  Video:    { bg: "#0f2744", text: "#38bdf8", border: "#0369a1" },
+  Notes:    { bg: "#1c1917", text: "#a8a29e", border: "#44403c" },
+  Exercise: { bg: "#14403a", text: "#2dd4bf", border: "#0f766e" },
+  TD:       { bg: "#1e1b4b", text: "#818cf8", border: "#4338ca" },
+  TP:       { bg: "#4a1942", text: "#e879f9", border: "#a21caf" },
+}
+
+function CategoryBadge({ category }: { category: string }) {
+  const c = CATEGORY_COLORS[category]
+  if (!c) return (
+    <span style={{
+      background: "var(--muted)", color: "var(--muted-foreground)",
+      border: "1px solid var(--border)", borderRadius: 6,
+      fontSize: 10, padding: "2px 8px",
+    }}>{category}</span>
+  )
+  return (
+    <span style={{
+      background: c.bg, color: c.text, border: `1px solid ${c.border}`,
+      borderRadius: 6, fontSize: 10, padding: "2px 8px", fontWeight: 500,
+    }}>{category}</span>
+  )
+}
+
 interface VirtualFolder {
   id: number
   subject_id: number
@@ -79,6 +108,8 @@ export function VirtualFolderDashboard({
   const [hoveredFileId, setHoveredFileId] = useState<number | null>(null)
   const [addFileOpen, setAddFileOpen] = useState(false)
   const [previewFile, setPreviewFile] = useState<AppFile | null>(null)
+  const [extFilter, setExtFilter]           = useState<string>("all")
+  const [categoryFilter, setCategoryFilter] = useState<string>("all")
 
   useEffect(() => {
     getVirtualFolderById(folderId).then(setFolder)
@@ -109,6 +140,16 @@ export function VirtualFolderDashboard({
   const border = "var(--border)"
   const card   = "var(--card)"
   const fg     = "var(--foreground)"
+
+  const allExts       = [...new Set(files.map(f => f.file_name.split(".").pop()?.toLowerCase() ?? "").filter(Boolean))].sort()
+  const allCategories = [...new Set(files.map(f => f.file_type).filter(Boolean))].sort()
+
+  const filteredFiles = files.filter(f => {
+    const ext = f.file_name.split(".").pop()?.toLowerCase() ?? ""
+    if (extFilter      !== "all" && ext          !== extFilter)      return false
+    if (categoryFilter !== "all" && f.file_type  !== categoryFilter) return false
+    return true
+  })
 
   const dashboardContent = (
     <div style={{ padding: "28px 32px", fontFamily: "inherit", minHeight: "100%" }}>
@@ -203,9 +244,64 @@ export function VirtualFolderDashboard({
       </div>
 
       {/* Files */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
         <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Files</span>
+        <span style={{ color: muted, fontSize: 11 }}>
+          {filteredFiles.length} of {files.length}
+        </span>
       </div>
+
+      {/* Filter chips */}
+      {files.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
+          {/* Extension row */}
+          {allExts.length > 0 && (
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+              <span style={{ color: muted, fontSize: 10, minWidth: 52 }}>Format</span>
+              {["all", ...allExts].map(ext => (
+                <button
+                  key={ext}
+                  onClick={() => setExtFilter(ext)}
+                  style={{
+                    background: extFilter === ext ? "var(--primary)" : "var(--muted)",
+                    color: extFilter === ext ? "var(--primary-foreground)" : muted,
+                    border: `1px solid ${extFilter === ext ? "var(--primary)" : border}`,
+                    borderRadius: 6, fontSize: 10, padding: "2px 10px",
+                    cursor: "pointer", textTransform: "uppercase", fontWeight: extFilter === ext ? 600 : 400,
+                  }}
+                >
+                  {ext === "all" ? "All" : ext}
+                </button>
+              ))}
+            </div>
+          )}
+          {/* Category row */}
+          {allCategories.length > 0 && (
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+              <span style={{ color: muted, fontSize: 10, minWidth: 52 }}>Type</span>
+              {["all", ...allCategories].map(cat => {
+                const c = cat !== "all" ? CATEGORY_COLORS[cat] : null
+                const active = categoryFilter === cat
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setCategoryFilter(cat)}
+                    style={{
+                      background: active ? (c?.bg ?? "var(--primary)") : "var(--muted)",
+                      color:      active ? (c?.text ?? "var(--primary-foreground)") : muted,
+                      border:     `1px solid ${active ? (c?.border ?? "var(--primary)") : border}`,
+                      borderRadius: 6, fontSize: 10, padding: "2px 10px",
+                      cursor: "pointer", fontWeight: active ? 600 : 400,
+                    }}
+                  >
+                    {cat === "all" ? "All" : cat}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {files.length === 0 ? (
         <div
@@ -220,9 +316,14 @@ export function VirtualFolderDashboard({
           <p style={{ color: fg, fontSize: 15, fontWeight: 500, marginTop: 12, marginBottom: 4 }}>Add files</p>
           <p style={{ color: muted, fontSize: 13, margin: 0 }}>Click to open file picker</p>
         </div>
+      ) : filteredFiles.length === 0 ? (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 0", color: muted }}>
+          <File size={32} />
+          <p style={{ marginTop: 10, fontSize: 13 }}>No files match the selected filters</p>
+        </div>
       ) : (
         <div style={{ background: card, borderRadius: 14, border: `1px solid ${border}`, overflow: "hidden" }}>
-          {files.map((file, i) => (
+          {filteredFiles.map((file, i) => (
             <div
               key={file.id}
               onMouseEnter={() => setHoveredFileId(file.id)}
@@ -230,7 +331,7 @@ export function VirtualFolderDashboard({
               style={{
                 display: "flex", alignItems: "center", justifyContent: "space-between",
                 padding: "11px 16px",
-                borderBottom: i < files.length - 1 ? `1px solid ${border}` : "none",
+                borderBottom: i < filteredFiles.length - 1 ? `1px solid ${border}` : "none",
                 background: previewFile?.id === file.id ? "var(--muted)" : undefined,
               }}
             >
@@ -243,13 +344,10 @@ export function VirtualFolderDashboard({
                 </span>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
-                <span style={{
-                  background: "var(--muted)", color: muted, fontSize: 10,
-                  padding: "2px 8px", borderRadius: 6, border: `1px solid ${border}`,
-                  textTransform: "uppercase",
-                }}>
-                  {file.file_type || "—"}
-                </span>
+                {file.file_type
+                  ? <CategoryBadge category={file.file_type} />
+                  : <span style={{ color: muted, fontSize: 10 }}>—</span>
+                }
                 <span style={{ color: muted, fontSize: 12, minWidth: 52, textAlign: "right" }}>
                   {formatSize(file.file_size)}
                 </span>
