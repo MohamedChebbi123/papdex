@@ -8,8 +8,16 @@ import {
     type Llama,
     type LlamaModel,
     type LlamaContext,
+    type LlamaEmbeddingContext,
     type ModelDownloader,
 } from "node-llama-cpp"
+import { extractText, extractPages } from "../lib/document_extractor"
+import { chunkPages, type DocumentChunk } from "../lib/document_chunker"
+
+export interface TaggedDocumentChunk extends DocumentChunk {
+    file_id: number
+    subject_id: number
+}
 
 export interface AiModelDefinition {
     id: string
@@ -75,6 +83,10 @@ export const AI_MODEL_CATALOG: AiModelDefinition[] = [
     },
 ]
 
+const EMBEDDING_MODEL_ID = "bge-small-en-v1.5"
+const EMBEDDING_MODEL_REPO = "CompendiumLabs/bge-small-en-v1.5-gguf"
+const EMBEDDING_MODEL_QUANT = "q8_0"
+
 function get_models_dir() {
     const dir = path.join(app.getPath("userData"), "ai-models")
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
@@ -98,6 +110,38 @@ let loaded_model: LlamaModel | null = null
 let loaded_context: LlamaContext | null = null
 let chat_session: LlamaChatSession | null = null
 let loaded_model_id: string | null = null
+
+let embedding_model: LlamaModel | null = null
+let embedding_context: LlamaEmbeddingContext | null = null
+let embedding_context_promise: Promise<LlamaEmbeddingContext> | null = null
+
+async function load_embedding_context(): Promise<LlamaEmbeddingContext> {
+    const model_path = path.join(get_models_dir(), `${EMBEDDING_MODEL_ID}.gguf`)
+
+    if (!fs.existsSync(model_path)) {
+        const downloader = await createModelDownloader({
+            modelUri: `hf:${EMBEDDING_MODEL_REPO}:${EMBEDDING_MODEL_QUANT}`,
+            dirPath: get_models_dir(),
+            fileName: `${EMBEDDING_MODEL_ID}.gguf`,
+        })
+        await downloader.download()
+    }
+
+    if (!llama_instance) llama_instance = await getLlama()
+    embedding_model = await llama_instance.loadModel({ modelPath: model_path })
+    return await embedding_model.createEmbeddingContext()
+}
+
+function ensure_embedding_context(): Promise<LlamaEmbeddingContext> {
+    if (embedding_context) return Promise.resolve(embedding_context)
+    if (!embedding_context_promise) {
+        embedding_context_promise = load_embedding_context().then(context => {
+            embedding_context = context
+            return context
+        })
+    }
+    return embedding_context_promise
+}
 
 async function unload_model() {
     chat_session = null
@@ -197,6 +241,34 @@ function get_active_model() {
     ipcMain.handle("ai:getActiveModel", () => loaded_model_id)
 }
 
+function extract_text() {
+    ipcMain.handle("ai:extractText", async (_event, file_path: string, file_type: string) => {
+        return await extractText(file_path, file_type)
+    })
+}
+
+function chunk_document() {
+    ipcMain.handle("ai:chunkDocument", async (
+        _event,
+        file_path: string,
+        file_type: string,
+        file_id: number,
+        subject_id: number
+    ): Promise<TaggedDocumentChunk[] | null> => {
+        const pages = await extractPages(file_path, file_type)
+        if (!pages) return null
+        return chunkPages(pages).map(chunk => ({ ...chunk, file_id, subject_id }))
+    })
+}
+
+function embed_text() {
+    ipcMain.handle("ai:embedText", async (_event, text: string) => {
+        const context = await ensure_embedding_context()
+        const embedding = await context.getEmbeddingFor(text)
+        return embedding.vector
+    })
+}
+
 function prompt_model() {
     ipcMain.handle("ai:prompt", async (event: IpcMainInvokeEvent, message: string) => {
         if (!chat_session) throw new Error("No model is loaded")
@@ -217,4 +289,7 @@ export function ai_handlers() {
     unload_model_handler()
     get_active_model()
     prompt_model()
+    extract_text()
+    chunk_document()
+    embed_text()
 }
