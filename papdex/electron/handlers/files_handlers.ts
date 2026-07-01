@@ -73,6 +73,84 @@ function delete_files_by_subject() {
     })
 }
 
+function fetch_file_count_by_semester() {
+    ipcMain.handle("files:getCountBySemester", (_event, semester_id: number) => {
+        const row = database.prepare(`
+            SELECT
+                (SELECT COUNT(*) FROM files f
+                    JOIN subjects s ON f.subject_id = s.id
+                    WHERE s.semester_id = ?) +
+                (SELECT COUNT(*) FROM imported_folder_files iff
+                    JOIN imported_folders imf ON iff.imported_folder_id = imf.id
+                    JOIN subjects s ON imf.subject_id = s.id
+                    WHERE s.semester_id = ?) AS count
+        `).get(semester_id, semester_id) as { count: number }
+        return row.count
+    })
+}
+
+function fetch_file_count_by_year() {
+    ipcMain.handle("files:getCountByYear", (_event, year_id: number) => {
+        const row = database.prepare(`
+            SELECT
+                (SELECT COUNT(*) FROM files f
+                    JOIN subjects s ON f.subject_id = s.id
+                    JOIN semesters sem ON s.semester_id = sem.id
+                    WHERE sem.year_id = ?) +
+                (SELECT COUNT(*) FROM imported_folder_files iff
+                    JOIN imported_folders imf ON iff.imported_folder_id = imf.id
+                    JOIN subjects s ON imf.subject_id = s.id
+                    JOIN semesters sem ON s.semester_id = sem.id
+                    WHERE sem.year_id = ?) AS count
+        `).get(year_id, year_id) as { count: number }
+        return row.count
+    })
+}
+
+function fetch_recent_files_by_semester() {
+    ipcMain.handle("files:getRecentBySemester", (_event, semester_id: number, limit: number) => {
+        return database.prepare(`
+            SELECT * FROM (
+                SELECT f.file_name, f.file_type, f.created_at, s.name AS subject_name
+                FROM files f
+                JOIN subjects s ON f.subject_id = s.id
+                WHERE s.semester_id = ?
+                UNION ALL
+                SELECT iff.file_name, iff.file_type, iff.created_at, s.name AS subject_name
+                FROM imported_folder_files iff
+                JOIN imported_folders imf ON iff.imported_folder_id = imf.id
+                JOIN subjects s ON imf.subject_id = s.id
+                WHERE s.semester_id = ?
+            )
+            ORDER BY created_at DESC
+            LIMIT ?
+        `).all(semester_id, semester_id, limit)
+    })
+}
+
+function fetch_recent_files_by_year() {
+    ipcMain.handle("files:getRecentByYear", (_event, year_id: number, limit: number) => {
+        return database.prepare(`
+            SELECT * FROM (
+                SELECT f.file_name, f.file_type, f.created_at, s.name AS subject_name
+                FROM files f
+                JOIN subjects s ON f.subject_id = s.id
+                JOIN semesters sem ON s.semester_id = sem.id
+                WHERE sem.year_id = ?
+                UNION ALL
+                SELECT iff.file_name, iff.file_type, iff.created_at, s.name AS subject_name
+                FROM imported_folder_files iff
+                JOIN imported_folders imf ON iff.imported_folder_id = imf.id
+                JOIN subjects s ON imf.subject_id = s.id
+                JOIN semesters sem ON s.semester_id = sem.id
+                WHERE sem.year_id = ?
+            )
+            ORDER BY created_at DESC
+            LIMIT ?
+        `).all(year_id, year_id, limit)
+    })
+}
+
 function open_file_picker() {
     ipcMain.handle("files:openPicker", async (_event, subject_id: number, folder_id: number | null) => {
         const { filePaths, canceled } = await dialog.showOpenDialog({
@@ -138,6 +216,10 @@ export function file_handlers() {
     update_file()
     delete_file()
     delete_files_by_subject()
+    fetch_file_count_by_semester()
+    fetch_file_count_by_year()
+    fetch_recent_files_by_semester()
+    fetch_recent_files_by_year()
     open_file_picker()
     pick_single_file()
     read_file_buffer()

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import {
   Calendar, ChevronRight, FileText,
-  Folder, Pencil, Plus, Star, Trash2, Video,
+  Folder, Plus, Star, Trash2,
 } from "lucide-react"
 import { DeleteConfirm } from "@/components/inputs/Delete_confirm"
 import { SubjectCreation } from "@/components/inputs/subject_creation"
@@ -10,46 +10,19 @@ import {
   toggleFavoriteSubject,
   deleteSubject,
 } from "@/components/subjects_service/file"
+import { getFileCountBySemester, getRecentFilesBySemester, type RecentFile } from "@/components/file_service/file"
 
 const COLORS = [
   "#6366f1", "#0891b2", "#059669", "#d97706",
   "#7c3aed", "#dc2626", "#0d9488", "#db2777",
 ]
 
-const MOCK_RECENT = [
-  { name: "Chapter 5 — Graphs.pdf",       subject: "Data Structures", tag: "Exam",      type: "pdf" },
-  { name: "Lecture 12 — TCP IP.pdf",      subject: "Networks",        tag: "Lecture",   type: "pdf" },
-  { name: "Summary — Sorting.pdf",        subject: "Data Structures", tag: "Summary",   type: "pdf" },
-  { name: "Assignment 3 — Dijkstra.docx", subject: "Algorithms",      tag: "Important", type: "doc" },
-  { name: "Integration techniques.pdf",   subject: "Calculus II",     tag: "",          type: "pdf" },
-]
-
-const TAG_COLORS: Record<string, { bg: string; text: string }> = {
-  Exam:      { bg: "#431407", text: "#fb923c" },
-  Summary:   { bg: "#14532d", text: "#4ade80" },
-  Important: { bg: "#450a0a", text: "#f87171" },
-  Lecture:   { bg: "#1e3a5f", text: "#60a5fa" },
-}
-
-function TagPill({ tag }: { tag: string }) {
-  const colors = TAG_COLORS[tag]
-  if (!colors) return null
-  return (
-    <span style={{
-      background: colors.bg, color: colors.text,
-      fontSize: 10, padding: "2px 8px", borderRadius: 6,
-      border: "1px solid var(--border)",
-    }}>
-      {tag}
-    </span>
-  )
-}
-
 interface Subject {
   id: number
   semester_id: number
   name: string
   is_favorite: number
+  file_count: number
 }
 
 interface Semester {
@@ -76,11 +49,13 @@ export function SemesterDashboard({ semester, year, onBack, onSelectSubject }: P
   const [subjectModalOpen, setSubjectModalOpen] = useState(false)
   const [deletingSubject, setDeletingSubject] = useState<Subject | null>(null)
   const [hoveredId, setHoveredId] = useState<number | null>(null)
-  const [notes, setNotes] = useState("")
-  const [editingNotes, setEditingNotes] = useState(false)
+  const [fileCount, setFileCount] = useState(0)
+  const [recentFiles, setRecentFiles] = useState<RecentFile[]>([])
 
   useEffect(() => {
-    getSubjectsBySemester(semester.id).then(setSubjects)
+    refresh()
+    getFileCountBySemester(semester.id).then(setFileCount)
+    getRecentFilesBySemester(semester.id, 5).then(setRecentFiles)
   }, [semester.id])
 
   function refresh() {
@@ -108,7 +83,7 @@ export function SemesterDashboard({ semester, year, onBack, onSelectSubject }: P
   const fg     = "var(--foreground)"
 
   return (
-    <div style={{ minHeight: "100vh", padding: "28px 32px", fontFamily: "inherit" }}>
+    <div style={{ minHeight: "100vh", padding: "28px 32px", fontFamily: "inherit", maxWidth: 1100, margin: "0 auto" }}>
 
       {/* Breadcrumb */}
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 20, color: muted, fontSize: 12 }}>
@@ -154,13 +129,13 @@ export function SemesterDashboard({ semester, year, onBack, onSelectSubject }: P
       </div>
 
       {/* Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 28 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 28, maxWidth: 480 }}>
         {[
           { value: subjects.length,  label: "Subjects" },
           { value: favoritesCount,   label: "Favorites" },
-          { value: 0,                label: "Files indexed" },
+          { value: fileCount,        label: "Files indexed" },
         ].map(stat => (
-          <div key={stat.label} style={{ background: card, borderRadius: 12, padding: 20, border: `1px solid ${border}` }}>
+          <div key={stat.label} style={{ background: card, borderRadius: 12, padding: "14px 16px", border: `1px solid ${border}` }}>
             <div style={{ fontSize: 28, fontWeight: 700, color: fg }}>{stat.value}</div>
             <div style={{ color: muted, fontSize: 12, marginTop: 2 }}>{stat.label}</div>
           </div>
@@ -190,7 +165,7 @@ export function SemesterDashboard({ semester, year, onBack, onSelectSubject }: P
           </button>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 28 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12, marginBottom: 28 }}>
           {subjects.map((subject, i) => {
             const color = COLORS[i % COLORS.length]
             const isFav = subject.is_favorite === 1
@@ -210,79 +185,52 @@ export function SemesterDashboard({ semester, year, onBack, onSelectSubject }: P
                   <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                     {hoveredId === subject.id && (
                       <button
-                        onClick={() => setDeletingSubject(subject)}
+                        onClick={e => { e.stopPropagation(); setDeletingSubject(subject) }}
                         style={{ background: "none", border: "none", cursor: "pointer", padding: 4, borderRadius: 6, display: "flex" }}
                       >
                         <Trash2 size={13} color="#ef4444" />
                       </button>
                     )}
                     <button
-                      onClick={() => handleToggleFavorite(subject)}
+                      onClick={e => { e.stopPropagation(); handleToggleFavorite(subject) }}
                       style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}
                     >
                       <Star size={16} fill={isFav ? "#f59e0b" : "none"} color={isFav ? "#f59e0b" : muted} />
                     </button>
                   </div>
                 </div>
-                <p style={{ color: muted, fontSize: 11, margin: "6px 0 0" }}>0 files</p>
+                <p style={{ color: muted, fontSize: 11, margin: "6px 0 0" }}>{subject.file_count} file{subject.file_count === 1 ? "" : "s"}</p>
               </div>
             )
           })}
         </div>
       )}
 
-      {/* Recent files */}
+      {/* Recently added files */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Recently Opened</span>
-        <button style={{ background: "none", border: "none", color: "#2563eb", fontSize: 12, cursor: "pointer" }}>See all</button>
+        <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Recently Added</span>
       </div>
-      <div style={{ marginBottom: 28 }}>
-        {MOCK_RECENT.map((file, i) => (
-          <div key={i} style={{
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            borderBottom: `1px solid ${border}`, padding: "10px 0",
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              {file.type === "mp4" ? <Video size={16} color={muted} /> : <FileText size={16} color={muted} />}
-              <span style={{ color: fg, fontSize: 13 }}>{file.name}</span>
+      {recentFiles.length === 0 ? (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "24px 0", marginBottom: 28 }}>
+          <FileText size={30} color={muted} />
+          <p style={{ color: muted, fontSize: 12, marginTop: 8 }}>No files added yet this semester</p>
+        </div>
+      ) : (
+        <div style={{ marginBottom: 28 }}>
+          {recentFiles.map((file, i) => (
+            <div key={i} style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              borderBottom: `1px solid ${border}`, padding: "10px 0",
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <FileText size={16} color={muted} />
+                <span style={{ color: fg, fontSize: 13 }}>{file.file_name}</span>
+              </div>
+              <span style={{ color: muted, fontSize: 11 }}>{file.subject_name}</span>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ color: muted, fontSize: 11 }}>{file.subject}</span>
-              {file.tag && <TagPill tag={file.tag} />}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Notes */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Notes</span>
-        <button
-          onClick={() => setEditingNotes(e => !e)}
-          style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}
-        >
-          <Pencil size={12} />
-          {editingNotes ? "Done" : "Edit"}
-        </button>
-      </div>
-      <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 12, padding: 16, marginBottom: 28 }}>
-        {editingNotes ? (
-          <textarea
-            value={notes}
-            onChange={e => setNotes(e.target.value)}
-            placeholder="Add notes for this semester..."
-            autoFocus
-            style={{
-              width: "100%", minHeight: 100, background: "transparent", border: "none", outline: "none",
-              color: fg, fontSize: 13, resize: "vertical", fontFamily: "inherit", lineHeight: 1.6,
-            }}
-          />
-        ) : (
-          <p style={{ color: notes ? fg : muted, fontSize: 13, fontStyle: notes ? "normal" : "italic", margin: 0, whiteSpace: "pre-wrap" }}>
-            {notes || "No notes yet — click Edit to add notes for this semester..."}
-          </p>
-        )}
-      </div>
+          ))}
+        </div>
+      )}
 
       <SubjectCreation
         open={subjectModalOpen}

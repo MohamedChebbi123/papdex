@@ -17,6 +17,13 @@ export interface PickedFile {
   file_size: number
 }
 
+export interface RecentFile {
+  file_name: string
+  file_type: string
+  created_at: string
+  subject_name: string
+}
+
 export async function pickSingleFile(): Promise<PickedFile | null> {
   return await window.ipcRenderer.invoke('files:pickSingle')
 }
@@ -58,6 +65,22 @@ export async function deleteFile(id: number): Promise<number> {
 
 export async function deleteFilesBySubject(subject_id: number): Promise<number> {
   return await window.ipcRenderer.invoke('files:deleteBySubject', subject_id)
+}
+
+export async function getFileCountBySemester(semester_id: number): Promise<number> {
+  return await window.ipcRenderer.invoke('files:getCountBySemester', semester_id)
+}
+
+export async function getFileCountByYear(year_id: number): Promise<number> {
+  return await window.ipcRenderer.invoke('files:getCountByYear', year_id)
+}
+
+export async function getRecentFilesBySemester(semester_id: number, limit: number): Promise<RecentFile[]> {
+  return await window.ipcRenderer.invoke('files:getRecentBySemester', semester_id, limit)
+}
+
+export async function getRecentFilesByYear(year_id: number, limit: number): Promise<RecentFile[]> {
+  return await window.ipcRenderer.invoke('files:getRecentByYear', year_id, limit)
 }
 
 export async function openFile(file_path: string): Promise<void> {

@@ -48,7 +48,7 @@ export function FavoritesDashboard({ onSelectSubject }: Props) {
   const fg     = "var(--foreground)"
 
   return (
-    <div style={{ minHeight: "100vh", padding: "28px 32px", fontFamily: "inherit" }}>
+    <div style={{ minHeight: "100vh", padding: "28px 32px", fontFamily: "inherit", maxWidth: 1100, margin: "0 auto" }}>
       <div style={{ marginBottom: 28 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
           <Star size={20} fill="#f59e0b" color="#f59e0b" />
@@ -66,7 +66,7 @@ export function FavoritesDashboard({ onSelectSubject }: Props) {
           <p style={{ color: muted, fontSize: 13, margin: 0 }}>Star a subject to add it here</p>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12 }}>
           {subjects.map((subject, i) => {
             const color = COLORS[i % COLORS.length]
             return (
