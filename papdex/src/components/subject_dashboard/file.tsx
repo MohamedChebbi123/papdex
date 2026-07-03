@@ -22,6 +22,11 @@ interface VirtualFolder {
   id: number
   subject_id: number
   name: string
+<<<<<<< HEAD
+=======
+  is_favorite: number
+  file_count: number
+>>>>>>> 8d3aca3790b7492698fdfa65bd3efe1d2d5606b3
 }
 
 interface Subject {
@@ -111,7 +116,7 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
   const fg     = "var(--foreground)"
 
   return (
-    <div style={{ minHeight: "100vh", padding: "28px 32px", fontFamily: "inherit" }}>
+    <div style={{ minHeight: "100vh", padding: "28px 32px", fontFamily: "inherit", maxWidth: 1100, margin: "0 auto" }}>
 
       {/* Breadcrumb */}
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 20, color: muted, fontSize: 12 }}>
@@ -183,12 +188,16 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
       </div>
 
       {/* Stats */}
+<<<<<<< HEAD
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, marginBottom: 28 }}>
+=======
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 28, maxWidth: 480 }}>
+>>>>>>> 8d3aca3790b7492698fdfa65bd3efe1d2d5606b3
         {[
           { value: folders.length,         label: "Folders" },
           { value: importedFolders.length, label: "Imported" },
         ].map(stat => (
-          <div key={stat.label} style={{ background: card, borderRadius: 12, padding: 20, border: `1px solid ${border}` }}>
+          <div key={stat.label} style={{ background: card, borderRadius: 12, padding: "14px 16px", border: `1px solid ${border}` }}>
             <div style={{ fontSize: 28, fontWeight: 700, color: fg }}>{stat.value}</div>
             <div style={{ color: muted, fontSize: 12, marginTop: 2 }}>{stat.label}</div>
           </div>
@@ -218,7 +227,7 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
           </button>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 28 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12, marginBottom: 28 }}>
           {folders.map(folder => (
             <div
               key={folder.id}
@@ -251,7 +260,7 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
                   )}
                 </div>
               </div>
-              <p style={{ color: muted, fontSize: 11, margin: "6px 0 0" }}>0 files</p>
+              <p style={{ color: muted, fontSize: 11, margin: "6px 0 0" }}>{folder.file_count} file{folder.file_count === 1 ? "" : "s"}</p>
             </div>
           ))}
         </div>
@@ -281,7 +290,7 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
           </button>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 28 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12, marginBottom: 28 }}>
           {importedFolders.map(folder => (
             <div
               key={folder.id}

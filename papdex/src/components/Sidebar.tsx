@@ -19,6 +19,7 @@ import { forwardRef, useEffect, useImperativeHandle, useState } from "react"
 import { AcademicYearCreation } from "./inputs/Academic_year_creation"
 import { AcademicYearUpdate } from "./inputs/Academic_year_update"
 import { DeleteConfirm } from "./inputs/Delete_confirm"
+import { AiModelsPanel } from "./inputs/ai_models_panel"
 import { deleteAcademicYear, getAllAcademicYears } from "./academic_year_service/file"
 import { getSemestersByYear } from "./semester_service/file"
 import { getSubjectsBySemester } from "./subjects_service/file"
@@ -68,6 +69,7 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
   const [editingYear, setEditingYear] = useState<AcademicYear | null>(null)
   const [deletingYear, setDeletingYear] = useState<AcademicYear | null>(null)
   const [hoveredYearId, setHoveredYearId] = useState<number | null>(null)
+  const [showAiModels, setShowAiModels] = useState(false)
   const [expandedYears, setExpandedYears] = useState<Set<number>>(new Set())
   const [expandedSemesters, setExpandedSemesters] = useState<Set<number>>(new Set())
   const [semestersMap, setSemestersMap] = useState<Record<number, Semester[]>>({})
@@ -154,6 +156,10 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
       onOpenChange={open => { if (!open) setDeletingYear(null) }}
       label={deletingYear?.name}
       onConfirmed={handleDelete}
+    />
+    <AiModelsPanel
+      open={showAiModels}
+      onOpenChange={setShowAiModels}
     />
     <Sidebar>
       <SidebarHeader className="px-4 py-3 border-b">
@@ -339,7 +345,10 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
             <p className="text-xs text-muted-foreground">Student</p>
           </div>
           {/* Settings */}
-          <button className="rounded-md p-1.5 hover:bg-accent transition-colors flex-shrink-0">
+          <button
+            onClick={() => setShowAiModels(true)}
+            className="rounded-md p-1.5 hover:bg-accent transition-colors flex-shrink-0"
+          >
             <Settings className="size-4 text-muted-foreground" />
           </button>
         </div>

@@ -12,9 +12,13 @@ function create_virtual_folder() {
 
 function fetch_virtual_folders_by_subject() {
     ipcMain.handle("virtualFolders:getBySubject", (_event, subject_id: number) => {
-        return database.prepare(
-            "SELECT * FROM virtual_folders WHERE subject_id = ? ORDER BY created_at DESC"
-        ).all(subject_id)
+        return database.prepare(`
+            SELECT v.*,
+                (SELECT COUNT(*) FROM files f WHERE f.folder_id = v.id) AS file_count
+            FROM virtual_folders v
+            WHERE v.subject_id = ?
+            ORDER BY v.created_at DESC
+        `).all(subject_id)
     })
 }
 
