@@ -10,7 +10,13 @@ import {
   toggleFavoriteSubject,
   deleteSubject,
 } from "@/components/subjects_service/file"
-import { getRecentFilesBySemester, type RecentFile } from "@/components/file_service/file"
+import {
+  getRecentFilesBySemester,
+  getFileTypeCountBySemester,
+  openFile,
+  type RecentFile,
+} from "@/components/file_service/file"
+import { getVirtualFolderById } from "@/components/virtual_folders_service/file"
 
 const COLORS = [
   "#6366f1", "#0891b2", "#059669", "#d97706",
@@ -24,6 +30,8 @@ interface Subject {
   semester_id: number
   name: string
   is_favorite: number
+  file_count?: number
+  total_size?: number
 }
 
 interface Semester {
@@ -43,19 +51,40 @@ interface Props {
   year: Year
   onBack: () => void
   onSelectSubject: (subject: Subject) => void
+  onOpenFile?: (params: {
+    subject: Subject
+    semester: Semester
+    folder: { id: number; subject_id: number; name: string; is_favorite: number } | null
+    fileId: number
+  }) => void
 }
 
-export function SemesterDashboard({ semester, year, onBack, onSelectSubject }: Props) {
+export function SemesterDashboard({ semester, year, onBack, onSelectSubject, onOpenFile }: Props) {
   const [subjects, setSubjects] = useState<Subject[]>([])
   const [subjectModalOpen, setSubjectModalOpen] = useState(false)
   const [deletingSubject, setDeletingSubject] = useState<Subject | null>(null)
   const [hoveredId, setHoveredId] = useState<number | null>(null)
   const [recentFiles, setRecentFiles] = useState<RecentFile[]>([])
+  const [examCount, setExamCount] = useState(0)
 
   useEffect(() => {
     getSubjectsBySemester(semester.id).then(setSubjects)
     getRecentFilesBySemester(semester.id).then(setRecentFiles)
+    getFileTypeCountBySemester(semester.id, "Exam").then(setExamCount)
   }, [semester.id])
+
+  async function handleOpenRecentFile(file: RecentFile) {
+    const subject = subjects.find(s => s.id === file.subject_id)
+    if (!subject) return
+
+    if (file.folder_id) {
+      const folder = await getVirtualFolderById(file.folder_id)
+      onOpenFile?.({ subject, semester, folder, fileId: file.id })
+    } else {
+      onOpenFile?.({ subject, semester, folder: null, fileId: file.id })
+      openFile(file.file_path)
+    }
+  }
 
   function refresh() {
     getSubjectsBySemester(semester.id).then(setSubjects)
@@ -75,6 +104,7 @@ export function SemesterDashboard({ semester, year, onBack, onSelectSubject }: P
   }
 
   const favoritesCount = subjects.filter(s => s.is_favorite).length
+  const totalFiles = subjects.reduce((acc, s) => acc + (s.file_count ?? 0), 0)
 
   const muted  = "var(--muted-foreground)"
   const border = "var(--border)"
@@ -128,11 +158,12 @@ export function SemesterDashboard({ semester, year, onBack, onSelectSubject }: P
       </div>
 
       {/* Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 28 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 28 }}>
         {[
           { value: subjects.length,  label: "Subjects" },
+          { value: totalFiles,       label: "Files indexed" },
+          { value: examCount,        label: "Exam tagged" },
           { value: favoritesCount,   label: "Favorites" },
-          { value: 0,                label: "Files indexed" },
         ].map(stat => (
           <div key={stat.label} style={{ background: card, borderRadius: 12, padding: 20, border: `1px solid ${border}` }}>
             <div style={{ fontSize: 28, fontWeight: 700, color: fg }}>{stat.value}</div>
@@ -184,21 +215,23 @@ export function SemesterDashboard({ semester, year, onBack, onSelectSubject }: P
                   <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                     {hoveredId === subject.id && (
                       <button
-                        onClick={() => setDeletingSubject(subject)}
+                        onClick={e => { e.stopPropagation(); setDeletingSubject(subject) }}
                         style={{ background: "none", border: "none", cursor: "pointer", padding: 4, borderRadius: 6, display: "flex" }}
                       >
                         <Trash2 size={13} color="#ef4444" />
                       </button>
                     )}
                     <button
-                      onClick={() => handleToggleFavorite(subject)}
+                      onClick={e => { e.stopPropagation(); handleToggleFavorite(subject) }}
                       style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}
                     >
                       <Star size={16} fill={isFav ? "#f59e0b" : "none"} color={isFav ? "#f59e0b" : muted} />
                     </button>
                   </div>
                 </div>
-                <p style={{ color: muted, fontSize: 11, margin: "6px 0 0" }}>0 files</p>
+                <p style={{ color: muted, fontSize: 11, margin: "6px 0 0" }}>
+                  {subject.file_count ?? 0} file{(subject.file_count ?? 0) !== 1 ? "s" : ""}
+                </p>
               </div>
             )
           })}
@@ -213,10 +246,14 @@ export function SemesterDashboard({ semester, year, onBack, onSelectSubject }: P
           </div>
           <div style={{ marginBottom: 28 }}>
             {recentFiles.map(file => (
-              <div key={file.id} style={{
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                borderBottom: `1px solid ${border}`, padding: "10px 0",
-              }}>
+              <div
+                key={file.id}
+                onClick={() => handleOpenRecentFile(file)}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  borderBottom: `1px solid ${border}`, padding: "10px 0", cursor: "pointer",
+                }}
+              >
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   {VIDEO_EXTENSIONS.includes(file.file_type) ? <Video size={16} color={muted} /> : <FileText size={16} color={muted} />}
                   <span style={{ color: fg, fontSize: 13 }}>{file.file_name}</span>

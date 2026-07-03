@@ -165,6 +165,18 @@ function fetch_recent_files_by_year() {
     })
 }
 
+function fetch_file_type_count_by_semester() {
+    ipcMain.handle("files:getTypeCountBySemester", (_event, semester_id: number, file_type: string) => {
+        const row = database.prepare(`
+            SELECT COUNT(*) AS count
+            FROM files f
+            JOIN subjects s ON s.id = f.subject_id
+            WHERE s.semester_id = ? AND f.file_type = ?
+        `).get(semester_id, file_type) as { count: number }
+        return row.count
+    })
+}
+
 function pick_single_file() {
     ipcMain.handle("files:pickSingle", async () => {
         const { filePaths, canceled } = await dialog.showOpenDialog({
@@ -198,4 +210,5 @@ export function file_handlers() {
     fetch_recent_files_by_subject()
     fetch_recent_files_by_semester()
     fetch_recent_files_by_year()
+    fetch_file_type_count_by_semester()
 }

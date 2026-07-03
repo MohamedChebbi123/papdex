@@ -12,7 +12,18 @@ function create_subject() {
 
 function fetch_subjects_by_semester() {
     ipcMain.handle("subjects:getBySemester", (_event, semester_id: number) => {
-        return database.prepare("SELECT * FROM subjects WHERE semester_id = ? ORDER BY created_at DESC").all(semester_id)
+        return database.prepare(`
+            SELECT
+                s.id, s.name, s.semester_id, s.is_favorite,
+                s.created_at, s.updated_at,
+                COUNT(f.id) AS file_count,
+                COALESCE(SUM(f.file_size), 0) AS total_size
+            FROM subjects s
+            LEFT JOIN files f ON f.subject_id = s.id
+            WHERE s.semester_id = ?
+            GROUP BY s.id
+            ORDER BY s.created_at DESC
+        `).all(semester_id)
     })
 }
 

@@ -1,14 +1,13 @@
 import { useState, useEffect, useMemo } from "react"
 import {
   Calendar, ChevronRight, ExternalLink, Eye, File, FileText, Folder,
-  FolderInput, Image, Star, Trash2, Video,
+  FolderInput, Image, Trash2, Video,
 } from "lucide-react"
 import { Group, Panel, Separator } from "react-resizable-panels"
 import {
   getImportedFolderById,
   getImportedFolderFiles,
   deleteImportedFolder,
-  toggleFavoriteImportedFolder,
   openImportedFile,
   type ImportedFolder,
   type ImportedFolderFile,
@@ -119,13 +118,6 @@ export function ImportedFolderDashboard({
     onBack()
   }
 
-  async function handleToggleFavorite() {
-    if (!folder) return
-    const next = folder.is_favorite ? 0 : 1
-    await toggleFavoriteImportedFolder(folderId, next)
-    setFolder(prev => prev ? { ...prev, is_favorite: next } : prev)
-  }
-
   const muted  = "var(--muted-foreground)"
   const border = "var(--border)"
   const card   = "var(--card)"
@@ -175,16 +167,6 @@ export function ImportedFolderDashboard({
             <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0, lineHeight: 1.2, color: fg }}>
               {folder?.name ?? "Loading..."}
             </h1>
-            <button
-              onClick={handleToggleFavorite}
-              style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", marginTop: 2 }}
-            >
-              <Star
-                size={18}
-                fill={folder?.is_favorite ? "#f59e0b" : "none"}
-                color={folder?.is_favorite ? "#f59e0b" : muted}
-              />
-            </button>
           </div>
           <p style={{ color: muted, fontSize: 13, margin: 0 }}>
             {subject.name} · {semester.name} · {files.length} file{files.length !== 1 ? "s" : ""}

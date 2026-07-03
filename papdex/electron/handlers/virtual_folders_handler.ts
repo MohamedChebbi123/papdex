@@ -33,15 +33,6 @@ function update_virtual_folder() {
     })
 }
 
-function toggle_favorite_virtual_folder() {
-    ipcMain.handle("virtualFolders:toggleFavorite", (_event, id: number, is_favorite: number) => {
-        const result = database.prepare(
-            "UPDATE virtual_folders SET is_favorite = ?, updated_at = datetime('now') WHERE id = ?"
-        ).run(is_favorite, id)
-        return result.changes
-    })
-}
-
 function delete_virtual_folder() {
     ipcMain.handle("virtualFolders:delete", (_event, id: number) => {
         const result = database.prepare("DELETE FROM virtual_folders WHERE id = ?").run(id)
@@ -54,6 +45,5 @@ export function virtual_folder_handlers() {
     fetch_virtual_folders_by_subject()
     fetch_virtual_folder_by_id()
     update_virtual_folder()
-    toggle_favorite_virtual_folder()
     delete_virtual_folder()
 }

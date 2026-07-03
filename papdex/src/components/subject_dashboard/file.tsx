@@ -6,12 +6,10 @@ import {
 import { getSubjectById, toggleFavoriteSubject } from "@/components/subjects_service/file"
 import {
   getVirtualFoldersBySubject,
-  toggleFavoriteVirtualFolder,
   deleteVirtualFolder,
 } from "@/components/virtual_folders_service/file"
 import {
   getImportedFoldersBySubject,
-  toggleFavoriteImportedFolder,
   deleteImportedFolder,
   importFolder,
   type ImportedFolder,
@@ -24,7 +22,6 @@ interface VirtualFolder {
   id: number
   subject_id: number
   name: string
-  is_favorite: number
 }
 
 interface Subject {
@@ -84,18 +81,6 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
     setSubject(prev => prev ? { ...prev, is_favorite: next } : prev)
   }
 
-  async function handleToggleFolderFavorite(folder: VirtualFolder) {
-    const next = folder.is_favorite ? 0 : 1
-    await toggleFavoriteVirtualFolder(folder.id, next)
-    setFolders(prev => prev.map(f => f.id === folder.id ? { ...f, is_favorite: next } : f))
-  }
-
-  async function handleToggleImportedFavorite(folder: ImportedFolder) {
-    const next = folder.is_favorite ? 0 : 1
-    await toggleFavoriteImportedFolder(folder.id, next)
-    setImportedFolders(prev => prev.map(f => f.id === folder.id ? { ...f, is_favorite: next } : f))
-  }
-
   async function handleDeleteFolder() {
     if (!deletingFolder) return
     await deleteVirtualFolder(deletingFolder.id)
@@ -119,8 +104,6 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
       setImporting(false)
     }
   }
-
-  const favFolders = folders.filter(f => f.is_favorite).length
 
   const muted  = "var(--muted-foreground)"
   const border = "var(--border)"
@@ -200,10 +183,9 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
       </div>
 
       {/* Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 28 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, marginBottom: 28 }}>
         {[
           { value: folders.length,         label: "Folders" },
-          { value: favFolders,             label: "Favorites" },
           { value: importedFolders.length, label: "Imported" },
         ].map(stat => (
           <div key={stat.label} style={{ background: card, borderRadius: 12, padding: 20, border: `1px solid ${border}` }}>
@@ -267,16 +249,6 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
                       </button>
                     </>
                   )}
-                  <button
-                    onClick={e => { e.stopPropagation(); handleToggleFolderFavorite(folder) }}
-                    style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}
-                  >
-                    <Star
-                      size={15}
-                      fill={folder.is_favorite ? "#f59e0b" : "none"}
-                      color={folder.is_favorite ? "#f59e0b" : muted}
-                    />
-                  </button>
                 </div>
               </div>
               <p style={{ color: muted, fontSize: 11, margin: "6px 0 0" }}>0 files</p>
@@ -332,16 +304,6 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
                       <Trash2 size={13} color="#ef4444" />
                     </button>
                   )}
-                  <button
-                    onClick={e => { e.stopPropagation(); handleToggleImportedFavorite(folder) }}
-                    style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}
-                  >
-                    <Star
-                      size={15}
-                      fill={folder.is_favorite ? "#f59e0b" : "none"}
-                      color={folder.is_favorite ? "#f59e0b" : muted}
-                    />
-                  </button>
                 </div>
               </div>
               <p style={{ color: muted, fontSize: 11, margin: "6px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>

@@ -38,9 +38,15 @@ function createWindow() {
   win = new BrowserWindow({
     title: 'Papdex',
     icon: path.join(process.env.VITE_PUBLIC, 'papdex-logo.png'),
+    backgroundColor: '#0a0a0a',
+    show: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
     },
+  })
+
+  win.once('ready-to-show', () => {
+    win?.show()
   })
 
   win.webContents.on('did-finish-load', () => {

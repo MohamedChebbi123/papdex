@@ -85,15 +85,6 @@ function fetch_imported_folder_files() {
     })
 }
 
-function toggle_favorite_imported_folder() {
-    ipcMain.handle("importedFolders:toggleFavorite", (_event, id: number, is_favorite: number) => {
-        const result = database.prepare(
-            "UPDATE imported_folders SET is_favorite = ?, updated_at = datetime('now') WHERE id = ?"
-        ).run(is_favorite, id)
-        return result.changes
-    })
-}
-
 function delete_imported_folder() {
     ipcMain.handle("importedFolders:delete", (_event, id: number) => {
         const result = database.prepare("DELETE FROM imported_folders WHERE id = ?").run(id)
@@ -119,7 +110,6 @@ export function imported_folder_handlers() {
     fetch_imported_folders_by_subject()
     fetch_imported_folder_by_id()
     fetch_imported_folder_files()
-    toggle_favorite_imported_folder()
     delete_imported_folder()
     open_imported_file()
     read_imported_file_buffer()

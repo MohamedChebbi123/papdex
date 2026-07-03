@@ -88,3 +88,7 @@ export async function getRecentFilesBySemester(semester_id: number, limit = 5): 
 export async function getRecentFilesByYear(year_id: number, limit = 5): Promise<RecentFile[]> {
   return await window.ipcRenderer.invoke('files:getRecentByYear', year_id, limit)
 }
+
+export async function getFileTypeCountBySemester(semester_id: number, file_type: string): Promise<number> {
+  return await window.ipcRenderer.invoke('files:getTypeCountBySemester', semester_id, file_type)
+}

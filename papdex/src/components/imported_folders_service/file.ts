@@ -36,10 +36,6 @@ export async function getImportedFolderFiles(imported_folder_id: number): Promis
   return await window.ipcRenderer.invoke('importedFolders:getFiles', imported_folder_id)
 }
 
-export async function toggleFavoriteImportedFolder(id: number, is_favorite: number): Promise<number> {
-  return await window.ipcRenderer.invoke('importedFolders:toggleFavorite', id, is_favorite)
-}
-
 export async function deleteImportedFolder(id: number): Promise<number> {
   return await window.ipcRenderer.invoke('importedFolders:delete', id)
 }

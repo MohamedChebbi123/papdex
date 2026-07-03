@@ -12,10 +12,11 @@ import { FavoritesDashboard } from "@/components/favorites_dashboard/file"
 import { Onboarding } from "@/components/onboarding/file"
 import { getUser } from "@/components/user_service/file"
 import type { ImportedFolder } from "@/components/imported_folders_service/file"
+import logo from "@/assets/papdex logo.png"
 
 type Semester = { id: number; name: string; start_date: string; end_date: string }
 type Subject  = { id: number; name: string; is_favorite: number }
-type Folder   = { id: number; name: string; is_favorite: number }
+type Folder   = { id: number; name: string }
 
 type RecentFileNav = {
   subject: Subject & { semester_id?: number }
@@ -81,7 +82,14 @@ function App() {
     setPendingFileId(folder ? fileId : null)
   }
 
-  if (onboarded === null) return null
+  if (onboarded === null) {
+    return (
+      <div className="flex h-screen w-screen flex-col items-center justify-center gap-4 bg-background">
+        <img src={logo} alt="Papdex" className="size-16 animate-pulse" />
+        <div className="size-5 animate-spin rounded-full border-2 border-muted-foreground/25 border-t-foreground" />
+      </div>
+    )
+  }
   if (!onboarded) return <Onboarding onDone={() => setOnboarded(true)} />
 
   return (
@@ -148,6 +156,7 @@ function App() {
             year={selectedYear}
             onBack={() => setSelectedSemester(null)}
             onSelectSubject={subj => setSelectedSubject(subj)}
+            onOpenFile={handleOpenRecentFile}
           />
         ) : selectedYear ? (
           <Academicyeardashaboard
