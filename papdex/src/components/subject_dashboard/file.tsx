@@ -22,11 +22,7 @@ interface VirtualFolder {
   id: number
   subject_id: number
   name: string
-<<<<<<< HEAD
-=======
-  is_favorite: number
   file_count: number
->>>>>>> 8d3aca3790b7492698fdfa65bd3efe1d2d5606b3
 }
 
 interface Subject {
@@ -188,11 +184,7 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
       </div>
 
       {/* Stats */}
-<<<<<<< HEAD
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, marginBottom: 28 }}>
-=======
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 28, maxWidth: 480 }}>
->>>>>>> 8d3aca3790b7492698fdfa65bd3efe1d2d5606b3
         {[
           { value: folders.length,         label: "Folders" },
           { value: importedFolders.length, label: "Imported" },

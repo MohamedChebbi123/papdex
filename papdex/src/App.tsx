@@ -162,15 +162,8 @@ function App() {
           <Academicyeardashaboard
             year={selectedYear}
             onSelectSemester={setSelectedSemester}
-<<<<<<< HEAD
-            onSelectSubject={(subject, semester) => {
-              setSelectedSemester(semester)
-              setSelectedSubject(subject)
-            }}
-            onOpenFile={handleOpenRecentFile}
-=======
             onSelectSubject={handleSelectSubject}
->>>>>>> 8d3aca3790b7492698fdfa65bd3efe1d2d5606b3
+            onOpenFile={handleOpenRecentFile}
           />
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-3 text-center px-6">

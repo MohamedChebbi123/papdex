@@ -13,17 +13,6 @@ function create_subject() {
 function fetch_subjects_by_semester() {
     ipcMain.handle("subjects:getBySemester", (_event, semester_id: number) => {
         return database.prepare(`
-<<<<<<< HEAD
-            SELECT
-                s.id, s.name, s.semester_id, s.is_favorite,
-                s.created_at, s.updated_at,
-                COUNT(f.id) AS file_count,
-                COALESCE(SUM(f.file_size), 0) AS total_size
-            FROM subjects s
-            LEFT JOIN files f ON f.subject_id = s.id
-            WHERE s.semester_id = ?
-            GROUP BY s.id
-=======
             SELECT s.*,
                 (SELECT COUNT(*) FROM files f WHERE f.subject_id = s.id) +
                 (SELECT COUNT(*) FROM imported_folder_files iff
@@ -31,7 +20,6 @@ function fetch_subjects_by_semester() {
                     WHERE imf.subject_id = s.id) AS file_count
             FROM subjects s
             WHERE s.semester_id = ?
->>>>>>> 8d3aca3790b7492698fdfa65bd3efe1d2d5606b3
             ORDER BY s.created_at DESC
         `).all(semester_id)
     })
@@ -40,19 +28,6 @@ function fetch_subjects_by_semester() {
 function fetch_subjects_by_year() {
     ipcMain.handle("subjects:getByYear", (_event, year_id: number) => {
         return database.prepare(`
-<<<<<<< HEAD
-            SELECT
-                s.id, s.name, s.semester_id, s.is_favorite,
-                s.created_at, s.updated_at,
-                COUNT(f.id) AS file_count,
-                COALESCE(SUM(f.file_size), 0) AS total_size
-            FROM subjects s
-            JOIN semesters sem ON s.semester_id = sem.id
-            LEFT JOIN files f ON f.subject_id = s.id
-            WHERE sem.year_id = ?
-            GROUP BY s.id
-            ORDER BY s.created_at DESC
-=======
             SELECT s.id, s.semester_id, s.name, s.is_favorite, s.created_at,
                 sem.name       AS semester_name,
                 sem.start_date AS semester_start_date,
@@ -65,7 +40,6 @@ function fetch_subjects_by_year() {
             JOIN semesters sem ON s.semester_id = sem.id
             WHERE sem.year_id = ?
             ORDER BY sem.start_date DESC, s.created_at DESC
->>>>>>> 8d3aca3790b7492698fdfa65bd3efe1d2d5606b3
         `).all(year_id)
     })
 }

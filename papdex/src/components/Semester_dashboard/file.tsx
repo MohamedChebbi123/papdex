@@ -1,11 +1,7 @@
 import { useState, useEffect } from "react"
 import {
   Calendar, ChevronRight, FileText,
-<<<<<<< HEAD
   Folder, Plus, Star, Trash2, Video,
-=======
-  Folder, Plus, Star, Trash2,
->>>>>>> 8d3aca3790b7492698fdfa65bd3efe1d2d5606b3
 } from "lucide-react"
 import { DeleteConfirm } from "@/components/inputs/Delete_confirm"
 import { SubjectCreation } from "@/components/inputs/subject_creation"
@@ -14,7 +10,6 @@ import {
   toggleFavoriteSubject,
   deleteSubject,
 } from "@/components/subjects_service/file"
-<<<<<<< HEAD
 import {
   getRecentFilesBySemester,
   getFileTypeCountBySemester,
@@ -22,31 +17,20 @@ import {
   type RecentFile,
 } from "@/components/file_service/file"
 import { getVirtualFolderById } from "@/components/virtual_folders_service/file"
-=======
-import { getFileCountBySemester, getRecentFilesBySemester, type RecentFile } from "@/components/file_service/file"
->>>>>>> 8d3aca3790b7492698fdfa65bd3efe1d2d5606b3
 
 const COLORS = [
   "#6366f1", "#0891b2", "#059669", "#d97706",
   "#7c3aed", "#dc2626", "#0d9488", "#db2777",
 ]
 
-<<<<<<< HEAD
 const VIDEO_EXTENSIONS = ["mp4", "mov", "mkv", "avi", "webm"]
 
-=======
->>>>>>> 8d3aca3790b7492698fdfa65bd3efe1d2d5606b3
 interface Subject {
   id: number
   semester_id: number
   name: string
   is_favorite: number
-<<<<<<< HEAD
-  file_count?: number
-  total_size?: number
-=======
   file_count: number
->>>>>>> 8d3aca3790b7492698fdfa65bd3efe1d2d5606b3
 }
 
 interface Semester {
@@ -79,7 +63,6 @@ export function SemesterDashboard({ semester, year, onBack, onSelectSubject, onO
   const [subjectModalOpen, setSubjectModalOpen] = useState(false)
   const [deletingSubject, setDeletingSubject] = useState<Subject | null>(null)
   const [hoveredId, setHoveredId] = useState<number | null>(null)
-<<<<<<< HEAD
   const [recentFiles, setRecentFiles] = useState<RecentFile[]>([])
   const [examCount, setExamCount] = useState(0)
 
@@ -87,15 +70,6 @@ export function SemesterDashboard({ semester, year, onBack, onSelectSubject, onO
     getSubjectsBySemester(semester.id).then(setSubjects)
     getRecentFilesBySemester(semester.id).then(setRecentFiles)
     getFileTypeCountBySemester(semester.id, "Exam").then(setExamCount)
-=======
-  const [fileCount, setFileCount] = useState(0)
-  const [recentFiles, setRecentFiles] = useState<RecentFile[]>([])
-
-  useEffect(() => {
-    refresh()
-    getFileCountBySemester(semester.id).then(setFileCount)
-    getRecentFilesBySemester(semester.id, 5).then(setRecentFiles)
->>>>>>> 8d3aca3790b7492698fdfa65bd3efe1d2d5606b3
   }, [semester.id])
 
   async function handleOpenRecentFile(file: RecentFile) {
@@ -183,20 +157,12 @@ export function SemesterDashboard({ semester, year, onBack, onSelectSubject, onO
       </div>
 
       {/* Stats */}
-<<<<<<< HEAD
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 28 }}>
-=======
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 28, maxWidth: 480 }}>
->>>>>>> 8d3aca3790b7492698fdfa65bd3efe1d2d5606b3
         {[
           { value: subjects.length,  label: "Subjects" },
           { value: totalFiles,       label: "Files indexed" },
           { value: examCount,        label: "Exam tagged" },
           { value: favoritesCount,   label: "Favorites" },
-<<<<<<< HEAD
-=======
-          { value: fileCount,        label: "Files indexed" },
->>>>>>> 8d3aca3790b7492698fdfa65bd3efe1d2d5606b3
         ].map(stat => (
           <div key={stat.label} style={{ background: card, borderRadius: 12, padding: "14px 16px", border: `1px solid ${border}` }}>
             <div style={{ fontSize: 28, fontWeight: 700, color: fg }}>{stat.value}</div>
@@ -262,20 +228,15 @@ export function SemesterDashboard({ semester, year, onBack, onSelectSubject, onO
                     </button>
                   </div>
                 </div>
-<<<<<<< HEAD
                 <p style={{ color: muted, fontSize: 11, margin: "6px 0 0" }}>
-                  {subject.file_count ?? 0} file{(subject.file_count ?? 0) !== 1 ? "s" : ""}
+                  {subject.file_count} file{subject.file_count !== 1 ? "s" : ""}
                 </p>
-=======
-                <p style={{ color: muted, fontSize: 11, margin: "6px 0 0" }}>{subject.file_count} file{subject.file_count === 1 ? "" : "s"}</p>
->>>>>>> 8d3aca3790b7492698fdfa65bd3efe1d2d5606b3
               </div>
             )
           })}
         </div>
       )}
 
-<<<<<<< HEAD
       {/* Recent files */}
       {recentFiles.length > 0 && (
         <>
@@ -301,32 +262,6 @@ export function SemesterDashboard({ semester, year, onBack, onSelectSubject, onO
             ))}
           </div>
         </>
-=======
-      {/* Recently added files */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Recently Added</span>
-      </div>
-      {recentFiles.length === 0 ? (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "24px 0", marginBottom: 28 }}>
-          <FileText size={30} color={muted} />
-          <p style={{ color: muted, fontSize: 12, marginTop: 8 }}>No files added yet this semester</p>
-        </div>
-      ) : (
-        <div style={{ marginBottom: 28 }}>
-          {recentFiles.map((file, i) => (
-            <div key={i} style={{
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-              borderBottom: `1px solid ${border}`, padding: "10px 0",
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <FileText size={16} color={muted} />
-                <span style={{ color: fg, fontSize: 13 }}>{file.file_name}</span>
-              </div>
-              <span style={{ color: muted, fontSize: 11 }}>{file.subject_name}</span>
-            </div>
-          ))}
-        </div>
->>>>>>> 8d3aca3790b7492698fdfa65bd3efe1d2d5606b3
       )}
 
       <SubjectCreation
