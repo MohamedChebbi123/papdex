@@ -1,6 +1,8 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
+import { GraduationCap } from "lucide-react"
 import { SidebarProvider } from "@/components/ui/sidebar"
-import { AppSidebar, type AcademicYear } from "@/components/Sidebar"
+import { Button } from "@/components/ui/button"
+import { AppSidebar, type AcademicYear, type AppSidebarHandle } from "@/components/Sidebar"
 import { Academicyeardashaboard } from "@/components/academeic_year_dashboard/file"
 import { SemesterDashboard } from "@/components/Semester_dashboard/file"
 import { SubjectDashboard } from "@/components/subject_dashboard/file"
@@ -15,6 +17,13 @@ type Semester = { id: number; name: string; start_date: string; end_date: string
 type Subject  = { id: number; name: string; is_favorite: number }
 type Folder   = { id: number; name: string; is_favorite: number }
 
+type RecentFileNav = {
+  subject: Subject & { semester_id?: number }
+  semester: Semester
+  folder: Folder | null
+  fileId: number
+}
+
 function App() {
   const [onboarded,              setOnboarded]              = useState<boolean | null>(null)
   const [selectedYear,           setSelectedYear]           = useState<AcademicYear | null>(null)
@@ -23,6 +32,8 @@ function App() {
   const [selectedFolder,         setSelectedFolder]         = useState<Folder | null>(null)
   const [selectedImportedFolder, setSelectedImportedFolder] = useState<ImportedFolder | null>(null)
   const [showFavorites,          setShowFavorites]          = useState(false)
+  const [pendingFileId,          setPendingFileId]          = useState<number | null>(null)
+  const sidebarRef = useRef<AppSidebarHandle>(null)
 
   useEffect(() => {
     getUser().then(user => {
@@ -61,12 +72,22 @@ function App() {
     setShowFavorites(false)
   }
 
+  function handleOpenRecentFile({ subject, semester, folder, fileId }: RecentFileNav) {
+    setSelectedSemester(semester)
+    setSelectedSubject(subject)
+    setSelectedFolder(folder)
+    setSelectedImportedFolder(null)
+    setShowFavorites(false)
+    setPendingFileId(folder ? fileId : null)
+  }
+
   if (onboarded === null) return null
   if (!onboarded) return <Onboarding onDone={() => setOnboarded(true)} />
 
   return (
     <SidebarProvider className="h-screen bg-background">
       <AppSidebar
+        ref={sidebarRef}
         onSelectYear={handleSelectYear}
         onSelectSemester={handleSelectSemester}
         onSelectSubject={handleSelectSubject}
@@ -105,6 +126,8 @@ function App() {
             subject={selectedSubject}
             semester={selectedSemester}
             year={selectedYear}
+            initialFileId={pendingFileId}
+            onInitialFileHandled={() => setPendingFileId(null)}
             onBack={() => setSelectedFolder(null)}
             onBackToSemester={() => { setSelectedSubject(null); setSelectedFolder(null) }}
             onBackToYear={() => { setSelectedSemester(null); setSelectedSubject(null); setSelectedFolder(null) }}
@@ -130,10 +153,26 @@ function App() {
           <Academicyeardashaboard
             year={selectedYear}
             onSelectSemester={setSelectedSemester}
+            onSelectSubject={(subject, semester) => {
+              setSelectedSemester(semester)
+              setSelectedSubject(subject)
+            }}
+            onOpenFile={handleOpenRecentFile}
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-muted-foreground text-sm">
-            Select an academic year to get started
+          <div className="flex h-full flex-col items-center justify-center gap-3 text-center px-6">
+            <div className="rounded-full bg-muted p-4">
+              <GraduationCap className="size-8 text-muted-foreground" />
+            </div>
+            <div>
+              <p className="text-sm font-medium">No academic year selected</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Create an academic year to start organizing your semesters, subjects, and files.
+              </p>
+            </div>
+            <Button size="sm" onClick={() => sidebarRef.current?.openCreateYear()}>
+              Create academic year
+            </Button>
           </div>
         )}
       </main>

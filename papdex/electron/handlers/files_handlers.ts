@@ -113,6 +113,58 @@ function open_file() {
     })
 }
 
+function mark_file_opened() {
+    ipcMain.handle("files:markOpened", (_event, file_id: number) => {
+        database.prepare(`
+            INSERT INTO file_opens (file_id, opened_at) VALUES (?, datetime('now'))
+            ON CONFLICT(file_id) DO UPDATE SET opened_at = datetime('now')
+        `).run(file_id)
+    })
+}
+
+function fetch_recent_files_by_subject() {
+    ipcMain.handle("files:getRecentBySubject", (_event, subject_id: number, limit: number) => {
+        return database.prepare(`
+            SELECT f.*, s.name AS subject_name, fo.opened_at
+            FROM file_opens fo
+            JOIN files f ON f.id = fo.file_id
+            JOIN subjects s ON s.id = f.subject_id
+            WHERE f.subject_id = ?
+            ORDER BY fo.opened_at DESC
+            LIMIT ?
+        `).all(subject_id, limit)
+    })
+}
+
+function fetch_recent_files_by_semester() {
+    ipcMain.handle("files:getRecentBySemester", (_event, semester_id: number, limit: number) => {
+        return database.prepare(`
+            SELECT f.*, s.name AS subject_name, fo.opened_at
+            FROM file_opens fo
+            JOIN files f ON f.id = fo.file_id
+            JOIN subjects s ON s.id = f.subject_id
+            WHERE s.semester_id = ?
+            ORDER BY fo.opened_at DESC
+            LIMIT ?
+        `).all(semester_id, limit)
+    })
+}
+
+function fetch_recent_files_by_year() {
+    ipcMain.handle("files:getRecentByYear", (_event, year_id: number, limit: number) => {
+        return database.prepare(`
+            SELECT f.*, s.name AS subject_name, fo.opened_at
+            FROM file_opens fo
+            JOIN files f ON f.id = fo.file_id
+            JOIN subjects s ON s.id = f.subject_id
+            JOIN semesters sem ON sem.id = s.semester_id
+            WHERE sem.year_id = ?
+            ORDER BY fo.opened_at DESC
+            LIMIT ?
+        `).all(year_id, limit)
+    })
+}
+
 function pick_single_file() {
     ipcMain.handle("files:pickSingle", async () => {
         const { filePaths, canceled } = await dialog.showOpenDialog({
@@ -142,4 +194,8 @@ export function file_handlers() {
     pick_single_file()
     read_file_buffer()
     open_file()
+    mark_file_opened()
+    fetch_recent_files_by_subject()
+    fetch_recent_files_by_semester()
+    fetch_recent_files_by_year()
 }

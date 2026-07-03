@@ -12,6 +12,7 @@ import {
   getFilesByFolder,
   deleteFile,
   openFile,
+  markFileOpened,
   type AppFile,
 } from "@/components/file_service/file"
 import { VirtualFolderUpdate } from "@/components/inputs/virtual_folder_update"
@@ -74,6 +75,8 @@ interface Props {
   subject: Subject
   semester: Semester
   year: Year
+  initialFileId?: number | null
+  onInitialFileHandled?: () => void
   onBack: () => void
   onBackToSemester: () => void
   onBackToYear: () => void
@@ -96,6 +99,7 @@ function FileIcon({ type }: { type: string }) {
 
 export function VirtualFolderDashboard({
   folderId, subject, semester, year,
+  initialFileId, onInitialFileHandled,
   onBack, onBackToSemester, onBackToYear,
 }: Props) {
   const [folder, setFolder] = useState<VirtualFolder | null>(null)
@@ -113,6 +117,20 @@ export function VirtualFolderDashboard({
     getVirtualFolderById(folderId).then(setFolder)
     getFilesByFolder(folderId).then(setFiles)
   }, [folderId])
+
+  useEffect(() => {
+    if (initialFileId == null) return
+    const file = files.find(f => f.id === initialFileId)
+    if (!file) return
+    if (canPreview(file)) {
+      setPreviewFile(file)
+      markFileOpened(file.id)
+    } else {
+      openFile(file.file_path)
+      markFileOpened(file.id)
+    }
+    onInitialFileHandled?.()
+  }, [initialFileId, files])
 
   async function handleDelete() {
     await deleteVirtualFolder(folderId)
@@ -335,14 +353,17 @@ export function VirtualFolderDashboard({
                   <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                     {canPreview(file) && (
                       <button
-                        onClick={() => setPreviewFile(prev => prev?.id === file.id ? null : file)}
+                        onClick={() => {
+                          setPreviewFile(prev => prev?.id === file.id ? null : file)
+                          if (previewFile?.id !== file.id) markFileOpened(file.id)
+                        }}
                         style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex", borderRadius: 6 }}
                       >
                         <Eye size={13} color={previewFile?.id === file.id ? "var(--primary)" : muted} />
                       </button>
                     )}
                     <button
-                      onClick={() => openFile(file.file_path)}
+                      onClick={() => { openFile(file.file_path); markFileOpened(file.id) }}
                       style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex", borderRadius: 6 }}
                     >
                       <ExternalLink size={13} color={muted} />

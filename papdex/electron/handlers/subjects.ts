@@ -16,6 +16,24 @@ function fetch_subjects_by_semester() {
     })
 }
 
+function fetch_subjects_by_year() {
+    ipcMain.handle("subjects:getByYear", (_event, year_id: number) => {
+        return database.prepare(`
+            SELECT
+                s.id, s.name, s.semester_id, s.is_favorite,
+                s.created_at, s.updated_at,
+                COUNT(f.id) AS file_count,
+                COALESCE(SUM(f.file_size), 0) AS total_size
+            FROM subjects s
+            JOIN semesters sem ON s.semester_id = sem.id
+            LEFT JOIN files f ON f.subject_id = s.id
+            WHERE sem.year_id = ?
+            GROUP BY s.id
+            ORDER BY s.created_at DESC
+        `).all(year_id)
+    })
+}
+
 function fetch_subject_by_id() {
     ipcMain.handle("subjects:getById", (_event, id: number) => {
         return database.prepare("SELECT * FROM subjects WHERE id = ?").get(id)
@@ -71,6 +89,7 @@ function delete_subject() {
 export function subject_handlers() {
     create_subject()
     fetch_subjects_by_semester()
+    fetch_subjects_by_year()
     fetch_subject_by_id()
     update_subject()
     toggle_favorite_subject()

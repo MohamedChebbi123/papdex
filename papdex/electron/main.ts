@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, Menu } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
@@ -33,8 +33,11 @@ file_handlers()
 user_handlers()
 imported_folder_handlers()
 function createWindow() {
+  Menu.setApplicationMenu(null)
+
   win = new BrowserWindow({
-    icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
+    title: 'Papdex',
+    icon: path.join(process.env.VITE_PUBLIC, 'papdex-logo.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
     },

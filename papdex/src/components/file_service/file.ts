@@ -67,3 +67,24 @@ export async function openFile(file_path: string): Promise<void> {
 export async function readFileBuffer(file_path: string): Promise<Uint8Array> {
   return await window.ipcRenderer.invoke('files:readBuffer', file_path)
 }
+
+export interface RecentFile extends AppFile {
+  subject_name: string
+  opened_at: string
+}
+
+export async function markFileOpened(file_id: number): Promise<void> {
+  await window.ipcRenderer.invoke('files:markOpened', file_id)
+}
+
+export async function getRecentFilesBySubject(subject_id: number, limit = 5): Promise<RecentFile[]> {
+  return await window.ipcRenderer.invoke('files:getRecentBySubject', subject_id, limit)
+}
+
+export async function getRecentFilesBySemester(semester_id: number, limit = 5): Promise<RecentFile[]> {
+  return await window.ipcRenderer.invoke('files:getRecentBySemester', semester_id, limit)
+}
+
+export async function getRecentFilesByYear(year_id: number, limit = 5): Promise<RecentFile[]> {
+  return await window.ipcRenderer.invoke('files:getRecentByYear', year_id, limit)
+}

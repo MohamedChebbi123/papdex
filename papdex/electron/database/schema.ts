@@ -49,6 +49,11 @@ database.exec(`
         updated_at      TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
+    CREATE TABLE IF NOT EXISTS file_opens (
+        file_id     INTEGER PRIMARY KEY REFERENCES files(id) ON DELETE CASCADE,
+        opened_at   TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
     CREATE TABLE IF NOT EXISTS user (
         id           INTEGER PRIMARY KEY DEFAULT 1,
         display_name TEXT NOT NULL DEFAULT 'Student',

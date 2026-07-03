@@ -15,7 +15,7 @@ import {
   GraduationCap, Home, Moon, Pencil,
   Plus, Settings, Star, Sun, Trash2, FlaskConical,
 } from "lucide-react"
-import { useEffect, useState } from "react"
+import { forwardRef, useEffect, useImperativeHandle, useState } from "react"
 import { AcademicYearCreation } from "./inputs/Academic_year_creation"
 import { AcademicYearUpdate } from "./inputs/Academic_year_update"
 import { DeleteConfirm } from "./inputs/Delete_confirm"
@@ -46,6 +46,10 @@ type Subject = {
 
 export type { AcademicYear }
 
+export interface AppSidebarHandle {
+  openCreateYear: () => void
+}
+
 interface Props {
   onSelectYear: (year: AcademicYear) => void
   onSelectSemester: (year: AcademicYear, semester: Semester) => void
@@ -53,7 +57,10 @@ interface Props {
   onShowFavorites: () => void
 }
 
-export function AppSidebar({ onSelectYear, onSelectSemester, onSelectSubject, onShowFavorites }: Props) {
+export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSidebar(
+  { onSelectYear, onSelectSemester, onSelectSubject, onShowFavorites },
+  ref
+) {
   const [academicYears, setAcademicYears] = useState<AcademicYear[]>([])
   const [user, setUser] = useState<User | null>(null)
   const [dark, setDark] = useState(document.documentElement.classList.contains("dark"))
@@ -65,6 +72,10 @@ export function AppSidebar({ onSelectYear, onSelectSemester, onSelectSubject, on
   const [expandedSemesters, setExpandedSemesters] = useState<Set<number>>(new Set())
   const [semestersMap, setSemestersMap] = useState<Record<number, Semester[]>>({})
   const [subjectsMap, setSubjectsMap] = useState<Record<number, Subject[]>>({})
+
+  useImperativeHandle(ref, () => ({
+    openCreateYear: () => setShowCreateYear(true),
+  }))
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark)
@@ -336,4 +347,4 @@ export function AppSidebar({ onSelectYear, onSelectSemester, onSelectSubject, on
     </Sidebar>
     </>
   )
-}
+})

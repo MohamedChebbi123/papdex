@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import {
   Calendar, ChevronRight, FileText,
-  Folder, Pencil, Plus, Star, Trash2, Video,
+  Folder, Plus, Star, Trash2, Video,
 } from "lucide-react"
 import { DeleteConfirm } from "@/components/inputs/Delete_confirm"
 import { SubjectCreation } from "@/components/inputs/subject_creation"
@@ -10,40 +10,14 @@ import {
   toggleFavoriteSubject,
   deleteSubject,
 } from "@/components/subjects_service/file"
+import { getRecentFilesBySemester, type RecentFile } from "@/components/file_service/file"
 
 const COLORS = [
   "#6366f1", "#0891b2", "#059669", "#d97706",
   "#7c3aed", "#dc2626", "#0d9488", "#db2777",
 ]
 
-const MOCK_RECENT = [
-  { name: "Chapter 5 — Graphs.pdf",       subject: "Data Structures", tag: "Exam",      type: "pdf" },
-  { name: "Lecture 12 — TCP IP.pdf",      subject: "Networks",        tag: "Lecture",   type: "pdf" },
-  { name: "Summary — Sorting.pdf",        subject: "Data Structures", tag: "Summary",   type: "pdf" },
-  { name: "Assignment 3 — Dijkstra.docx", subject: "Algorithms",      tag: "Important", type: "doc" },
-  { name: "Integration techniques.pdf",   subject: "Calculus II",     tag: "",          type: "pdf" },
-]
-
-const TAG_COLORS: Record<string, { bg: string; text: string }> = {
-  Exam:      { bg: "#431407", text: "#fb923c" },
-  Summary:   { bg: "#14532d", text: "#4ade80" },
-  Important: { bg: "#450a0a", text: "#f87171" },
-  Lecture:   { bg: "#1e3a5f", text: "#60a5fa" },
-}
-
-function TagPill({ tag }: { tag: string }) {
-  const colors = TAG_COLORS[tag]
-  if (!colors) return null
-  return (
-    <span style={{
-      background: colors.bg, color: colors.text,
-      fontSize: 10, padding: "2px 8px", borderRadius: 6,
-      border: "1px solid var(--border)",
-    }}>
-      {tag}
-    </span>
-  )
-}
+const VIDEO_EXTENSIONS = ["mp4", "mov", "mkv", "avi", "webm"]
 
 interface Subject {
   id: number
@@ -76,11 +50,11 @@ export function SemesterDashboard({ semester, year, onBack, onSelectSubject }: P
   const [subjectModalOpen, setSubjectModalOpen] = useState(false)
   const [deletingSubject, setDeletingSubject] = useState<Subject | null>(null)
   const [hoveredId, setHoveredId] = useState<number | null>(null)
-  const [notes, setNotes] = useState("")
-  const [editingNotes, setEditingNotes] = useState(false)
+  const [recentFiles, setRecentFiles] = useState<RecentFile[]>([])
 
   useEffect(() => {
     getSubjectsBySemester(semester.id).then(setSubjects)
+    getRecentFilesBySemester(semester.id).then(setRecentFiles)
   }, [semester.id])
 
   function refresh() {
@@ -232,57 +206,27 @@ export function SemesterDashboard({ semester, year, onBack, onSelectSubject }: P
       )}
 
       {/* Recent files */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Recently Opened</span>
-        <button style={{ background: "none", border: "none", color: "#2563eb", fontSize: 12, cursor: "pointer" }}>See all</button>
-      </div>
-      <div style={{ marginBottom: 28 }}>
-        {MOCK_RECENT.map((file, i) => (
-          <div key={i} style={{
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            borderBottom: `1px solid ${border}`, padding: "10px 0",
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              {file.type === "mp4" ? <Video size={16} color={muted} /> : <FileText size={16} color={muted} />}
-              <span style={{ color: fg, fontSize: 13 }}>{file.name}</span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ color: muted, fontSize: 11 }}>{file.subject}</span>
-              {file.tag && <TagPill tag={file.tag} />}
-            </div>
+      {recentFiles.length > 0 && (
+        <>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Recently Opened</span>
           </div>
-        ))}
-      </div>
-
-      {/* Notes */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Notes</span>
-        <button
-          onClick={() => setEditingNotes(e => !e)}
-          style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}
-        >
-          <Pencil size={12} />
-          {editingNotes ? "Done" : "Edit"}
-        </button>
-      </div>
-      <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 12, padding: 16, marginBottom: 28 }}>
-        {editingNotes ? (
-          <textarea
-            value={notes}
-            onChange={e => setNotes(e.target.value)}
-            placeholder="Add notes for this semester..."
-            autoFocus
-            style={{
-              width: "100%", minHeight: 100, background: "transparent", border: "none", outline: "none",
-              color: fg, fontSize: 13, resize: "vertical", fontFamily: "inherit", lineHeight: 1.6,
-            }}
-          />
-        ) : (
-          <p style={{ color: notes ? fg : muted, fontSize: 13, fontStyle: notes ? "normal" : "italic", margin: 0, whiteSpace: "pre-wrap" }}>
-            {notes || "No notes yet — click Edit to add notes for this semester..."}
-          </p>
-        )}
-      </div>
+          <div style={{ marginBottom: 28 }}>
+            {recentFiles.map(file => (
+              <div key={file.id} style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                borderBottom: `1px solid ${border}`, padding: "10px 0",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  {VIDEO_EXTENSIONS.includes(file.file_type) ? <Video size={16} color={muted} /> : <FileText size={16} color={muted} />}
+                  <span style={{ color: fg, fontSize: 13 }}>{file.file_name}</span>
+                </div>
+                <span style={{ color: muted, fontSize: 11 }}>{file.subject_name}</span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       <SubjectCreation
         open={subjectModalOpen}

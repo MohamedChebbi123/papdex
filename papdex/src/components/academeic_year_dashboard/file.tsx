@@ -1,64 +1,51 @@
 import { useState, useEffect } from "react"
 import {
-  Calendar, ChevronRight, Plus, Star, FileText,
+  Calendar, ChevronRight, Plus, FileText,
   Video, Pencil, Folder, BookOpen, Trash2,
 } from "lucide-react"
 import { SemesterCreation } from "@/components/inputs/Semester_creation"
 import { SemesterUpdate } from "@/components/inputs/Semester_update"
 import { DeleteConfirm } from "@/components/inputs/Delete_confirm"
 import { getSemestersByYear, deleteSemester } from "@/components/semester_service/file"
+import { getSubjectsByYear } from "@/components/subjects_service/file"
+import { getRecentFilesByYear, openFile, type RecentFile } from "@/components/file_service/file"
+import { getVirtualFolderById } from "@/components/virtual_folders_service/file"
 
-const subjects = [
-  { name: "Data Structures", color: "#6366f1", files: 28, favorite: true,  tags: ["Exam", "Lecture", "Summary"] },
-  { name: "Networks",        color: "#0891b2", files: 17, favorite: true,  tags: ["Exam", "Lecture"] },
-  { name: "Calculus II",     color: "#059669", files: 34, favorite: false, tags: ["Summary", "Reference"] },
-  { name: "Linear Algebra",  color: "#d97706", files: 11, favorite: false, tags: ["Lecture"] },
-  { name: "Algorithms",      color: "#7c3aed", files: 22, favorite: false, tags: ["Exam", "Assignment"] },
-  { name: "Databases",       color: "#dc2626", files: 9,  favorite: false, tags: ["Lecture", "Reference"] },
+const COLORS = [
+  "#6366f1", "#0891b2", "#059669", "#d97706",
+  "#7c3aed", "#dc2626", "#0d9488", "#db2777",
 ]
 
-const recentFiles = [
-  { name: "Chapter 5 — Graphs.pdf",       subject: "Data Structures", tag: "Exam",      type: "pdf" },
-  { name: "Lecture 12 — TCP IP.pdf",      subject: "Networks",        tag: "Lecture",   type: "pdf" },
-  { name: "Summary — Sorting.pdf",        subject: "Data Structures", tag: "Summary",   type: "pdf" },
-  { name: "Assignment 3 — Dijkstra.docx", subject: "Algorithms",      tag: "Important", type: "doc" },
-  { name: "Integration techniques.pdf",   subject: "Calculus II",     tag: "",          type: "pdf" },
-]
-
-const tagColors: Record<string, { bg: string; text: string }> = {
-  Exam:      { bg: "#431407", text: "#fb923c" },
-  Summary:   { bg: "#14532d", text: "#4ade80" },
-  Important: { bg: "#450a0a", text: "#f87171" },
-  Lecture:   { bg: "#1e3a5f", text: "#60a5fa" },
-}
-
-function TagPill({ tag }: { tag: string }) {
-  const colors = tagColors[tag]
-  if (!colors) return null
-  return (
-    <span style={{
-      background: colors.bg, color: colors.text,
-      fontSize: 10, padding: "2px 8px", borderRadius: 6,
-      border: "1px solid var(--border)",
-    }}>
-      {tag}
-    </span>
-  )
-}
+const VIDEO_EXTENSIONS = ["mp4", "mov", "mkv", "avi", "webm"]
 
 type Semester = { id: number; name: string; start_date: string; end_date: string }
+type Subject = { id: number; semester_id: number; name: string; is_favorite: number; file_count: number; total_size: number }
+
+function formatSize(bytes: number): string {
+  if (bytes <= 0) return "0 B"
+  const units = ["B", "KB", "MB", "GB"]
+  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1)
+  const value = bytes / Math.pow(1024, i)
+  return `${i === 0 ? value : value.toFixed(1)} ${units[i]}`
+}
 
 interface Props {
   year: { id: number; name: string; start_date: string; end_date: string } | null
   onSelectSemester: (semester: Semester) => void
+  onSelectSubject?: (subject: Subject, semester: Semester) => void
+  onOpenFile?: (params: {
+    subject: Subject
+    semester: Semester
+    folder: { id: number; subject_id: number; name: string; is_favorite: number } | null
+    fileId: number
+  }) => void
 }
 
-export function Academicyeardashaboard({ year, onSelectSemester }: Props) {
-  const [favorites, setFavorites] = useState<string[]>(
-    subjects.filter(s => s.favorite).map(s => s.name)
-  )
+export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject, onOpenFile }: Props) {
   const [semesterModalOpen, setSemesterModalOpen] = useState(false)
   const [semesters, setSemesters] = useState<any[]>([])
+  const [subjects, setSubjects] = useState<Subject[]>([])
+  const [recentFiles, setRecentFiles] = useState<RecentFile[]>([])
   const [editingSemester, setEditingSemester] = useState<any | null>(null)
   const [deletingSemester, setDeletingSemester] = useState<any | null>(null)
   const [hoveredSemId, setHoveredSemId] = useState<number | null>(null)
@@ -66,10 +53,16 @@ export function Academicyeardashaboard({ year, onSelectSemester }: Props) {
   useEffect(() => {
     if (!year) return
     getSemestersByYear(year.id).then(setSemesters)
+    getSubjectsByYear(year.id).then(setSubjects)
+    getRecentFilesByYear(year.id).then(setRecentFiles)
   }, [year?.id])
 
   function refreshSemesters() {
     if (year) getSemestersByYear(year.id).then(setSemesters)
+  }
+
+  function refreshSubjects() {
+    if (year) getSubjectsByYear(year.id).then(setSubjects)
   }
 
   async function handleDeleteSemester() {
@@ -77,16 +70,30 @@ export function Academicyeardashaboard({ year, onSelectSemester }: Props) {
     await deleteSemester(deletingSemester.id)
     setDeletingSemester(null)
     refreshSemesters()
+    refreshSubjects()
   }
 
-  function toggleFavorite(name: string) {
-    setFavorites(prev =>
-      prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]
-    )
+  function handleSelectSubject(subject: Subject) {
+    const semester = semesters.find(s => s.id === subject.semester_id)
+    if (semester) onSelectSubject?.(subject, semester)
   }
 
-  const totalFiles = subjects.reduce((acc, s) => acc + s.files, 0)
-  const examTags = subjects.filter(s => s.tags.includes("Exam")).length
+  async function handleOpenRecentFile(file: RecentFile) {
+    const subject = subjects.find(s => s.id === file.subject_id)
+    const semester = subject && semesters.find(s => s.id === subject.semester_id)
+    if (!subject || !semester) return
+
+    if (file.folder_id) {
+      const folder = await getVirtualFolderById(file.folder_id)
+      onOpenFile?.({ subject, semester, folder, fileId: file.id })
+    } else {
+      onOpenFile?.({ subject, semester, folder: null, fileId: file.id })
+      openFile(file.file_path)
+    }
+  }
+
+  const totalFiles = subjects.reduce((acc, s) => acc + s.file_count, 0)
+  const totalSize = subjects.reduce((acc, s) => acc + s.total_size, 0)
 
   const muted = "var(--muted-foreground)"
   const border = "var(--border)"
@@ -119,23 +126,15 @@ export function Academicyeardashaboard({ year, onSelectSemester }: Props) {
             Sep 2025 — Jan 2026 · {subjects.length} subjects · {totalFiles} files indexed
           </p>
         </div>
-        <button style={{
-          background: card, border: `1px solid ${border}`, borderRadius: 10,
-          color: fg, fontSize: 14, padding: "10px 20px",
-          display: "flex", alignItems: "center", gap: 6, cursor: "pointer",
-        }}>
-          <Plus size={14} />
-          Add subject
-        </button>
       </div>
 
       {/* Stats row */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 28 }}>
         {[
-          { value: subjects.length,  label: "Subjects" },
-          { value: totalFiles,       label: "Files indexed" },
-          { value: examTags,         label: "Exam tags" },
-          { value: favorites.length, label: "Favorites" },
+          { value: semesters.length,   label: "Semesters" },
+          { value: subjects.length,    label: "Subjects" },
+          { value: totalFiles,         label: "Files indexed" },
+          { value: formatSize(totalSize), label: "Total size" },
         ].map(stat => (
           <div key={stat.label} style={{ background: card, borderRadius: 12, padding: 20, border: `1px solid ${border}` }}>
             <div style={{ fontSize: 28, fontWeight: 700, color: fg }}>{stat.value}</div>
@@ -175,7 +174,10 @@ export function Academicyeardashaboard({ year, onSelectSemester }: Props) {
         </div>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, marginBottom: 28 }}>
-          {semesters.map((sem: any) => (
+          {semesters.map((sem: any) => {
+          const semSubjects = subjects.filter(s => s.semester_id === sem.id)
+          const semFileCount = semSubjects.reduce((acc, s) => acc + s.file_count, 0)
+          return (
             <div
               key={sem.id}
               onMouseEnter={() => setHoveredSemId(sem.id)}
@@ -194,13 +196,13 @@ export function Academicyeardashaboard({ year, onSelectSemester }: Props) {
                 {hoveredSemId === sem.id && (
                   <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                     <button
-                      onClick={() => setEditingSemester(sem)}
+                      onClick={e => { e.stopPropagation(); setEditingSemester(sem) }}
                       style={{ background: "none", border: "none", cursor: "pointer", padding: 4, borderRadius: 6, display: "flex" }}
                     >
                       <Pencil size={13} color={muted} />
                     </button>
                     <button
-                      onClick={() => setDeletingSemester(sem)}
+                      onClick={e => { e.stopPropagation(); setDeletingSemester(sem) }}
                       style={{ background: "none", border: "none", cursor: "pointer", padding: 4, borderRadius: 6, display: "flex" }}
                     >
                       <Trash2 size={13} color="#ef4444" />
@@ -211,8 +213,20 @@ export function Academicyeardashaboard({ year, onSelectSemester }: Props) {
               <p style={{ color: muted, fontSize: 11, margin: "0 0 10px" }}>
                 {sem.start_date} — {sem.end_date}
               </p>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                {semSubjects.length > 0 && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    {semSubjects.slice(0, 6).map((s, i) => (
+                      <div key={s.id} style={{ width: 8, height: 8, borderRadius: "50%", background: COLORS[i % COLORS.length], flexShrink: 0 }} />
+                    ))}
+                  </div>
+                )}
+                <span style={{ color: muted, fontSize: 12 }}>
+                  {semSubjects.length} subject{semSubjects.length !== 1 ? "s" : ""} · {semFileCount} file{semFileCount !== 1 ? "s" : ""}
+                </span>
+              </div>
             </div>
-          ))}
+          )})}
         </div>
       )}
 
@@ -226,42 +240,24 @@ export function Academicyeardashaboard({ year, onSelectSemester }: Props) {
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 0" }}>
           <Folder size={40} color={muted} />
           <p style={{ color: fg, fontSize: 15, fontWeight: 500, marginTop: 12, marginBottom: 4 }}>No subjects yet</p>
-          <p style={{ color: muted, fontSize: 13, margin: 0 }}>Add your first subject to start organizing files</p>
-          <button style={{
-            background: card, border: `1px solid ${border}`, borderRadius: 10,
-            color: fg, fontSize: 14, padding: "10px 20px", marginTop: 16,
-            display: "flex", alignItems: "center", gap: 6, cursor: "pointer",
-          }}>
-            <Plus size={14} />
-            Add subject
-          </button>
+          <p style={{ color: muted, fontSize: 13, margin: 0 }}>Open a semester to add your first subject</p>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 28 }}>
-          {subjects.map(subject => {
-            const isFav = favorites.includes(subject.name)
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 28 }}>
+          {subjects.map((subject, i) => {
+            const color = COLORS[i % COLORS.length]
             return (
               <div
-                key={subject.name}
-                style={{ background: card, border: `1px solid ${border}`, borderRadius: 14, padding: 16, cursor: "default" }}
+                key={subject.id}
+                onClick={() => handleSelectSubject(subject)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 8,
+                  background: "var(--muted)", border: `1px solid ${border}`,
+                  borderRadius: 999, padding: "6px 14px", cursor: "pointer",
+                }}
               >
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <div style={{ width: 10, height: 10, borderRadius: "50%", background: subject.color, flexShrink: 0 }} />
-                    <span style={{ color: fg, fontSize: 13, fontWeight: 500 }}>{subject.name}</span>
-                  </div>
-                  <button onClick={() => toggleFavorite(subject.name)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}>
-                    <Star size={16} fill={isFav ? "#f59e0b" : "none"} color={isFav ? "#f59e0b" : muted} />
-                  </button>
-                </div>
-                <p style={{ color: muted, fontSize: 11, margin: "4px 0 0" }}>· {subject.files} files</p>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 12 }}>
-                  {subject.tags.slice(0, 3).map(tag => (
-                    <span key={tag} style={{ background: "var(--muted)", border: `1px solid ${border}`, borderRadius: 6, color: muted, fontSize: 10, padding: "2px 8px" }}>
-                      {tag}
-                    </span>
-                  ))}
-                </div>
+                <div style={{ width: 8, height: 8, borderRadius: "50%", background: color, flexShrink: 0 }} />
+                <span style={{ color: fg, fontSize: 13, fontWeight: 500 }}>{subject.name}</span>
               </div>
             )
           })}
@@ -269,41 +265,31 @@ export function Academicyeardashaboard({ year, onSelectSemester }: Props) {
       )}
 
       {/* Recent files */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Recently Opened</span>
-        <button style={{ background: "none", border: "none", color: "#2563eb", fontSize: 12, cursor: "pointer" }}>See all</button>
-      </div>
-      <div style={{ marginBottom: 28 }}>
-        {recentFiles.map((file, i) => (
-          <div key={i} style={{
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            borderBottom: `1px solid ${border}`, padding: "10px 0",
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              {file.type === "mp4" ? <Video size={16} color={muted} /> : <FileText size={16} color={muted} />}
-              <span style={{ color: fg, fontSize: 13 }}>{file.name}</span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ color: muted, fontSize: 11 }}>{file.subject}</span>
-              {file.tag && <TagPill tag={file.tag} />}
-            </div>
+      {recentFiles.length > 0 && (
+        <>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Recently Opened</span>
           </div>
-        ))}
-      </div>
-
-      {/* Notes preview */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Semester Notes</span>
-        <button style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
-          <Pencil size={12} />
-          Edit
-        </button>
-      </div>
-      <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 12, padding: 16, marginBottom: 28 }}>
-        <p style={{ color: muted, fontSize: 13, fontStyle: "italic", margin: 0 }}>
-          No notes yet — click Edit to add notes for this semester...
-        </p>
-      </div>
+          <div style={{ marginBottom: 28 }}>
+            {recentFiles.map(file => (
+              <div
+                key={file.id}
+                onClick={() => handleOpenRecentFile(file)}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  borderBottom: `1px solid ${border}`, padding: "10px 0", cursor: "pointer",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  {VIDEO_EXTENSIONS.includes(file.file_type) ? <Video size={16} color={muted} /> : <FileText size={16} color={muted} />}
+                  <span style={{ color: fg, fontSize: 13 }}>{file.file_name}</span>
+                </div>
+                <span style={{ color: muted, fontSize: 11 }}>{file.subject_name}</span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       <SemesterCreation
         open={semesterModalOpen}
