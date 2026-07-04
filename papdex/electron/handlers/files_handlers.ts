@@ -211,6 +211,48 @@ function fetch_file_type_count_by_semester() {
     })
 }
 
+function search_files() {
+    ipcMain.handle("files:search", (_event, query: string) => {
+        const like = `%${query}%`
+        return database.prepare(`
+            SELECT
+                f.id, f.file_name, f.file_path, f.file_type, 'virtual' AS kind,
+                f.folder_id, vf.name AS folder_name,
+                s.id AS subject_id, s.name AS subject_name,
+                sem.id AS semester_id, sem.name AS semester_name,
+                sem.start_date AS semester_start_date, sem.end_date AS semester_end_date,
+                y.id AS year_id, y.name AS year_name,
+                y.start_date AS year_start_date, y.end_date AS year_end_date
+            FROM files f
+            JOIN subjects s ON s.id = f.subject_id
+            JOIN semesters sem ON sem.id = s.semester_id
+            JOIN academic_years y ON y.id = sem.year_id
+            LEFT JOIN virtual_folders vf ON vf.id = f.folder_id
+            WHERE f.file_name LIKE ? COLLATE NOCASE
+
+            UNION ALL
+
+            SELECT
+                iff.id, iff.file_name, iff.file_path, iff.file_type, 'imported' AS kind,
+                imf.id AS folder_id, imf.name AS folder_name,
+                s.id AS subject_id, s.name AS subject_name,
+                sem.id AS semester_id, sem.name AS semester_name,
+                sem.start_date AS semester_start_date, sem.end_date AS semester_end_date,
+                y.id AS year_id, y.name AS year_name,
+                y.start_date AS year_start_date, y.end_date AS year_end_date
+            FROM imported_folder_files iff
+            JOIN imported_folders imf ON imf.id = iff.imported_folder_id
+            JOIN subjects s ON s.id = imf.subject_id
+            JOIN semesters sem ON sem.id = s.semester_id
+            JOIN academic_years y ON y.id = sem.year_id
+            WHERE iff.file_name LIKE ? COLLATE NOCASE
+
+            ORDER BY file_name
+            LIMIT 40
+        `).all(like, like)
+    })
+}
+
 function pick_single_file() {
     ipcMain.handle("files:pickSingle", async () => {
         const { filePaths, canceled } = await dialog.showOpenDialog({
@@ -240,6 +282,7 @@ export function file_handlers() {
     fetch_file_count_by_year()
     open_file_picker()
     pick_single_file()
+    search_files()
     read_file_buffer()
     open_file()
     mark_file_opened()

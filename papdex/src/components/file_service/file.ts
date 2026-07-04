@@ -100,3 +100,27 @@ export async function getRecentFilesByYear(year_id: number, limit = 5): Promise<
 export async function getFileTypeCountBySemester(semester_id: number, file_type: string): Promise<number> {
   return await window.ipcRenderer.invoke('files:getTypeCountBySemester', semester_id, file_type)
 }
+
+export interface SearchResult {
+  id: number
+  file_name: string
+  file_path: string
+  file_type: string
+  kind: "virtual" | "imported"
+  folder_id: number | null
+  folder_name: string | null
+  subject_id: number
+  subject_name: string
+  semester_id: number
+  semester_name: string
+  semester_start_date: string
+  semester_end_date: string
+  year_id: number
+  year_name: string
+  year_start_date: string
+  year_end_date: string
+}
+
+export async function searchFiles(query: string): Promise<SearchResult[]> {
+  return await window.ipcRenderer.invoke('files:search', query)
+}

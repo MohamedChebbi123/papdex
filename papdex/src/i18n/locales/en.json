@@ -38,7 +38,9 @@
     "noSemesters": "No semesters",
     "noSubjects": "No subjects",
     "noAcademicYears": "No academic years yet",
-    "refresh": "refresh"
+    "refresh": "refresh",
+    "searchPlaceholder": "Search files...",
+    "searchEmpty": "No files found"
   },
   "language": {
     "en": "English",
@@ -160,12 +162,16 @@
     "virtualFolder": {
       "actions": { "title": "Manage this folder", "content": "Add more files, rename the folder, or delete it from here." },
       "filters": { "title": "Filter files", "content": "Narrow the list down by file format or by the category tag assigned to each file." },
-      "files": { "title": "Files", "content": "Hover a file to preview it, open it in its default app, or delete it." }
+      "files": { "title": "Files", "content": "Hover a file to reveal its actions. The eye icon opens a side-by-side preview panel you can resize, without leaving this page; you can also open it in its default app, or delete it." }
     },
     "importedFolder": {
       "header": { "title": "Imported folder", "content": "This mirrors a folder on your computer, shown at the path below. Its files aren't moved or copied — this is just a live view." },
       "filters": { "title": "Filter files", "content": "Narrow the current folder's files down by format." },
-      "files": { "title": "Browse files", "content": "Subfolders and files are listed together. Click a subfolder to navigate into it, and hover a file to preview or open it." }
+      "files": { "title": "Browse files", "content": "Subfolders and files are listed together. Click a subfolder to navigate into it. Hover a file and click the eye icon to preview it in a resizable side-by-side panel, or open it directly." }
+    },
+    "favorites": {
+      "header": { "title": "Favorite subjects", "content": "Subjects you star show up here for quick access, no matter which year or semester they belong to." },
+      "list": { "title": "Your favorites", "content": "Click a subject to jump straight into it, or click the star again to remove it from this list." }
     }
   },
   "modal": {

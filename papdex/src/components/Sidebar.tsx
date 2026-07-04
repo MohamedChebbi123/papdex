@@ -13,7 +13,7 @@ import {
 import {
   BookOpen, ChevronDown, ChevronLeft, ChevronRight,
   GraduationCap, Home, Moon, Pencil,
-  Plus, Star, Sun, Trash2, FlaskConical,
+  Plus, Search, Star, Sun, Trash2, FlaskConical,
 } from "lucide-react"
 import { forwardRef, useEffect, useImperativeHandle, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -25,6 +25,7 @@ import { deleteAcademicYear, getAllAcademicYears } from "./academic_year_service
 import { getSemestersByYear } from "./semester_service/file"
 import { getSubjectsBySemester } from "./subjects_service/file"
 import { getUser, updateUser, type User, type Language } from "./user_service/file"
+import { searchFiles, type SearchResult } from "./file_service/file"
 
 const LANGUAGES: Language[] = ["en", "fr", "ar"]
 
@@ -59,10 +60,11 @@ interface Props {
   onSelectSemester: (year: AcademicYear, semester: Semester) => void
   onSelectSubject: (year: AcademicYear, semester: Semester, subject: Subject) => void
   onShowFavorites: () => void
+  onSelectSearchResult: (result: SearchResult) => void
 }
 
 export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSidebar(
-  { onSelectYear, onSelectSemester, onSelectSubject, onShowFavorites },
+  { onSelectYear, onSelectSemester, onSelectSubject, onShowFavorites, onSelectSearchResult },
   ref
 ) {
   const { t, i18n } = useTranslation()
@@ -79,6 +81,9 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
   const [expandedSemesters, setExpandedSemesters] = useState<Set<number>>(new Set())
   const [semestersMap, setSemestersMap] = useState<Record<number, Semester[]>>({})
   const [subjectsMap, setSubjectsMap] = useState<Record<number, Subject[]>>({})
+  const [searchQuery, setSearchQuery] = useState("")
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([])
+  const [searching, setSearching] = useState(false)
 
   useImperativeHandle(ref, () => ({
     openCreateYear: () => setShowCreateYear(true),
@@ -92,6 +97,29 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
     getAllAcademicYears().then(setAcademicYears)
     getUser().then(setUser)
   }, [])
+
+  useEffect(() => {
+    const term = searchQuery.trim()
+    if (!term) {
+      setSearchResults([])
+      setSearching(false)
+      return
+    }
+    setSearching(true)
+    const handle = setTimeout(() => {
+      searchFiles(term).then(results => {
+        setSearchResults(results)
+        setSearching(false)
+      })
+    }, 250)
+    return () => clearTimeout(handle)
+  }, [searchQuery])
+
+  function handleSelectResult(result: SearchResult) {
+    onSelectSearchResult(result)
+    setSearchQuery("")
+    setSearchResults([])
+  }
 
   function toggleTheme() {
     const next = !dark
@@ -169,7 +197,7 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
       onConfirmed={handleDelete}
     />
     <Sidebar side={isRTL ? "right" : "left"}>
-      <SidebarHeader className="px-4 py-3 border-b">
+      <SidebarHeader className="px-4 py-3 border-b space-y-2">
         <div className="flex items-center gap-2">
           <GraduationCap className="size-5 text-primary" />
           <div className="flex-1">
@@ -182,6 +210,38 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
           >
             {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
           </button>
+        </div>
+        <div className="relative">
+          <Search className="pointer-events-none absolute start-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+          <input
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder={t("sidebar.searchPlaceholder")}
+            className="w-full rounded-md border border-input bg-background ps-8 pe-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-ring"
+          />
+          {searchQuery.trim() && (
+            <div className="absolute inset-x-0 top-full z-20 mt-1 max-h-72 overflow-auto rounded-md border bg-popover shadow-md">
+              {searching ? (
+                <p className="px-3 py-2 text-xs text-muted-foreground">{t("common.loading")}</p>
+              ) : searchResults.length === 0 ? (
+                <p className="px-3 py-2 text-xs text-muted-foreground">{t("sidebar.searchEmpty")}</p>
+              ) : (
+                searchResults.map(result => (
+                  <button
+                    key={`${result.kind}-${result.id}`}
+                    onClick={() => handleSelectResult(result)}
+                    className="w-full border-b text-start px-3 py-2 last:border-b-0 hover:bg-accent transition-colors"
+                  >
+                    <p className="truncate text-xs font-medium">{result.file_name}</p>
+                    <p className="truncate text-[10px] text-muted-foreground">
+                      {result.year_name} · {result.semester_name} · {result.subject_name}
+                      {result.folder_name ? ` · ${result.folder_name}` : ""}
+                    </p>
+                  </button>
+                ))
+              )}
+            </div>
+          )}
         </div>
       </SidebarHeader>
 

@@ -12,6 +12,8 @@ import { ImportedFolderDashboard } from "@/components/imported_folder_dashboard/
 import { FavoritesDashboard } from "@/components/favorites_dashboard/file"
 import { Onboarding } from "@/components/onboarding/file"
 import { getUser } from "@/components/user_service/file"
+import { openFile, markFileOpened, type SearchResult } from "@/components/file_service/file"
+import { openImportedFile, markImportedFileOpened } from "@/components/imported_folders_service/file"
 import { applyDocumentDirection } from "@/i18n"
 import type { ImportedFolder } from "@/components/imported_folders_service/file"
 import logo from "@/assets/papdex logo.png"
@@ -89,6 +91,33 @@ function App() {
     setPendingFileId(folder ? fileId : null)
   }
 
+  function handleSelectSearchResult(result: SearchResult) {
+    const year:     AcademicYear = { id: result.year_id, name: result.year_name, start_date: result.year_start_date, end_date: result.year_end_date }
+    const semester: Semester     = { id: result.semester_id, name: result.semester_name, start_date: result.semester_start_date, end_date: result.semester_end_date }
+    const subject:  Subject      = { id: result.subject_id, name: result.subject_name, is_favorite: 0 }
+
+    setSelectedYear(year)
+    setSelectedSemester(semester)
+    setSelectedSubject(subject)
+    setSelectedImportedFolder(null)
+    setShowFavorites(false)
+
+    if (result.kind === "virtual" && result.folder_id) {
+      setSelectedFolder({ id: result.folder_id, name: result.folder_name ?? "" })
+      setPendingFileId(result.id)
+      return
+    }
+
+    setSelectedFolder(null)
+    if (result.kind === "virtual") {
+      markFileOpened(result.id)
+      openFile(result.file_path)
+    } else {
+      markImportedFileOpened(result.id)
+      openImportedFile(result.file_path)
+    }
+  }
+
   if (onboarded === null) {
     return (
       <div className="flex h-screen w-screen flex-col items-center justify-center gap-4 bg-background">
@@ -114,6 +143,7 @@ function App() {
           setSelectedFolder(null)
           setSelectedImportedFolder(null)
         }}
+        onSelectSearchResult={handleSelectSearchResult}
       />
       <main className="flex-1 overflow-auto bg-background">
         {showFavorites ? (

@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { FlaskConical, Star } from "lucide-react"
+import type { Step } from "react-joyride"
 import { getFavoriteSubjects, toggleFavoriteSubject } from "@/components/subjects_service/file"
+import { TourGuide } from "@/components/inputs/tour_guide"
+import { HelpButton } from "@/components/inputs/help_button"
 
 interface FavoriteSubject {
   id: number
@@ -33,10 +36,16 @@ const COLORS = [
 export function FavoritesDashboard({ onSelectSubject }: Props) {
   const { t } = useTranslation()
   const [subjects, setSubjects] = useState<FavoriteSubject[]>([])
+  const [runTour, setRunTour] = useState(false)
 
   useEffect(() => {
     getFavoriteSubjects().then(setSubjects)
   }, [])
+
+  const tourSteps: Step[] = [
+    { target: '[data-tour="favorites-header"]', title: t("tour.favorites.header.title"), content: t("tour.favorites.header.content") },
+    ...(subjects.length > 0 ? [{ target: '[data-tour="favorites-list"]', title: t("tour.favorites.list.title"), content: t("tour.favorites.list.content") }] : []),
+  ]
 
   async function handleUnfavorite(e: React.MouseEvent, subject: FavoriteSubject) {
     e.stopPropagation()
@@ -51,15 +60,20 @@ export function FavoritesDashboard({ onSelectSubject }: Props) {
 
   return (
     <div style={{ minHeight: "100vh", padding: "28px 32px", fontFamily: "inherit", maxWidth: 1100, margin: "0 auto" }}>
-      <div style={{ marginBottom: 28 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-          <Star size={20} fill="#f59e0b" color="#f59e0b" />
-          <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0, color: fg }}>{t("favorites.title")}</h1>
+      <div data-tour="favorites-header" style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28 }}>
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+            <Star size={20} fill="#f59e0b" color="#f59e0b" />
+            <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0, color: fg }}>{t("favorites.title")}</h1>
+          </div>
+          <p style={{ color: muted, fontSize: 13, margin: 0 }}>
+            {t("favorites.count", { count: subjects.length })}
+          </p>
         </div>
-        <p style={{ color: muted, fontSize: 13, margin: 0 }}>
-          {t("favorites.count", { count: subjects.length })}
-        </p>
+        <HelpButton onClick={() => setRunTour(true)} />
       </div>
+
+      <TourGuide steps={tourSteps} run={runTour} onFinish={() => setRunTour(false)} />
 
       {subjects.length === 0 ? (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "60px 0" }}>
@@ -68,7 +82,7 @@ export function FavoritesDashboard({ onSelectSubject }: Props) {
           <p style={{ color: muted, fontSize: 13, margin: 0 }}>{t("favorites.emptySubtitle")}</p>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12 }}>
+        <div data-tour="favorites-list" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12 }}>
           {subjects.map((subject, i) => {
             const color = COLORS[i % COLORS.length]
             return (

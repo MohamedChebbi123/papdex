@@ -38,7 +38,9 @@
     "noSemesters": "Aucun semestre",
     "noSubjects": "Aucune matière",
     "noAcademicYears": "Aucune année scolaire pour l'instant",
-    "refresh": "actualiser"
+    "refresh": "actualiser",
+    "searchPlaceholder": "Rechercher des fichiers...",
+    "searchEmpty": "Aucun fichier trouvé"
   },
   "language": {
     "en": "Anglais",
@@ -160,12 +162,16 @@
     "virtualFolder": {
       "actions": { "title": "Gérer ce dossier", "content": "Ajoutez d'autres fichiers, renommez le dossier, ou supprimez-le depuis ici." },
       "filters": { "title": "Filtrer les fichiers", "content": "Affinez la liste par format de fichier ou par la catégorie attribuée à chaque fichier." },
-      "files": { "title": "Fichiers", "content": "Survolez un fichier pour le prévisualiser, l'ouvrir dans son application par défaut, ou le supprimer." }
+      "files": { "title": "Fichiers", "content": "Survolez un fichier pour voir ses actions. L'icône œil ouvre un panneau de prévisualisation redimensionnable, sans quitter cette page ; vous pouvez aussi l'ouvrir dans son application par défaut, ou le supprimer." }
     },
     "importedFolder": {
       "header": { "title": "Dossier importé", "content": "Ceci reflète un dossier de votre ordinateur, indiqué au chemin ci-dessous. Ses fichiers ne sont ni déplacés ni copiés — c'est une vue en direct." },
       "filters": { "title": "Filtrer les fichiers", "content": "Affinez les fichiers du dossier actuel par format." },
-      "files": { "title": "Parcourir les fichiers", "content": "Les sous-dossiers et les fichiers sont listés ensemble. Cliquez sur un sous-dossier pour y accéder, et survolez un fichier pour le prévisualiser ou l'ouvrir." }
+      "files": { "title": "Parcourir les fichiers", "content": "Les sous-dossiers et les fichiers sont listés ensemble. Cliquez sur un sous-dossier pour y accéder. Survolez un fichier et cliquez sur l'icône œil pour le prévisualiser dans un panneau redimensionnable, ou ouvrez-le directement." }
+    },
+    "favorites": {
+      "header": { "title": "Matières favorites", "content": "Les matières marquées d'une étoile apparaissent ici pour un accès rapide, quelle que soit leur année ou leur semestre." },
+      "list": { "title": "Vos favoris", "content": "Cliquez sur une matière pour y accéder directement, ou cliquez à nouveau sur l'étoile pour la retirer de cette liste." }
     }
   },
   "modal": {
