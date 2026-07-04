@@ -18,16 +18,6 @@ export default defineConfig({
       main: {
         // Shortcut of `build.lib.entry`.
         entry: 'electron/main.ts',
-        vite: {
-          build: {
-            // node-llama-cpp is ESM-only and dynamically imports platform-specific
-            // native binary packages (@node-llama-cpp/*) that only exist for the
-            // current OS/arch. Bundling it breaks that resolution, so keep it external.
-            rollupOptions: {
-              external: [/^node-llama-cpp/, /^@node-llama-cpp\//],
-            },
-          },
-        },
       },
       preload: {
         // Shortcut of `build.rollupOptions.input`.

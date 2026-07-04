@@ -3,6 +3,7 @@ import {
   Calendar, ChevronRight, FileText,
   Folder, FolderInput, Pencil, Plus, Star, Trash2,
 } from "lucide-react"
+import type { Step } from "react-joyride"
 import { getSubjectById, toggleFavoriteSubject } from "@/components/subjects_service/file"
 import {
   getVirtualFoldersBySubject,
@@ -12,11 +13,17 @@ import {
   getImportedFoldersBySubject,
   deleteImportedFolder,
   importFolder,
+  getRecentImportedFilesBySubject,
+  openImportedFile,
   type ImportedFolder,
+  type RecentImportedFile,
 } from "@/components/imported_folders_service/file"
+import { getRecentFilesBySubject, openFile, type RecentFile } from "@/components/file_service/file"
 import { VirtualFolderCreation } from "@/components/inputs/virtual_folder_creation"
 import { VirtualFolderUpdate } from "@/components/inputs/virtual_folder_update"
 import { DeleteConfirm } from "@/components/inputs/Delete_confirm"
+import { TourGuide } from "@/components/inputs/tour_guide"
+import { HelpButton } from "@/components/inputs/help_button"
 
 interface VirtualFolder {
   id: number
@@ -49,12 +56,24 @@ interface Props {
   onBackToYear: () => void
   onSelectFolder: (folder: VirtualFolder) => void
   onSelectImportedFolder: (folder: ImportedFolder) => void
+  onOpenFile?: (params: {
+    subject: Subject
+    semester: Semester
+    folder: { id: number; name: string } | null
+    fileId: number
+  }) => void
 }
 
-export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYear, onSelectFolder, onSelectImportedFolder }: Props) {
+type RecentEntry =
+  | { kind: "virtual"; file: RecentFile }
+  | { kind: "imported"; file: RecentImportedFile }
+
+export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYear, onSelectFolder, onSelectImportedFolder, onOpenFile }: Props) {
   const [subject, setSubject] = useState<Subject | null>(null)
   const [folders, setFolders] = useState<VirtualFolder[]>([])
   const [importedFolders, setImportedFolders] = useState<ImportedFolder[]>([])
+  const [recentFiles, setRecentFiles] = useState<RecentFile[]>([])
+  const [recentImported, setRecentImported] = useState<RecentImportedFile[]>([])
   const [createOpen, setCreateOpen] = useState(false)
   const [editingFolder, setEditingFolder] = useState<VirtualFolder | null>(null)
   const [deletingFolder, setDeletingFolder] = useState<VirtualFolder | null>(null)
@@ -62,17 +81,45 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
   const [hoveredId, setHoveredId] = useState<number | null>(null)
   const [hoveredImportedId, setHoveredImportedId] = useState<number | null>(null)
   const [importing, setImporting] = useState(false)
+  const [runTour, setRunTour] = useState(false)
 
   useEffect(() => {
     getSubjectById(subjectId).then(setSubject)
     getVirtualFoldersBySubject(subjectId).then(setFolders)
     getImportedFoldersBySubject(subjectId).then(setImportedFolders)
+    getRecentFilesBySubject(subjectId).then(setRecentFiles)
+    getRecentImportedFilesBySubject(subjectId).then(setRecentImported)
   }, [subjectId])
 
   function refresh() {
     getSubjectById(subjectId).then(setSubject)
     getVirtualFoldersBySubject(subjectId).then(setFolders)
     getImportedFoldersBySubject(subjectId).then(setImportedFolders)
+  }
+
+  const recentEntries: RecentEntry[] = [
+    ...recentFiles.map(file => ({ kind: "virtual" as const, file })),
+    ...recentImported.map(file => ({ kind: "imported" as const, file })),
+  ]
+    .sort((a, b) => new Date(b.file.opened_at).getTime() - new Date(a.file.opened_at).getTime())
+    .slice(0, 6)
+
+  function handleOpenRecentEntry(entry: RecentEntry) {
+    if (entry.kind === "imported") {
+      openImportedFile(entry.file.file_path)
+      return
+    }
+    const file = entry.file
+    if (!subject) return
+    if (file.folder_id) {
+      const folder = folders.find(f => f.id === file.folder_id)
+      if (folder) {
+        onOpenFile?.({ subject, semester, folder, fileId: file.id })
+        return
+      }
+    }
+    onOpenFile?.({ subject, semester, folder: null, fileId: file.id })
+    openFile(file.file_path)
   }
 
   async function handleToggleSubjectFavorite() {
@@ -111,29 +158,41 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
   const card   = "var(--card)"
   const fg     = "var(--foreground)"
 
+  const tourSteps: Step[] = [
+    { target: '[data-tour="subj-actions"]', title: "Add content", content: "Import an existing OS folder to bring in all its files at once, or create a virtual folder to organize files inside the app." },
+    { target: '[data-tour="subj-folders"]', title: "Folders", content: "Virtual folders live inside the app and group related files together. Click one to open it." },
+    { target: '[data-tour="subj-imported"]', title: "Imported folders", content: "Imported folders mirror a real folder on your computer, including its subfolders, without moving or copying any files." },
+    ...(recentEntries.length > 0 ? [{ target: '[data-tour="subj-recent"]', title: "Recently opened", content: "Files you've recently opened in this subject appear here, whether they live in a virtual folder or an imported one." }] : []),
+  ]
+
   return (
     <div style={{ minHeight: "100vh", padding: "28px 32px", fontFamily: "inherit", maxWidth: 1100, margin: "0 auto" }}>
 
       {/* Breadcrumb */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 20, color: muted, fontSize: 12 }}>
-        <Calendar size={13} />
-        <ChevronRight size={13} />
-        <button
-          onClick={onBackToYear}
-          style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}
-        >
-          {year.name}
-        </button>
-        <ChevronRight size={13} />
-        <button
-          onClick={onBack}
-          style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}
-        >
-          {semester.name}
-        </button>
-        <ChevronRight size={13} />
-        <span style={{ color: fg }}>{subject?.name ?? "..."}</span>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, color: muted, fontSize: 12 }}>
+          <Calendar size={13} />
+          <ChevronRight size={13} />
+          <button
+            onClick={onBackToYear}
+            style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}
+          >
+            {year.name}
+          </button>
+          <ChevronRight size={13} />
+          <button
+            onClick={onBack}
+            style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}
+          >
+            {semester.name}
+          </button>
+          <ChevronRight size={13} />
+          <span style={{ color: fg }}>{subject?.name ?? "..."}</span>
+        </div>
+        <HelpButton onClick={() => setRunTour(true)} />
       </div>
+
+      <TourGuide steps={tourSteps} run={runTour} onFinish={() => setRunTour(false)} />
 
       {/* Header */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28 }}>
@@ -155,7 +214,7 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
             {semester.name} · {folders.length} folders · {importedFolders.length} imported
           </p>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div data-tour="subj-actions" style={{ display: "flex", gap: 8 }}>
           <button
             onClick={handleImportFolder}
             disabled={importing}
@@ -197,6 +256,7 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
       </div>
 
       {/* Virtual Folders */}
+      <div data-tour="subj-folders">
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
         <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Folders</span>
       </div>
@@ -257,8 +317,10 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
           ))}
         </div>
       )}
+      </div>
 
       {/* Imported Folders */}
+      <div data-tour="subj-imported">
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
         <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Imported Folders</span>
       </div>
@@ -312,6 +374,48 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
               </p>
             </div>
           ))}
+        </div>
+      )}
+      </div>
+
+      {/* Recently Opened */}
+      {recentEntries.length > 0 && (
+        <div data-tour="subj-recent">
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Recently Opened</span>
+          </div>
+          <div style={{ marginBottom: 28 }}>
+            {recentEntries.map(entry => (
+              <div
+                key={`${entry.kind}-${entry.file.id}`}
+                onClick={() => handleOpenRecentEntry(entry)}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  borderBottom: `1px solid ${border}`, padding: "10px 0", cursor: "pointer",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                  <FileText size={16} color={muted} style={{ flexShrink: 0 }} />
+                  <span style={{ color: fg, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {entry.file.file_name}
+                  </span>
+                </div>
+                <span style={{ color: muted, fontSize: 11, display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+                  {entry.kind === "imported" ? (
+                    <>
+                      <FolderInput size={12} />
+                      {entry.file.folder_name}
+                    </>
+                  ) : (
+                    <>
+                      <Folder size={12} />
+                      {folders.find(f => f.id === entry.file.folder_id)?.name ?? "No folder"}
+                    </>
+                  )}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

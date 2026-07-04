@@ -3,8 +3,11 @@ import {
   Calendar, ChevronRight, FileText,
   Folder, Plus, Star, Trash2, Video,
 } from "lucide-react"
+import type { Step } from "react-joyride"
 import { DeleteConfirm } from "@/components/inputs/Delete_confirm"
 import { SubjectCreation } from "@/components/inputs/subject_creation"
+import { TourGuide } from "@/components/inputs/tour_guide"
+import { HelpButton } from "@/components/inputs/help_button"
 import {
   getSubjectsBySemester,
   toggleFavoriteSubject,
@@ -65,6 +68,7 @@ export function SemesterDashboard({ semester, year, onBack, onSelectSubject, onO
   const [hoveredId, setHoveredId] = useState<number | null>(null)
   const [recentFiles, setRecentFiles] = useState<RecentFile[]>([])
   const [examCount, setExamCount] = useState(0)
+  const [runTour, setRunTour] = useState(false)
 
   useEffect(() => {
     getSubjectsBySemester(semester.id).then(setSubjects)
@@ -110,22 +114,33 @@ export function SemesterDashboard({ semester, year, onBack, onSelectSubject, onO
   const card   = "var(--card)"
   const fg     = "var(--foreground)"
 
+  const tourSteps: Step[] = [
+    { target: '[data-tour="sem-stats"]', title: "Semester stats", content: "Quick counts for this semester: subjects, files indexed, exam-tagged files, and favorites." },
+    { target: '[data-tour="sem-subjects"]', title: "Subjects", content: "Click a subject to browse its folders and files, star the ones you care about, or add a new subject here." },
+    ...(recentFiles.length > 0 ? [{ target: '[data-tour="sem-recent"]', title: "Recently opened", content: "Files you've recently opened anywhere in this semester show up here for quick access." }] : []),
+  ]
+
   return (
     <div style={{ minHeight: "100vh", padding: "28px 32px", fontFamily: "inherit", maxWidth: 1100, margin: "0 auto" }}>
 
       {/* Breadcrumb */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 20, color: muted, fontSize: 12 }}>
-        <Calendar size={13} />
-        <ChevronRight size={13} />
-        <button
-          onClick={onBack}
-          style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}
-        >
-          {year.name}
-        </button>
-        <ChevronRight size={13} />
-        <span style={{ color: fg }}>{semester.name}</span>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, color: muted, fontSize: 12 }}>
+          <Calendar size={13} />
+          <ChevronRight size={13} />
+          <button
+            onClick={onBack}
+            style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}
+          >
+            {year.name}
+          </button>
+          <ChevronRight size={13} />
+          <span style={{ color: fg }}>{semester.name}</span>
+        </div>
+        <HelpButton onClick={() => setRunTour(true)} />
       </div>
+
+      <TourGuide steps={tourSteps} run={runTour} onFinish={() => setRunTour(false)} />
 
       {/* Header */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28 }}>
@@ -157,7 +172,7 @@ export function SemesterDashboard({ semester, year, onBack, onSelectSubject, onO
       </div>
 
       {/* Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 28 }}>
+      <div data-tour="sem-stats" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 28 }}>
         {[
           { value: subjects.length,  label: "Subjects" },
           { value: totalFiles,       label: "Files indexed" },
@@ -172,6 +187,7 @@ export function SemesterDashboard({ semester, year, onBack, onSelectSubject, onO
       </div>
 
       {/* Subjects */}
+      <div data-tour="sem-subjects">
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
         <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Subjects</span>
       </div>
@@ -236,10 +252,11 @@ export function SemesterDashboard({ semester, year, onBack, onSelectSubject, onO
           })}
         </div>
       )}
+      </div>
 
       {/* Recent files */}
       {recentFiles.length > 0 && (
-        <>
+        <div data-tour="sem-recent">
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
             <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Recently Opened</span>
           </div>
@@ -261,7 +278,7 @@ export function SemesterDashboard({ semester, year, onBack, onSelectSubject, onO
               </div>
             ))}
           </div>
-        </>
+        </div>
       )}
 
       <SubjectCreation

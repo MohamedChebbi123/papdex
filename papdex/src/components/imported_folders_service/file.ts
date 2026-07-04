@@ -47,3 +47,16 @@ export async function openImportedFile(file_path: string): Promise<void> {
 export async function readImportedFileBuffer(file_path: string): Promise<Uint8Array> {
   return await window.ipcRenderer.invoke('importedFolders:readBuffer', file_path)
 }
+
+export interface RecentImportedFile extends ImportedFolderFile {
+  folder_name: string
+  opened_at: string
+}
+
+export async function markImportedFileOpened(file_id: number): Promise<void> {
+  await window.ipcRenderer.invoke('importedFolders:markOpened', file_id)
+}
+
+export async function getRecentImportedFilesBySubject(subject_id: number, limit = 5): Promise<RecentImportedFile[]> {
+  return await window.ipcRenderer.invoke('importedFolders:getRecentBySubject', subject_id, limit)
+}

@@ -105,6 +105,29 @@ function read_imported_file_buffer() {
     })
 }
 
+function mark_imported_file_opened() {
+    ipcMain.handle("importedFolders:markOpened", (_event, file_id: number) => {
+        database.prepare(`
+            INSERT INTO imported_file_opens (file_id, opened_at) VALUES (?, datetime('now'))
+            ON CONFLICT(file_id) DO UPDATE SET opened_at = datetime('now')
+        `).run(file_id)
+    })
+}
+
+function fetch_recent_imported_files_by_subject() {
+    ipcMain.handle("importedFolders:getRecentBySubject", (_event, subject_id: number, limit: number) => {
+        return database.prepare(`
+            SELECT iff.*, imf.name AS folder_name, io.opened_at
+            FROM imported_file_opens io
+            JOIN imported_folder_files iff ON iff.id = io.file_id
+            JOIN imported_folders imf ON imf.id = iff.imported_folder_id
+            WHERE imf.subject_id = ?
+            ORDER BY io.opened_at DESC
+            LIMIT ?
+        `).all(subject_id, limit)
+    })
+}
+
 export function imported_folder_handlers() {
     import_folder()
     fetch_imported_folders_by_subject()
@@ -113,4 +136,6 @@ export function imported_folder_handlers() {
     delete_imported_folder()
     open_imported_file()
     read_imported_file_buffer()
+    mark_imported_file_opened()
+    fetch_recent_imported_files_by_subject()
 }

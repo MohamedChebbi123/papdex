@@ -3,17 +3,21 @@ import {
   Calendar, ChevronRight, ExternalLink, Eye, File, FileText, Folder,
   FolderInput, Image, Trash2, Video,
 } from "lucide-react"
+import type { Step } from "react-joyride"
 import { Group, Panel, Separator } from "react-resizable-panels"
 import {
   getImportedFolderById,
   getImportedFolderFiles,
   deleteImportedFolder,
   openImportedFile,
+  markImportedFileOpened,
   type ImportedFolder,
   type ImportedFolderFile,
 } from "@/components/imported_folders_service/file"
 import { DeleteConfirm } from "@/components/inputs/Delete_confirm"
 import { FilePreviewPanel, canPreview } from "@/components/inputs/file_preview_modal"
+import { TourGuide } from "@/components/inputs/tour_guide"
+import { HelpButton } from "@/components/inputs/help_button"
 import type { AppFile } from "@/components/file_service/file"
 
 interface Subject {
@@ -105,6 +109,7 @@ export function ImportedFolderDashboard({
   const [previewFile, setPreviewFile] = useState<AppFile | null>(null)
   const [extFilter, setExtFilter] = useState<string>("all")
   const [currentPath, setCurrentPath] = useState<string>("")
+  const [runTour, setRunTour] = useState(false)
 
   useEffect(() => {
     getImportedFolderById(folderId).then(setFolder)
@@ -137,30 +142,41 @@ export function ImportedFolderDashboard({
   const pathSegments = currentPath ? currentPath.split("/") : []
   const isEmptyDir = childFolders.length === 0 && childFiles.length === 0
 
+  const tourSteps: Step[] = [
+    { target: '[data-tour="if-header"]', title: "Imported folder", content: "This mirrors a folder on your computer, shown at the path below. Its files aren't moved or copied — this is just a live view." },
+    ...(allExts.length > 0 ? [{ target: '[data-tour="if-filters"]', title: "Filter files", content: "Narrow the current folder's files down by format." }] : []),
+    { target: '[data-tour="if-files"]', title: "Browse files", content: "Subfolders and files are listed together. Click a subfolder to navigate into it, and hover a file to preview or open it." },
+  ]
+
   const dashboardContent = (
     <div style={{ padding: "28px 32px", fontFamily: "inherit", minHeight: "100%" }}>
 
       {/* Breadcrumb */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 20, color: muted, fontSize: 12 }}>
-        <Calendar size={13} />
-        <ChevronRight size={13} />
-        <button onClick={onBackToYear} style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}>
-          {year.name}
-        </button>
-        <ChevronRight size={13} />
-        <button onClick={onBackToSemester} style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}>
-          {semester.name}
-        </button>
-        <ChevronRight size={13} />
-        <button onClick={onBack} style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}>
-          {subject.name}
-        </button>
-        <ChevronRight size={13} />
-        <span style={{ color: fg }}>{folder?.name ?? "..."}</span>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, color: muted, fontSize: 12 }}>
+          <Calendar size={13} />
+          <ChevronRight size={13} />
+          <button onClick={onBackToYear} style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}>
+            {year.name}
+          </button>
+          <ChevronRight size={13} />
+          <button onClick={onBackToSemester} style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}>
+            {semester.name}
+          </button>
+          <ChevronRight size={13} />
+          <button onClick={onBack} style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}>
+            {subject.name}
+          </button>
+          <ChevronRight size={13} />
+          <span style={{ color: fg }}>{folder?.name ?? "..."}</span>
+        </div>
+        <HelpButton onClick={() => setRunTour(true)} />
       </div>
 
+      <TourGuide steps={tourSteps} run={runTour} onFinish={() => setRunTour(false)} />
+
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28 }}>
+      <div data-tour="if-header" style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28 }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
             <FolderInput size={22} color={muted} />
@@ -237,7 +253,7 @@ export function ImportedFolderDashboard({
 
       {/* Filter chips */}
       {allExts.length > 0 && (
-        <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
+        <div data-tour="if-filters" style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
           <span style={{ color: muted, fontSize: 10, minWidth: 52 }}>Format</span>
           {["all", ...allExts].map(ext => (
             <button
@@ -257,6 +273,7 @@ export function ImportedFolderDashboard({
         </div>
       )}
 
+      <div data-tour="if-files">
       {files.length === 0 ? (
         <div style={{
           display: "flex", flexDirection: "column", alignItems: "center",
@@ -331,14 +348,17 @@ export function ImportedFolderDashboard({
                     <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                       {canPreview(appFile) && (
                         <button
-                          onClick={() => setPreviewFile(prev => prev?.id === file.id ? null : appFile)}
+                          onClick={() => {
+                            setPreviewFile(prev => prev?.id === file.id ? null : appFile)
+                            if (previewFile?.id !== file.id) markImportedFileOpened(file.id)
+                          }}
                           style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex", borderRadius: 6 }}
                         >
                           <Eye size={13} color={previewFile?.id === file.id ? "var(--primary)" : muted} />
                         </button>
                       )}
                       <button
-                        onClick={() => openImportedFile(file.file_path)}
+                        onClick={() => { openImportedFile(file.file_path); markImportedFileOpened(file.id) }}
                         style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex", borderRadius: 6 }}
                       >
                         <ExternalLink size={13} color={muted} />
@@ -353,6 +373,7 @@ export function ImportedFolderDashboard({
           })}
         </div>
       )}
+      </div>
     </div>
   )
 

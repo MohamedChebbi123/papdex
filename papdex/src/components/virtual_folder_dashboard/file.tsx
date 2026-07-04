@@ -3,6 +3,7 @@ import {
   Calendar, ChevronRight, ExternalLink, Eye, File, FileText,
   Folder, Image, Pencil, Plus, Trash2, Video,
 } from "lucide-react"
+import type { Step } from "react-joyride"
 import { Group, Panel, Separator } from "react-resizable-panels"
 import {
   getVirtualFolderById,
@@ -19,6 +20,8 @@ import { VirtualFolderUpdate } from "@/components/inputs/virtual_folder_update"
 import { DeleteConfirm } from "@/components/inputs/Delete_confirm"
 import { FileCreationInput } from "@/components/inputs/file_creation_input"
 import { FilePreviewPanel, canPreview } from "@/components/inputs/file_preview_modal"
+import { TourGuide } from "@/components/inputs/tour_guide"
+import { HelpButton } from "@/components/inputs/help_button"
 
 const CATEGORY_COLORS: Record<string, { bg: string; text: string; border: string }> = {
   Summary:  { bg: "#14532d", text: "#4ade80", border: "#166534" },
@@ -112,6 +115,7 @@ export function VirtualFolderDashboard({
   const [previewFile, setPreviewFile] = useState<AppFile | null>(null)
   const [extFilter, setExtFilter]           = useState<string>("all")
   const [categoryFilter, setCategoryFilter] = useState<string>("all")
+  const [runTour, setRunTour] = useState(false)
 
   useEffect(() => {
     getVirtualFolderById(folderId).then(setFolder)
@@ -160,27 +164,38 @@ export function VirtualFolderDashboard({
     return true
   })
 
+  const tourSteps: Step[] = [
+    { target: '[data-tour="vf-actions"]', title: "Manage this folder", content: "Add more files, rename the folder, or delete it from here." },
+    ...(files.length > 0 ? [{ target: '[data-tour="vf-filters"]', title: "Filter files", content: "Narrow the list down by file format or by the category tag assigned to each file." }] : []),
+    { target: '[data-tour="vf-files"]', title: "Files", content: "Hover a file to preview it, open it in its default app, or delete it." },
+  ]
+
   const dashboardContent = (
     <div style={{ padding: "28px 32px", fontFamily: "inherit", minHeight: "100%" }}>
 
       {/* Breadcrumb */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 20, color: muted, fontSize: 12 }}>
-        <Calendar size={13} />
-        <ChevronRight size={13} />
-        <button onClick={onBackToYear} style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}>
-          {year.name}
-        </button>
-        <ChevronRight size={13} />
-        <button onClick={onBackToSemester} style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}>
-          {semester.name}
-        </button>
-        <ChevronRight size={13} />
-        <button onClick={onBack} style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}>
-          {subject.name}
-        </button>
-        <ChevronRight size={13} />
-        <span style={{ color: fg }}>{folder?.name ?? "..."}</span>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, color: muted, fontSize: 12 }}>
+          <Calendar size={13} />
+          <ChevronRight size={13} />
+          <button onClick={onBackToYear} style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}>
+            {year.name}
+          </button>
+          <ChevronRight size={13} />
+          <button onClick={onBackToSemester} style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}>
+            {semester.name}
+          </button>
+          <ChevronRight size={13} />
+          <button onClick={onBack} style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}>
+            {subject.name}
+          </button>
+          <ChevronRight size={13} />
+          <span style={{ color: fg }}>{folder?.name ?? "..."}</span>
+        </div>
+        <HelpButton onClick={() => setRunTour(true)} />
       </div>
+
+      <TourGuide steps={tourSteps} run={runTour} onFinish={() => setRunTour(false)} />
 
       {/* Header */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28 }}>
@@ -196,7 +211,7 @@ export function VirtualFolderDashboard({
           </p>
         </div>
 
-        <div style={{ display: "flex", gap: 8 }}>
+        <div data-tour="vf-actions" style={{ display: "flex", gap: 8 }}>
           <button
             onClick={() => setAddFileOpen(true)}
             style={{
@@ -251,7 +266,7 @@ export function VirtualFolderDashboard({
 
       {/* Filter chips */}
       {files.length > 0 && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
+        <div data-tour="vf-filters" style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
           {/* Extension row */}
           {allExts.length > 0 && (
             <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
@@ -301,6 +316,7 @@ export function VirtualFolderDashboard({
         </div>
       )}
 
+      <div data-tour="vf-files">
       {files.length === 0 ? (
         <div
           onClick={() => setAddFileOpen(true)}
@@ -383,6 +399,7 @@ export function VirtualFolderDashboard({
           ))}
         </div>
       )}
+      </div>
     </div>
   )
 

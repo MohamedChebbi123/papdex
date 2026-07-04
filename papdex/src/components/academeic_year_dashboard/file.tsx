@@ -3,9 +3,12 @@ import {
   Calendar, ChevronRight, Plus, Star, FileText,
   Video, Pencil, Folder, BookOpen, Trash2,
 } from "lucide-react"
+import type { Step } from "react-joyride"
 import { SemesterCreation } from "@/components/inputs/Semester_creation"
 import { SemesterUpdate } from "@/components/inputs/Semester_update"
 import { DeleteConfirm } from "@/components/inputs/Delete_confirm"
+import { TourGuide } from "@/components/inputs/tour_guide"
+import { HelpButton } from "@/components/inputs/help_button"
 import { getSemestersByYear, deleteSemester } from "@/components/semester_service/file"
 import { getSubjectsByYear, toggleFavoriteSubject } from "@/components/subjects_service/file"
 import { getRecentFilesByYear, openFile, type RecentFile } from "@/components/file_service/file"
@@ -52,6 +55,7 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
   const [editingSemester, setEditingSemester] = useState<any | null>(null)
   const [deletingSemester, setDeletingSemester] = useState<any | null>(null)
   const [hoveredSemId, setHoveredSemId] = useState<number | null>(null)
+  const [runTour, setRunTour] = useState(false)
 
   useEffect(() => {
     if (!year) return
@@ -124,18 +128,30 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
   const yearStatus = year ? getStatus(year.start_date, year.end_date) : null
   const yearStatusLabel = yearStatus === "active" ? "Active year" : yearStatus === "upcoming" ? "Upcoming year" : "Past year"
 
+  const tourSteps: Step[] = [
+    { target: '[data-tour="year-hero"]', title: "Your academic year", content: "This shows the selected year's date range and quick stats: semesters, subjects, files indexed, and favorites." },
+    { target: '[data-tour="year-semesters"]', title: "Semesters", content: "Semesters break your year into terms. Click one to open it, or add a new semester here." },
+    { target: '[data-tour="year-subjects"]', title: "Subjects", content: "Every subject across this year's semesters shows up here. Click one to browse its folders and files, and star the ones you use often." },
+    ...(recentFiles.length > 0 ? [{ target: '[data-tour="year-recent"]', title: "Recently opened", content: "Files you've recently opened anywhere in this year appear here for quick access." }] : []),
+  ]
+
   return (
     <div style={{ minHeight: "100vh", padding: "28px 32px", fontFamily: "inherit", maxWidth: 1100, margin: "0 auto" }}>
 
       {/* Breadcrumb */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 20, color: muted, fontSize: 12 }}>
-        <Calendar size={13} />
-        <ChevronRight size={13} />
-        <span>{year?.name ?? "—"}</span>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, color: muted, fontSize: 12 }}>
+          <Calendar size={13} />
+          <ChevronRight size={13} />
+          <span>{year?.name ?? "—"}</span>
+        </div>
+        <HelpButton onClick={() => setRunTour(true)} />
       </div>
 
+      <TourGuide steps={tourSteps} run={runTour} onFinish={() => setRunTour(false)} />
+
       {/* Hero */}
-      <div style={{
+      <div data-tour="year-hero" style={{
         background: "linear-gradient(120deg, rgba(59,130,246,0.16) 0%, rgba(99,102,241,0.08) 100%)",
         border: "1px solid rgba(59,130,246,0.25)",
         borderRadius: 14, padding: "20px 24px", marginBottom: 28,
@@ -165,6 +181,7 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
       </div>
 
       {/* ── Semesters section ── */}
+      <div data-tour="year-semesters">
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
         <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Semesters</span>
       </div>
@@ -268,8 +285,10 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
           </div>
         </div>
       )}
+      </div>
 
       {/* Subjects section */}
+      <div data-tour="year-subjects">
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
         <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Subjects</span>
       </div>
@@ -310,10 +329,11 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
           })}
         </div>
       )}
+      </div>
 
       {/* Recent files */}
       {recentFiles.length > 0 && (
-        <>
+        <div data-tour="year-recent">
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
             <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Recently Opened</span>
           </div>
@@ -335,7 +355,7 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
               </div>
             ))}
           </div>
-        </>
+        </div>
       )}
 
       <SemesterCreation

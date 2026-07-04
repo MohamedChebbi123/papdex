@@ -82,6 +82,11 @@ database.exec(`
         relative_path      TEXT NOT NULL,
         created_at         TEXT NOT NULL DEFAULT (datetime('now'))
     );
+
+    CREATE TABLE IF NOT EXISTS imported_file_opens (
+        file_id     INTEGER PRIMARY KEY REFERENCES imported_folder_files(id) ON DELETE CASCADE,
+        opened_at   TEXT NOT NULL DEFAULT (datetime('now'))
+    );
 `)
 
 database.prepare("INSERT OR IGNORE INTO user (id) VALUES (1)").run()

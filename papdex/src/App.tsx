@@ -149,6 +149,7 @@ function App() {
             onBackToYear={() => { setSelectedSemester(null); setSelectedSubject(null) }}
             onSelectFolder={setSelectedFolder}
             onSelectImportedFolder={setSelectedImportedFolder}
+            onOpenFile={handleOpenRecentFile}
           />
         ) : selectedSemester && selectedYear ? (
           <SemesterDashboard
