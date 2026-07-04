@@ -18,6 +18,7 @@ export interface ImportedFolderFile {
   file_size: number | null
   relative_path: string
   created_at: string
+  exists: boolean
 }
 
 export async function importFolder(subject_id: number): Promise<ImportedFolder | null> {

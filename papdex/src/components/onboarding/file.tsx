@@ -1,26 +1,9 @@
-import { useState, useCallback, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
-import Cropper from "react-easy-crop"
-import { UserRound, Sun, Moon, ImagePlus, ArrowRight, ArrowLeft, Check, ZoomIn, ZoomOut } from "lucide-react"
+import { UserRound, Sun, Moon, ImagePlus, ArrowRight, ArrowLeft } from "lucide-react"
 import { updateUser, pickAvatar } from "@/components/user_service/file"
+import { AvatarCropper } from "@/components/inputs/avatar_cropper"
 import { RTL_LANGUAGES } from "@/i18n"
-
-type Area = { x: number; y: number; width: number; height: number }
-
-async function cropImageToDataUrl(imageSrc: string, pixelCrop: Area): Promise<string> {
-  const image = await new Promise<HTMLImageElement>((resolve, reject) => {
-    const img = new Image()
-    img.onload = () => resolve(img)
-    img.onerror = reject
-    img.src = imageSrc
-  })
-  const canvas = document.createElement("canvas")
-  canvas.width  = pixelCrop.width
-  canvas.height = pixelCrop.height
-  const ctx = canvas.getContext("2d")!
-  ctx.drawImage(image, pixelCrop.x, pixelCrop.y, pixelCrop.width, pixelCrop.height, 0, 0, pixelCrop.width, pixelCrop.height)
-  return canvas.toDataURL("image/jpeg", 0.9)
-}
 
 interface Props {
   onDone: () => void
@@ -35,9 +18,6 @@ export function Onboarding({ onDone }: Props) {
   const [rawSrc, setRawSrc]             = useState<string | null>(null)
   const [croppedDataUrl, setCroppedDataUrl] = useState<string | null>(null)
   const [showCropper, setShowCropper]   = useState(false)
-  const [crop, setCrop]                 = useState({ x: 0, y: 0 })
-  const [zoom, setZoom]                 = useState(1)
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null)
   const [loading, setLoading]           = useState(false)
 
   // Apply theme in real-time as user toggles
@@ -56,18 +36,10 @@ export function Onboarding({ onDone }: Props) {
     const dataUrl = await pickAvatar()
     if (!dataUrl) return
     setRawSrc(dataUrl)
-    setCrop({ x: 0, y: 0 })
-    setZoom(1)
     setShowCropper(true)
   }
 
-  const onCropComplete = useCallback((_: Area, pixels: Area) => {
-    setCroppedAreaPixels(pixels)
-  }, [])
-
-  async function handleCropConfirm() {
-    if (!rawSrc || !croppedAreaPixels) return
-    const dataUrl = await cropImageToDataUrl(rawSrc, croppedAreaPixels)
+  function handleCropConfirm(dataUrl: string) {
     setCroppedDataUrl(dataUrl)
     setShowCropper(false)
   }
@@ -97,65 +69,11 @@ export function Onboarding({ onDone }: Props) {
   // ── Cropper overlay ──────────────────────────────────────────────────────
   if (showCropper && rawSrc) {
     return (
-      <div style={{ position: "fixed", inset: 0, background: "#000", zIndex: 100, display: "flex", flexDirection: "column" }}>
-        <div style={{ flex: 1, position: "relative" }}>
-          <Cropper
-            image={rawSrc}
-            crop={crop}
-            zoom={zoom}
-            aspect={1}
-            cropShape="round"
-            showGrid={false}
-            onCropChange={setCrop}
-            onZoomChange={setZoom}
-            onCropComplete={onCropComplete}
-          />
-        </div>
-        {/* Zoom controls */}
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "center", gap: 12,
-          padding: "16px 24px", background: "#111",
-        }}>
-          <button
-            type="button"
-            onClick={() => setZoom(z => Math.max(1, z - 0.1))}
-            style={{ background: "#222", border: "1px solid #333", borderRadius: 8, padding: 8, cursor: "pointer", display: "flex", color: "#fff" }}
-          >
-            <ZoomOut size={16} />
-          </button>
-          <input
-            type="range" min={1} max={3} step={0.01}
-            value={zoom}
-            onChange={e => setZoom(Number(e.target.value))}
-            style={{ width: 160, accentColor: "#4ade80" }}
-          />
-          <button
-            type="button"
-            onClick={() => setZoom(z => Math.min(3, z + 0.1))}
-            style={{ background: "#222", border: "1px solid #333", borderRadius: 8, padding: 8, cursor: "pointer", display: "flex", color: "#fff" }}
-          >
-            <ZoomIn size={16} />
-          </button>
-          <button
-            type="button"
-            onClick={handleCropCancel}
-            style={{ marginInlineStart: 16, background: "#222", border: "1px solid #333", borderRadius: 8, padding: "8px 18px", cursor: "pointer", color: "#aaa", fontSize: 13 }}
-          >
-            {t("common.cancel")}
-          </button>
-          <button
-            type="button"
-            onClick={handleCropConfirm}
-            style={{
-              background: "#166534", border: "1px solid #4ade80", borderRadius: 8,
-              padding: "8px 20px", cursor: "pointer", color: "#4ade80",
-              fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6,
-            }}
-          >
-            <Check size={14} /> {t("onboarding.apply")}
-          </button>
-        </div>
-      </div>
+      <AvatarCropper
+        imageSrc={rawSrc}
+        onCancel={handleCropCancel}
+        onConfirm={handleCropConfirm}
+      />
     )
   }
 

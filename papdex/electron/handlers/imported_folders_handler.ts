@@ -79,9 +79,10 @@ function fetch_imported_folder_by_id() {
 
 function fetch_imported_folder_files() {
     ipcMain.handle("importedFolders:getFiles", (_event, imported_folder_id: number) => {
-        return database.prepare(
+        const rows = database.prepare(
             "SELECT * FROM imported_folder_files WHERE imported_folder_id = ? ORDER BY relative_path ASC"
-        ).all(imported_folder_id)
+        ).all(imported_folder_id) as { file_path: string }[]
+        return rows.map(row => ({ ...row, exists: fs.existsSync(row.file_path) }))
     })
 }
 
@@ -116,7 +117,7 @@ function mark_imported_file_opened() {
 
 function fetch_recent_imported_files_by_subject() {
     ipcMain.handle("importedFolders:getRecentBySubject", (_event, subject_id: number, limit: number) => {
-        return database.prepare(`
+        const rows = database.prepare(`
             SELECT iff.*, imf.name AS folder_name, io.opened_at
             FROM imported_file_opens io
             JOIN imported_folder_files iff ON iff.id = io.file_id
@@ -124,7 +125,8 @@ function fetch_recent_imported_files_by_subject() {
             WHERE imf.subject_id = ?
             ORDER BY io.opened_at DESC
             LIMIT ?
-        `).all(subject_id, limit)
+        `).all(subject_id, limit) as { file_path: string }[]
+        return rows.map(row => ({ ...row, exists: fs.existsSync(row.file_path) }))
     })
 }
 

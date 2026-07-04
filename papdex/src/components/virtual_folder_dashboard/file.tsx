@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import {
-  Calendar, ChevronLeft, ChevronRight, ExternalLink, Eye, File, FileText,
+  AlertTriangle, Calendar, ChevronLeft, ChevronRight, ExternalLink, Eye, File, FileText,
   Folder, FolderInput, Image, Pencil, Plus, Tag, Trash2, Video, X,
 } from "lucide-react"
 import type { Step } from "react-joyride"
@@ -144,6 +144,10 @@ export function VirtualFolderDashboard({
     if (initialFileId == null) return
     const file = files.find(f => f.id === initialFileId)
     if (!file) return
+    if (!file.exists) {
+      onInitialFileHandled?.()
+      return
+    }
     if (canPreview(file)) {
       setPreviewFile(file)
       markFileOpened(file.id)
@@ -476,6 +480,20 @@ export function VirtualFolderDashboard({
                 <span style={{ color: fg, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {file.file_name}
                 </span>
+                {!file.exists && (
+                  <span
+                    title={t("common.fileMissingTooltip")}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 4, flexShrink: 0,
+                      color: "#ef4444", fontSize: 10, fontWeight: 500,
+                      background: "rgba(239, 68, 68, 0.1)", border: "1px solid #ef4444",
+                      borderRadius: 6, padding: "2px 6px",
+                    }}
+                  >
+                    <AlertTriangle size={10} />
+                    {t("common.fileMissing")}
+                  </span>
+                )}
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
                 {file.file_type
@@ -487,7 +505,7 @@ export function VirtualFolderDashboard({
                 </span>
                 {hoveredFileId === file.id ? (
                   <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                    {canPreview(file) && (
+                    {canPreview(file) && file.exists && (
                       <button
                         onClick={() => {
                           setPreviewFile(prev => prev?.id === file.id ? null : file)
@@ -499,8 +517,13 @@ export function VirtualFolderDashboard({
                       </button>
                     )}
                     <button
-                      onClick={() => { openFile(file.file_path); markFileOpened(file.id) }}
-                      style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex", borderRadius: 6 }}
+                      onClick={() => { if (!file.exists) return; openFile(file.file_path); markFileOpened(file.id) }}
+                      disabled={!file.exists}
+                      title={!file.exists ? t("common.fileMissingTooltip") : undefined}
+                      style={{
+                        background: "none", border: "none", padding: 4, display: "flex", borderRadius: 6,
+                        cursor: file.exists ? "pointer" : "not-allowed", opacity: file.exists ? 1 : 0.4,
+                      }}
                     >
                       <ExternalLink size={13} color={muted} />
                     </button>
@@ -560,7 +583,7 @@ export function VirtualFolderDashboard({
         onOpenChange={setAddFileOpen}
         subjectId={subject.id}
         folderId={folderId}
-        onCreated={file => setFiles(prev => [{ ...file, subject_id: subject.id, folder_id: folderId, created_at: "", updated_at: "" }, ...prev])}
+        onCreated={file => setFiles(prev => [{ ...file, subject_id: subject.id, folder_id: folderId, created_at: "", updated_at: "", exists: true }, ...prev])}
       />
       <VirtualFolderUpdate
         open={renameOpen}

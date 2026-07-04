@@ -9,6 +9,7 @@
     "save": "Save",
     "saving": "Saving...",
     "delete": "Delete",
+    "deleting": "Deleting…",
     "rename": "Rename",
     "noFolder": "No folder",
     "loading": "Loading…",
@@ -24,7 +25,9 @@
     "folderCount_one": "{{count}} folder",
     "folderCount_other": "{{count}} folders",
     "subjectCount_one": "{{count}} subject",
-    "subjectCount_other": "{{count}} subjects"
+    "subjectCount_other": "{{count}} subjects",
+    "fileMissing": "Missing",
+    "fileMissingTooltip": "This file could not be found on disk. It may have been moved, renamed, or deleted outside Papdex."
   },
   "app": {
     "noYearTitle": "No academic year selected",
@@ -34,6 +37,7 @@
   "sidebar": {
     "home": "Home",
     "favorites": "Favorites",
+    "settings": "Settings",
     "academicYears": "Academic Years",
     "noSemesters": "No semesters",
     "noSubjects": "No subjects",
@@ -225,6 +229,22 @@
       "description_one": "Choose a category to assign to {{count}} file.",
       "description_other": "Choose a category to assign to {{count}} files."
     }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your profile and appearance preferences.",
+    "profileSection": "Profile",
+    "changePhoto": "Change photo",
+    "removePhoto": "Remove photo",
+    "appearanceSection": "Appearance",
+    "theme": "Theme",
+    "language": "Language",
+    "dark": "Dark",
+    "light": "Light",
+    "dangerZoneSection": "Danger Zone",
+    "deleteAllData": "Delete all data",
+    "deleteAllDataDescription": "Permanently delete all academic years, semesters, subjects, folders, and file records. Your profile and preferences are kept, and files on disk are not touched. This cannot be undone.",
+    "deleteAllDataLabel": "all your data"
   },
   "filePreview": {
     "highlighting": "Highlighting…",

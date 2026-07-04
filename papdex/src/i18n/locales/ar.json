@@ -9,6 +9,7 @@
     "save": "حفظ",
     "saving": "جارٍ الحفظ...",
     "delete": "حذف",
+    "deleting": "جارٍ الحذف…",
     "rename": "إعادة تسمية",
     "noFolder": "بدون مجلد",
     "loading": "جارٍ التحميل…",
@@ -36,7 +37,9 @@
     "subjectCount_two": "مادتان",
     "subjectCount_few": "{{count}} مواد",
     "subjectCount_many": "{{count}} مادة",
-    "subjectCount_other": "{{count}} مادة"
+    "subjectCount_other": "{{count}} مادة",
+    "fileMissing": "مفقود",
+    "fileMissingTooltip": "تعذّر العثور على هذا الملف على القرص. ربما تم نقله أو إعادة تسميته أو حذفه خارج Papdex."
   },
   "app": {
     "noYearTitle": "لم يتم اختيار سنة دراسية",
@@ -46,6 +49,7 @@
   "sidebar": {
     "home": "الرئيسية",
     "favorites": "المفضلة",
+    "settings": "الإعدادات",
     "academicYears": "السنوات الدراسية",
     "noSemesters": "لا توجد سداسيات",
     "noSubjects": "لا توجد مواد",
@@ -253,6 +257,22 @@
       "description_many": "اختر فئة لتعيينها لـ {{count}} ملفًا.",
       "description_other": "اختر فئة لتعيينها لـ {{count}} ملف."
     }
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "subtitle": "أدر ملفك الشخصي وتفضيلات المظهر.",
+    "profileSection": "الملف الشخصي",
+    "changePhoto": "تغيير الصورة",
+    "removePhoto": "إزالة الصورة",
+    "appearanceSection": "المظهر",
+    "theme": "المظهر",
+    "language": "اللغة",
+    "dark": "داكن",
+    "light": "فاتح",
+    "dangerZoneSection": "منطقة الخطر",
+    "deleteAllData": "حذف جميع البيانات",
+    "deleteAllDataDescription": "يحذف نهائيًا جميع السنوات الدراسية والسداسيات والمواد والمجلدات وسجلات الملفات. يتم الاحتفاظ بملفك الشخصي وتفضيلاتك، ولا يتم المساس بالملفات الموجودة على القرص. لا يمكن التراجع عن هذا الإجراء.",
+    "deleteAllDataLabel": "جميع بياناتك"
   },
   "filePreview": {
     "highlighting": "جارٍ تلوين الشيفرة…",

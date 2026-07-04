@@ -10,6 +10,7 @@ import { SubjectDashboard } from "@/components/subject_dashboard/file"
 import { VirtualFolderDashboard } from "@/components/virtual_folder_dashboard/file"
 import { ImportedFolderDashboard } from "@/components/imported_folder_dashboard/file"
 import { FavoritesDashboard } from "@/components/favorites_dashboard/file"
+import { SettingsDashboard } from "@/components/settings_dashboard/file"
 import { Onboarding } from "@/components/onboarding/file"
 import { getUser } from "@/components/user_service/file"
 import { openFile, markFileOpened, type SearchResult } from "@/components/file_service/file"
@@ -38,6 +39,7 @@ function App() {
   const [selectedFolder,         setSelectedFolder]         = useState<Folder | null>(null)
   const [selectedImportedFolder, setSelectedImportedFolder] = useState<ImportedFolder | null>(null)
   const [showFavorites,          setShowFavorites]          = useState(false)
+  const [showSettings,           setShowSettings]           = useState(false)
   const [pendingFileId,          setPendingFileId]          = useState<number | null>(null)
   const sidebarRef = useRef<AppSidebarHandle>(null)
 
@@ -62,6 +64,7 @@ function App() {
     setSelectedFolder(null)
     setSelectedImportedFolder(null)
     setShowFavorites(false)
+    setShowSettings(false)
   }
 
   function handleSelectSemester(year: AcademicYear, semester: Semester) {
@@ -71,6 +74,7 @@ function App() {
     setSelectedFolder(null)
     setSelectedImportedFolder(null)
     setShowFavorites(false)
+    setShowSettings(false)
   }
 
   function handleSelectSubject(year: AcademicYear, semester: Semester, subject: Subject) {
@@ -80,6 +84,7 @@ function App() {
     setSelectedFolder(null)
     setSelectedImportedFolder(null)
     setShowFavorites(false)
+    setShowSettings(false)
   }
 
   function handleOpenRecentFile({ subject, semester, folder, fileId }: RecentFileNav) {
@@ -88,6 +93,7 @@ function App() {
     setSelectedFolder(folder)
     setSelectedImportedFolder(null)
     setShowFavorites(false)
+    setShowSettings(false)
     setPendingFileId(folder ? fileId : null)
   }
 
@@ -101,6 +107,7 @@ function App() {
     setSelectedSubject(subject)
     setSelectedImportedFolder(null)
     setShowFavorites(false)
+    setShowSettings(false)
 
     if (result.kind === "virtual" && result.folder_id) {
       setSelectedFolder({ id: result.folder_id, name: result.folder_name ?? "" })
@@ -137,6 +144,16 @@ function App() {
         onSelectSubject={handleSelectSubject}
         onShowFavorites={() => {
           setShowFavorites(true)
+          setShowSettings(false)
+          setSelectedYear(null)
+          setSelectedSemester(null)
+          setSelectedSubject(null)
+          setSelectedFolder(null)
+          setSelectedImportedFolder(null)
+        }}
+        onShowSettings={() => {
+          setShowSettings(true)
+          setShowFavorites(false)
           setSelectedYear(null)
           setSelectedSemester(null)
           setSelectedSubject(null)
@@ -146,7 +163,9 @@ function App() {
         onSelectSearchResult={handleSelectSearchResult}
       />
       <main className="flex-1 overflow-auto bg-background">
-        {showFavorites ? (
+        {showSettings ? (
+          <SettingsDashboard />
+        ) : showFavorites ? (
           <FavoritesDashboard
             onSelectSubject={(subject, semester, year) => {
               setSelectedYear(year)

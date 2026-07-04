@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import {
-  Calendar, ChevronLeft, ChevronRight, ExternalLink, Eye, File, FileText, Folder,
+  AlertTriangle, Calendar, ChevronLeft, ChevronRight, ExternalLink, Eye, File, FileText, Folder,
   FolderInput, Image, Trash2, Video,
 } from "lucide-react"
 import type { Step } from "react-joyride"
@@ -97,6 +97,7 @@ function toAppFile(f: ImportedFolderFile): AppFile {
     file_size:  f.file_size,
     created_at: f.created_at,
     updated_at: f.created_at,
+    exists:     f.exists,
   }
 }
 
@@ -343,6 +344,20 @@ export function ImportedFolderDashboard({
                       {file.file_name}
                     </div>
                   </div>
+                  {!file.exists && (
+                    <span
+                      title={t("common.fileMissingTooltip")}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 4, flexShrink: 0,
+                        color: "#ef4444", fontSize: 10, fontWeight: 500,
+                        background: "rgba(239, 68, 68, 0.1)", border: "1px solid #ef4444",
+                        borderRadius: 6, padding: "2px 6px",
+                      }}
+                    >
+                      <AlertTriangle size={10} />
+                      {t("common.fileMissing")}
+                    </span>
+                  )}
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
                   <span style={{ color: muted, fontSize: 10, textTransform: "uppercase" }}>{file.file_type || "—"}</span>
@@ -351,7 +366,7 @@ export function ImportedFolderDashboard({
                   </span>
                   {hoveredFileId === file.id ? (
                     <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                      {canPreview(appFile) && (
+                      {canPreview(appFile) && file.exists && (
                         <button
                           onClick={() => {
                             setPreviewFile(prev => prev?.id === file.id ? null : appFile)
@@ -363,14 +378,19 @@ export function ImportedFolderDashboard({
                         </button>
                       )}
                       <button
-                        onClick={() => { openImportedFile(file.file_path); markImportedFileOpened(file.id) }}
-                        style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex", borderRadius: 6 }}
+                        onClick={() => { if (!file.exists) return; openImportedFile(file.file_path); markImportedFileOpened(file.id) }}
+                        disabled={!file.exists}
+                        title={!file.exists ? t("common.fileMissingTooltip") : undefined}
+                        style={{
+                          background: "none", border: "none", padding: 4, display: "flex", borderRadius: 6,
+                          cursor: file.exists ? "pointer" : "not-allowed", opacity: file.exists ? 1 : 0.4,
+                        }}
                       >
                         <ExternalLink size={13} color={muted} />
                       </button>
                     </div>
                   ) : (
-                    <div style={{ width: canPreview(appFile) ? 46 : 24 }} />
+                    <div style={{ width: canPreview(appFile) && file.exists ? 46 : 24 }} />
                   )}
                 </div>
               </div>

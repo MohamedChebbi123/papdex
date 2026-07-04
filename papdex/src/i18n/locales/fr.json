@@ -9,6 +9,7 @@
     "save": "Enregistrer",
     "saving": "Enregistrement...",
     "delete": "Supprimer",
+    "deleting": "Suppression…",
     "rename": "Renommer",
     "noFolder": "Aucun dossier",
     "loading": "Chargement…",
@@ -24,7 +25,9 @@
     "folderCount_one": "{{count}} dossier",
     "folderCount_other": "{{count}} dossiers",
     "subjectCount_one": "{{count}} matière",
-    "subjectCount_other": "{{count}} matières"
+    "subjectCount_other": "{{count}} matières",
+    "fileMissing": "Introuvable",
+    "fileMissingTooltip": "Ce fichier est introuvable sur le disque. Il a peut-être été déplacé, renommé ou supprimé en dehors de Papdex."
   },
   "app": {
     "noYearTitle": "Aucune année scolaire sélectionnée",
@@ -34,6 +37,7 @@
   "sidebar": {
     "home": "Accueil",
     "favorites": "Favoris",
+    "settings": "Paramètres",
     "academicYears": "Années scolaires",
     "noSemesters": "Aucun semestre",
     "noSubjects": "Aucune matière",
@@ -225,6 +229,22 @@
       "description_one": "Choisissez une catégorie à attribuer à {{count}} fichier.",
       "description_other": "Choisissez une catégorie à attribuer à {{count}} fichiers."
     }
+  },
+  "settings": {
+    "title": "Paramètres",
+    "subtitle": "Gérez votre profil et vos préférences d'apparence.",
+    "profileSection": "Profil",
+    "changePhoto": "Changer la photo",
+    "removePhoto": "Retirer la photo",
+    "appearanceSection": "Apparence",
+    "theme": "Thème",
+    "language": "Langue",
+    "dark": "Sombre",
+    "light": "Clair",
+    "dangerZoneSection": "Zone de danger",
+    "deleteAllData": "Supprimer toutes les données",
+    "deleteAllDataDescription": "Supprime définitivement toutes les années scolaires, semestres, matières, dossiers et enregistrements de fichiers. Votre profil et vos préférences sont conservés, et les fichiers sur le disque ne sont pas touchés. Cette action est irréversible.",
+    "deleteAllDataLabel": "toutes vos données"
   },
   "filePreview": {
     "highlighting": "Coloration syntaxique…",

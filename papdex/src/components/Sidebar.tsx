@@ -12,22 +12,20 @@ import {
 } from "@/components/ui/sidebar"
 import {
   BookOpen, ChevronDown, ChevronLeft, ChevronRight,
-  GraduationCap, Home, Moon, Pencil,
-  Plus, Search, Star, Sun, Trash2, FlaskConical,
+  GraduationCap, Home, Pencil,
+  Plus, Search, Settings, Star, Trash2, FlaskConical,
 } from "lucide-react"
 import { forwardRef, useEffect, useImperativeHandle, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { applyDocumentDirection, RTL_LANGUAGES } from "@/i18n"
+import { RTL_LANGUAGES } from "@/i18n"
 import { AcademicYearCreation } from "./inputs/Academic_year_creation"
 import { AcademicYearUpdate } from "./inputs/Academic_year_update"
 import { DeleteConfirm } from "./inputs/Delete_confirm"
 import { deleteAcademicYear, getAllAcademicYears } from "./academic_year_service/file"
 import { getSemestersByYear } from "./semester_service/file"
 import { getSubjectsBySemester } from "./subjects_service/file"
-import { getUser, updateUser, type User, type Language } from "./user_service/file"
+import { getUser, type User } from "./user_service/file"
 import { searchFiles, type SearchResult } from "./file_service/file"
-
-const LANGUAGES: Language[] = ["en", "fr", "ar"]
 
 type AcademicYear = {
   id: number
@@ -60,11 +58,12 @@ interface Props {
   onSelectSemester: (year: AcademicYear, semester: Semester) => void
   onSelectSubject: (year: AcademicYear, semester: Semester, subject: Subject) => void
   onShowFavorites: () => void
+  onShowSettings: () => void
   onSelectSearchResult: (result: SearchResult) => void
 }
 
 export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSidebar(
-  { onSelectYear, onSelectSemester, onSelectSubject, onShowFavorites, onSelectSearchResult },
+  { onSelectYear, onSelectSemester, onSelectSubject, onShowFavorites, onShowSettings, onSelectSearchResult },
   ref
 ) {
   const { t, i18n } = useTranslation()
@@ -72,7 +71,6 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
   const CollapsedChevron = isRTL ? ChevronLeft : ChevronRight
   const [academicYears, setAcademicYears] = useState<AcademicYear[]>([])
   const [user, setUser] = useState<User | null>(null)
-  const [dark, setDark] = useState(document.documentElement.classList.contains("dark"))
   const [showCreateYear, setShowCreateYear] = useState(false)
   const [editingYear, setEditingYear] = useState<AcademicYear | null>(null)
   const [deletingYear, setDeletingYear] = useState<AcademicYear | null>(null)
@@ -88,10 +86,6 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
   useImperativeHandle(ref, () => ({
     openCreateYear: () => setShowCreateYear(true),
   }))
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", dark)
-  }, [dark])
 
   useEffect(() => {
     getAllAcademicYears().then(setAcademicYears)
@@ -119,18 +113,6 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
     onSelectSearchResult(result)
     setSearchQuery("")
     setSearchResults([])
-  }
-
-  function toggleTheme() {
-    const next = !dark
-    setDark(next)
-    updateUser({ theme: next ? "dark" : "light" })
-  }
-
-  function handleLanguageChange(language: Language) {
-    i18n.changeLanguage(language)
-    applyDocumentDirection(language)
-    updateUser({ language })
   }
 
   function refresh() {
@@ -204,12 +186,6 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
             <p className="text-sm font-semibold">Papdex</p>
             <p className="text-xs text-muted-foreground">{new Date().toLocaleDateString(i18n.language)}</p>
           </div>
-          <button
-            onClick={toggleTheme}
-            className="rounded-md p-1.5 hover:bg-accent transition-colors"
-          >
-            {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
-          </button>
         </div>
         <div className="relative">
           <Search className="pointer-events-none absolute start-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
@@ -259,6 +235,12 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
                 <SidebarMenuButton onClick={onShowFavorites}>
                   <Star className="size-4" />
                   <span>{t("sidebar.favorites")}</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton onClick={onShowSettings}>
+                  <Settings className="size-4" />
+                  <span>{t("sidebar.settings")}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -395,7 +377,10 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
       </SidebarContent>
 
       <SidebarFooter className="border-t p-3">
-        <div className="flex items-center gap-3">
+        <button
+          onClick={onShowSettings}
+          className="flex w-full items-center gap-3 rounded-md p-1 -m-1 hover:bg-accent transition-colors"
+        >
           {/* Avatar */}
           <div className="size-8 rounded-full overflow-hidden flex-shrink-0 bg-muted flex items-center justify-center">
             {user?.avatar_path ? (
@@ -407,28 +392,12 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
             )}
           </div>
           {/* Name */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 text-start">
             <p className="text-sm font-medium truncate">{user?.display_name ?? "—"}</p>
             <p className="text-xs text-muted-foreground">{t("common.student")}</p>
           </div>
-        </div>
-        {/* Language switcher */}
-        <div className="flex items-center gap-1 mt-2.5">
-          {LANGUAGES.map(lang => (
-            <button
-              key={lang}
-              onClick={() => handleLanguageChange(lang)}
-              title={t(`language.${lang}`)}
-              className={`flex-1 rounded-md py-1 text-xs font-medium uppercase transition-colors ${
-                i18n.language === lang
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
-              }`}
-            >
-              {lang}
-            </button>
-          ))}
-        </div>
+          <Settings className="size-4 text-muted-foreground flex-shrink-0" />
+        </button>
       </SidebarFooter>
     </Sidebar>
     </>

@@ -21,19 +21,25 @@ function create_file() {
     })
 }
 
+function with_exists<T extends { file_path: string }>(rows: T[]): (T & { exists: boolean })[] {
+    return rows.map(row => ({ ...row, exists: fs.existsSync(row.file_path) }))
+}
+
 function fetch_files_by_subject() {
     ipcMain.handle("files:getBySubject", (_event, subject_id: number) => {
-        return database.prepare(
+        const rows = database.prepare(
             "SELECT * FROM files WHERE subject_id = ? ORDER BY created_at DESC"
-        ).all(subject_id)
+        ).all(subject_id) as { file_path: string }[]
+        return with_exists(rows)
     })
 }
 
 function fetch_files_by_folder() {
     ipcMain.handle("files:getByFolder", (_event, folder_id: number) => {
-        return database.prepare(
+        const rows = database.prepare(
             "SELECT * FROM files WHERE folder_id = ? ORDER BY created_at DESC"
-        ).all(folder_id)
+        ).all(folder_id) as { file_path: string }[]
+        return with_exists(rows)
     })
 }
 
@@ -173,7 +179,7 @@ function mark_file_opened() {
 
 function fetch_recent_files_by_subject() {
     ipcMain.handle("files:getRecentBySubject", (_event, subject_id: number, limit: number) => {
-        return database.prepare(`
+        const rows = database.prepare(`
             SELECT f.*, s.name AS subject_name, fo.opened_at
             FROM file_opens fo
             JOIN files f ON f.id = fo.file_id
@@ -181,13 +187,14 @@ function fetch_recent_files_by_subject() {
             WHERE f.subject_id = ?
             ORDER BY fo.opened_at DESC
             LIMIT ?
-        `).all(subject_id, limit)
+        `).all(subject_id, limit) as { file_path: string }[]
+        return with_exists(rows)
     })
 }
 
 function fetch_recent_files_by_semester() {
     ipcMain.handle("files:getRecentBySemester", (_event, semester_id: number, limit: number) => {
-        return database.prepare(`
+        const rows = database.prepare(`
             SELECT f.*, s.name AS subject_name, fo.opened_at
             FROM file_opens fo
             JOIN files f ON f.id = fo.file_id
@@ -195,13 +202,14 @@ function fetch_recent_files_by_semester() {
             WHERE s.semester_id = ?
             ORDER BY fo.opened_at DESC
             LIMIT ?
-        `).all(semester_id, limit)
+        `).all(semester_id, limit) as { file_path: string }[]
+        return with_exists(rows)
     })
 }
 
 function fetch_recent_files_by_year() {
     ipcMain.handle("files:getRecentByYear", (_event, year_id: number, limit: number) => {
-        return database.prepare(`
+        const rows = database.prepare(`
             SELECT f.*, s.name AS subject_name, fo.opened_at
             FROM file_opens fo
             JOIN files f ON f.id = fo.file_id
@@ -210,7 +218,8 @@ function fetch_recent_files_by_year() {
             WHERE sem.year_id = ?
             ORDER BY fo.opened_at DESC
             LIMIT ?
-        `).all(year_id, limit)
+        `).all(year_id, limit) as { file_path: string }[]
+        return with_exists(rows)
     })
 }
 

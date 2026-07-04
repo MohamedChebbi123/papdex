@@ -8,6 +8,7 @@ export interface AppFile {
   file_size: number | null
   created_at: string
   updated_at: string
+  exists: boolean
 }
 
 export interface PickedFile {
