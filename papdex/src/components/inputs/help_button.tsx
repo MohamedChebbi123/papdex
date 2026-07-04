@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next"
 import { HelpCircle } from "lucide-react"
 
 interface Props {
@@ -5,10 +6,11 @@ interface Props {
 }
 
 export function HelpButton({ onClick }: Props) {
+  const { t } = useTranslation()
   return (
     <button
       onClick={onClick}
-      title="Show tutorial"
+      title={t("tour.showTutorial")}
       style={{
         background: "var(--card)", border: "1px solid var(--border)", borderRadius: 10,
         color: "var(--muted-foreground)", padding: "10px 12px",

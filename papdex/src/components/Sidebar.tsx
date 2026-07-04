@@ -11,18 +11,22 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import {
-  BookOpen, ChevronDown, ChevronRight,
+  BookOpen, ChevronDown, ChevronLeft, ChevronRight,
   GraduationCap, Home, Moon, Pencil,
   Plus, Star, Sun, Trash2, FlaskConical,
 } from "lucide-react"
 import { forwardRef, useEffect, useImperativeHandle, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { applyDocumentDirection, RTL_LANGUAGES } from "@/i18n"
 import { AcademicYearCreation } from "./inputs/Academic_year_creation"
 import { AcademicYearUpdate } from "./inputs/Academic_year_update"
 import { DeleteConfirm } from "./inputs/Delete_confirm"
 import { deleteAcademicYear, getAllAcademicYears } from "./academic_year_service/file"
 import { getSemestersByYear } from "./semester_service/file"
 import { getSubjectsBySemester } from "./subjects_service/file"
-import { getUser, updateUser, type User } from "./user_service/file"
+import { getUser, updateUser, type User, type Language } from "./user_service/file"
+
+const LANGUAGES: Language[] = ["en", "fr", "ar"]
 
 type AcademicYear = {
   id: number
@@ -61,6 +65,9 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
   { onSelectYear, onSelectSemester, onSelectSubject, onShowFavorites },
   ref
 ) {
+  const { t, i18n } = useTranslation()
+  const isRTL = RTL_LANGUAGES.has(i18n.language)
+  const CollapsedChevron = isRTL ? ChevronLeft : ChevronRight
   const [academicYears, setAcademicYears] = useState<AcademicYear[]>([])
   const [user, setUser] = useState<User | null>(null)
   const [dark, setDark] = useState(document.documentElement.classList.contains("dark"))
@@ -90,6 +97,12 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
     const next = !dark
     setDark(next)
     updateUser({ theme: next ? "dark" : "light" })
+  }
+
+  function handleLanguageChange(language: Language) {
+    i18n.changeLanguage(language)
+    applyDocumentDirection(language)
+    updateUser({ language })
   }
 
   function refresh() {
@@ -155,13 +168,13 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
       label={deletingYear?.name}
       onConfirmed={handleDelete}
     />
-    <Sidebar>
+    <Sidebar side={isRTL ? "right" : "left"}>
       <SidebarHeader className="px-4 py-3 border-b">
         <div className="flex items-center gap-2">
           <GraduationCap className="size-5 text-primary" />
           <div className="flex-1">
             <p className="text-sm font-semibold">Papdex</p>
-            <p className="text-xs text-muted-foreground">{new Date().toLocaleDateString()}</p>
+            <p className="text-xs text-muted-foreground">{new Date().toLocaleDateString(i18n.language)}</p>
           </div>
           <button
             onClick={toggleTheme}
@@ -179,13 +192,13 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
               <SidebarMenuItem>
                 <SidebarMenuButton>
                   <Home className="size-4" />
-                  <span>Home</span>
+                  <span>{t("sidebar.home")}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton onClick={onShowFavorites}>
                   <Star className="size-4" />
-                  <span>Favorites</span>
+                  <span>{t("sidebar.favorites")}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -194,7 +207,7 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
 
         <SidebarGroup>
           <SidebarGroupLabel className="flex items-center justify-between">
-            Academic Years
+            {t("sidebar.academicYears")}
             <button
               onClick={() => setShowCreateYear(true)}
               className="rounded p-0.5 hover:bg-accent transition-colors"
@@ -221,7 +234,7 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
                         >
                           {yearExpanded
                             ? <ChevronDown className="size-3.5 text-muted-foreground" />
-                            : <ChevronRight className="size-3.5 text-muted-foreground" />
+                            : <CollapsedChevron className="size-3.5 text-muted-foreground" />
                           }
                         </button>
                         <BookOpen className="size-4 flex-shrink-0" />
@@ -247,9 +260,9 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
 
                     {/* ── Semester children ── */}
                     {yearExpanded && (
-                      <div className="ml-4 pl-2 border-l border-border mt-0.5 mb-1 space-y-0.5">
+                      <div className="ms-4 ps-2 border-s border-border mt-0.5 mb-1 space-y-0.5">
                         {semesters.length === 0 ? (
-                          <p className="px-2 py-1 text-xs text-muted-foreground">No semesters</p>
+                          <p className="px-2 py-1 text-xs text-muted-foreground">{t("sidebar.noSemesters")}</p>
                         ) : (
                           semesters.map(sem => {
                             const semExpanded = expandedSemesters.has(sem.id)
@@ -264,12 +277,12 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
                                   >
                                     {semExpanded
                                       ? <ChevronDown className="size-3 text-muted-foreground" />
-                                      : <ChevronRight className="size-3 text-muted-foreground" />
+                                      : <CollapsedChevron className="size-3 text-muted-foreground" />
                                     }
                                   </button>
                                   <button
                                     onClick={() => onSelectSemester(year, sem)}
-                                    className="flex-1 text-left py-1.5 text-xs text-muted-foreground group-hover:text-foreground transition-colors flex items-center gap-1.5 min-w-0"
+                                    className="flex-1 text-start py-1.5 text-xs text-muted-foreground group-hover:text-foreground transition-colors flex items-center gap-1.5 min-w-0"
                                   >
                                     <BookOpen className="size-3 flex-shrink-0" />
                                     <span className="truncate">{sem.name}</span>
@@ -278,9 +291,9 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
 
                                 {/* Subject children */}
                                 {semExpanded && (
-                                  <div className="ml-4 pl-2 border-l border-border mt-0.5 mb-1 space-y-0.5">
+                                  <div className="ms-4 ps-2 border-s border-border mt-0.5 mb-1 space-y-0.5">
                                     {subjects.length === 0 ? (
-                                      <p className="px-2 py-0.5 text-xs text-muted-foreground/60">No subjects</p>
+                                      <p className="px-2 py-0.5 text-xs text-muted-foreground/60">{t("sidebar.noSubjects")}</p>
                                     ) : (
                                       subjects.map(subj => (
                                         <div
@@ -291,16 +304,16 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
                                           <FlaskConical className="size-3 flex-shrink-0" />
                                           <span className="truncate">{subj.name}</span>
                                           {subj.is_favorite === 1 && (
-                                            <Star className="size-3 ml-auto flex-shrink-0 text-amber-500" fill="currentColor" />
+                                            <Star className="size-3 ms-auto flex-shrink-0 text-amber-500" fill="currentColor" />
                                           )}
                                         </div>
                                       ))
                                     )}
                                     <button
                                       onClick={() => refreshSubjects(sem.id)}
-                                      className="w-full text-left px-2 py-0.5 text-xs text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+                                      className="w-full text-start px-2 py-0.5 text-xs text-muted-foreground/40 hover:text-muted-foreground transition-colors"
                                     >
-                                      ↻ refresh
+                                      ↻ {t("sidebar.refresh")}
                                     </button>
                                   </div>
                                 )}
@@ -314,7 +327,7 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
                 )
               })}
               {academicYears.length === 0 && (
-                <p className="px-2 py-1 text-xs text-muted-foreground">No academic years yet</p>
+                <p className="px-2 py-1 text-xs text-muted-foreground">{t("sidebar.noAcademicYears")}</p>
               )}
             </SidebarMenu>
           </SidebarGroupContent>
@@ -326,7 +339,7 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
           {/* Avatar */}
           <div className="size-8 rounded-full overflow-hidden flex-shrink-0 bg-muted flex items-center justify-center">
             {user?.avatar_path ? (
-              <img src={user.avatar_path} alt="avatar" className="size-full object-cover" />
+              <img src={user.avatar_path} alt={t("common.avatarAlt")} className="size-full object-cover" />
             ) : (
               <span className="text-xs font-semibold text-muted-foreground">
                 {user?.display_name?.[0]?.toUpperCase() ?? "?"}
@@ -336,8 +349,25 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
           {/* Name */}
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium truncate">{user?.display_name ?? "—"}</p>
-            <p className="text-xs text-muted-foreground">Student</p>
+            <p className="text-xs text-muted-foreground">{t("common.student")}</p>
           </div>
+        </div>
+        {/* Language switcher */}
+        <div className="flex items-center gap-1 mt-2.5">
+          {LANGUAGES.map(lang => (
+            <button
+              key={lang}
+              onClick={() => handleLanguageChange(lang)}
+              title={t(`language.${lang}`)}
+              className={`flex-1 rounded-md py-1 text-xs font-medium uppercase transition-colors ${
+                i18n.language === lang
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground"
+              }`}
+            >
+              {lang}
+            </button>
+          ))}
         </div>
       </SidebarFooter>
     </Sidebar>

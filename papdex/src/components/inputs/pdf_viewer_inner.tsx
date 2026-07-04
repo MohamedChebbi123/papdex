@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react"
+import { useTranslation } from "react-i18next"
 import { readFileBuffer } from "@/components/file_service/file"
 
 export default function PdfViewerInner({ filePath }: { filePath: string }) {
+  const { t } = useTranslation()
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -16,10 +18,10 @@ export default function PdfViewerInner({ filePath }: { filePath: string }) {
         url = URL.createObjectURL(blob)
         setPdfUrl(url)
       })
-      .catch(() => setError("Could not read file."))
+      .catch(() => setError(t("filePreview.couldNotRead")))
 
     return () => { if (url) URL.revokeObjectURL(url) }
-  }, [filePath])
+  }, [filePath, t])
 
   if (error) return (
     <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--muted-foreground)", fontSize: 13 }}>
@@ -29,7 +31,7 @@ export default function PdfViewerInner({ filePath }: { filePath: string }) {
 
   if (!pdfUrl) return (
     <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--muted-foreground)", fontSize: 13 }}>
-      Loading…
+      {t("common.loading")}
     </div>
   )
 
@@ -37,7 +39,7 @@ export default function PdfViewerInner({ filePath }: { filePath: string }) {
     <iframe
       src={pdfUrl}
       style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" }}
-      title="PDF Viewer"
+      title={t("filePreview.pdfViewerTitle")}
     />
   )
 }

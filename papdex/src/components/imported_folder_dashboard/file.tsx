@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import {
-  Calendar, ChevronRight, ExternalLink, Eye, File, FileText, Folder,
+  Calendar, ChevronLeft, ChevronRight, ExternalLink, Eye, File, FileText, Folder,
   FolderInput, Image, Trash2, Video,
 } from "lucide-react"
 import type { Step } from "react-joyride"
@@ -18,6 +19,7 @@ import { DeleteConfirm } from "@/components/inputs/Delete_confirm"
 import { FilePreviewPanel, canPreview } from "@/components/inputs/file_preview_modal"
 import { TourGuide } from "@/components/inputs/tour_guide"
 import { HelpButton } from "@/components/inputs/help_button"
+import { RTL_LANGUAGES } from "@/i18n"
 import type { AppFile } from "@/components/file_service/file"
 
 interface Subject {
@@ -102,6 +104,9 @@ export function ImportedFolderDashboard({
   folderId, subject, semester, year,
   onBack, onBackToSemester, onBackToYear,
 }: Props) {
+  const { t, i18n } = useTranslation()
+  const isRTL = RTL_LANGUAGES.has(i18n.language)
+  const BreadcrumbChevron = isRTL ? ChevronLeft : ChevronRight
   const [folder, setFolder] = useState<ImportedFolder | null>(null)
   const [files, setFiles] = useState<ImportedFolderFile[]>([])
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -143,9 +148,9 @@ export function ImportedFolderDashboard({
   const isEmptyDir = childFolders.length === 0 && childFiles.length === 0
 
   const tourSteps: Step[] = [
-    { target: '[data-tour="if-header"]', title: "Imported folder", content: "This mirrors a folder on your computer, shown at the path below. Its files aren't moved or copied — this is just a live view." },
-    ...(allExts.length > 0 ? [{ target: '[data-tour="if-filters"]', title: "Filter files", content: "Narrow the current folder's files down by format." }] : []),
-    { target: '[data-tour="if-files"]', title: "Browse files", content: "Subfolders and files are listed together. Click a subfolder to navigate into it, and hover a file to preview or open it." },
+    { target: '[data-tour="if-header"]', title: t("tour.importedFolder.header.title"), content: t("tour.importedFolder.header.content") },
+    ...(allExts.length > 0 ? [{ target: '[data-tour="if-filters"]', title: t("tour.importedFolder.filters.title"), content: t("tour.importedFolder.filters.content") }] : []),
+    { target: '[data-tour="if-files"]', title: t("tour.importedFolder.files.title"), content: t("tour.importedFolder.files.content") },
   ]
 
   const dashboardContent = (
@@ -155,19 +160,19 @@ export function ImportedFolderDashboard({
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6, color: muted, fontSize: 12 }}>
           <Calendar size={13} />
-          <ChevronRight size={13} />
+          <BreadcrumbChevron size={13} />
           <button onClick={onBackToYear} style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}>
             {year.name}
           </button>
-          <ChevronRight size={13} />
+          <BreadcrumbChevron size={13} />
           <button onClick={onBackToSemester} style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}>
             {semester.name}
           </button>
-          <ChevronRight size={13} />
+          <BreadcrumbChevron size={13} />
           <button onClick={onBack} style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}>
             {subject.name}
           </button>
-          <ChevronRight size={13} />
+          <BreadcrumbChevron size={13} />
           <span style={{ color: fg }}>{folder?.name ?? "..."}</span>
         </div>
         <HelpButton onClick={() => setRunTour(true)} />
@@ -181,11 +186,11 @@ export function ImportedFolderDashboard({
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
             <FolderInput size={22} color={muted} />
             <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0, lineHeight: 1.2, color: fg }}>
-              {folder?.name ?? "Loading..."}
+              {folder?.name ?? t("common.loading")}
             </h1>
           </div>
           <p style={{ color: muted, fontSize: 13, margin: 0 }}>
-            {subject.name} · {semester.name} · {files.length} file{files.length !== 1 ? "s" : ""}
+            {subject.name} · {semester.name} · {t("common.fileCount", { count: files.length })}
           </p>
           {folder?.original_path && (
             <p style={{ color: muted, fontSize: 11, margin: "4px 0 0", fontFamily: "monospace" }}>
@@ -203,7 +208,7 @@ export function ImportedFolderDashboard({
           }}
         >
           <Trash2 size={14} />
-          Delete
+          {t("common.delete")}
         </button>
       </div>
 
@@ -211,7 +216,7 @@ export function ImportedFolderDashboard({
       <div style={{ marginBottom: 28 }}>
         <div style={{ background: card, borderRadius: 12, padding: 20, border: `1px solid ${border}`, display: "inline-block" }}>
           <div style={{ fontSize: 28, fontWeight: 700, color: fg }}>{files.length}</div>
-          <div style={{ color: muted, fontSize: 12, marginTop: 2 }}>Files</div>
+          <div style={{ color: muted, fontSize: 12, marginTop: 2 }}>{t("importedFolder.statFiles")}</div>
         </div>
       </div>
 
@@ -219,14 +224,14 @@ export function ImportedFolderDashboard({
       {currentPath && (
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 14, color: muted, fontSize: 12, flexWrap: "wrap" }}>
           <button onClick={() => setCurrentPath("")} style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}>
-            {folder?.name ?? "Root"}
+            {folder?.name ?? t("importedFolder.root")}
           </button>
           {pathSegments.map((seg, i) => {
             const segPath = pathSegments.slice(0, i + 1).join("/")
             const isLast = i === pathSegments.length - 1
             return (
               <span key={segPath} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <ChevronRight size={13} />
+                <BreadcrumbChevron size={13} />
                 {isLast ? (
                   <span style={{ color: fg }}>{seg}</span>
                 ) : (
@@ -243,18 +248,18 @@ export function ImportedFolderDashboard({
       {/* Files */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
         <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-          {currentPath ? pathSegments[pathSegments.length - 1] : "Files"}
+          {currentPath ? pathSegments[pathSegments.length - 1] : t("importedFolder.filesHeading")}
         </span>
         <span style={{ color: muted, fontSize: 11 }}>
-          {childFolders.length > 0 && `${childFolders.length} folder${childFolders.length !== 1 ? "s" : ""} · `}
-          {filteredFiles.length} of {childFiles.length} file{childFiles.length !== 1 ? "s" : ""}
+          {childFolders.length > 0 && `${t("common.folderCount", { count: childFolders.length })} · `}
+          {t("common.ofCount", { filtered: filteredFiles.length, total: childFiles.length })}
         </span>
       </div>
 
       {/* Filter chips */}
       {allExts.length > 0 && (
         <div data-tour="if-filters" style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
-          <span style={{ color: muted, fontSize: 10, minWidth: 52 }}>Format</span>
+          <span style={{ color: muted, fontSize: 10, minWidth: 52 }}>{t("common.format")}</span>
           {["all", ...allExts].map(ext => (
             <button
               key={ext}
@@ -267,7 +272,7 @@ export function ImportedFolderDashboard({
                 cursor: "pointer", textTransform: "uppercase", fontWeight: extFilter === ext ? 600 : 400,
               }}
             >
-              {ext === "all" ? "All" : ext}
+              {ext === "all" ? t("common.all") : ext}
             </button>
           ))}
         </div>
@@ -281,13 +286,13 @@ export function ImportedFolderDashboard({
           border: `1px dashed ${border}`,
         }}>
           <FolderInput size={36} color={muted} />
-          <p style={{ color: fg, fontSize: 15, fontWeight: 500, marginTop: 12, marginBottom: 4 }}>Folder is empty</p>
-          <p style={{ color: muted, fontSize: 13, margin: 0 }}>No files were found in the imported folder</p>
+          <p style={{ color: fg, fontSize: 15, fontWeight: 500, marginTop: 12, marginBottom: 4 }}>{t("importedFolder.emptyTitle")}</p>
+          <p style={{ color: muted, fontSize: 13, margin: 0 }}>{t("importedFolder.emptySubtitle")}</p>
         </div>
       ) : isEmptyDir ? (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 0", color: muted }}>
           <File size={32} />
-          <p style={{ marginTop: 10, fontSize: 13 }}>No files match the selected filter</p>
+          <p style={{ marginTop: 10, fontSize: 13 }}>{t("importedFolder.noMatch")}</p>
         </div>
       ) : (
         <div style={{ background: card, borderRadius: 14, border: `1px solid ${border}`, overflow: "hidden" }}>
@@ -310,8 +315,8 @@ export function ImportedFolderDashboard({
                 </div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
-                <span style={{ color: muted, fontSize: 11 }}>{cf.count} file{cf.count !== 1 ? "s" : ""}</span>
-                <ChevronRight size={14} color={muted} />
+                <span style={{ color: muted, fontSize: 11 }}>{t("common.fileCount", { count: cf.count })}</span>
+                <BreadcrumbChevron size={14} color={muted} />
               </div>
             </div>
           ))}
@@ -341,7 +346,7 @@ export function ImportedFolderDashboard({
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
                   <span style={{ color: muted, fontSize: 10, textTransform: "uppercase" }}>{file.file_type || "—"}</span>
-                  <span style={{ color: muted, fontSize: 12, minWidth: 52, textAlign: "right" }}>
+                  <span style={{ color: muted, fontSize: 12, minWidth: 52, textAlign: "end" }}>
                     {formatSize(file.file_size)}
                   </span>
                   {hoveredFileId === file.id ? (

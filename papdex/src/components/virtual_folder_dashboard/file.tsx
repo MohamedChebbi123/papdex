@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
+import { useTranslation } from "react-i18next"
 import {
-  Calendar, ChevronRight, ExternalLink, Eye, File, FileText,
+  Calendar, ChevronLeft, ChevronRight, ExternalLink, Eye, File, FileText,
   Folder, Image, Pencil, Plus, Trash2, Video,
 } from "lucide-react"
 import type { Step } from "react-joyride"
@@ -22,6 +23,8 @@ import { FileCreationInput } from "@/components/inputs/file_creation_input"
 import { FilePreviewPanel, canPreview } from "@/components/inputs/file_preview_modal"
 import { TourGuide } from "@/components/inputs/tour_guide"
 import { HelpButton } from "@/components/inputs/help_button"
+import { RTL_LANGUAGES } from "@/i18n"
+import { categoryLabel } from "@/lib/category_label"
 
 const CATEGORY_COLORS: Record<string, { bg: string; text: string; border: string }> = {
   Summary:  { bg: "#14532d", text: "#4ade80", border: "#166534" },
@@ -36,19 +39,20 @@ const CATEGORY_COLORS: Record<string, { bg: string; text: string; border: string
 }
 
 function CategoryBadge({ category }: { category: string }) {
+  const { t } = useTranslation()
   const c = CATEGORY_COLORS[category]
   if (!c) return (
     <span style={{
       background: "var(--muted)", color: "var(--muted-foreground)",
       border: "1px solid var(--border)", borderRadius: 6,
       fontSize: 10, padding: "2px 8px",
-    }}>{category}</span>
+    }}>{categoryLabel(t, category)}</span>
   )
   return (
     <span style={{
       background: c.bg, color: c.text, border: `1px solid ${c.border}`,
       borderRadius: 6, fontSize: 10, padding: "2px 8px", fontWeight: 500,
-    }}>{category}</span>
+    }}>{categoryLabel(t, category)}</span>
   )
 }
 
@@ -105,6 +109,9 @@ export function VirtualFolderDashboard({
   initialFileId, onInitialFileHandled,
   onBack, onBackToSemester, onBackToYear,
 }: Props) {
+  const { t, i18n } = useTranslation()
+  const isRTL = RTL_LANGUAGES.has(i18n.language)
+  const BreadcrumbChevron = isRTL ? ChevronLeft : ChevronRight
   const [folder, setFolder] = useState<VirtualFolder | null>(null)
   const [files, setFiles] = useState<AppFile[]>([])
   const [renameOpen, setRenameOpen] = useState(false)
@@ -165,9 +172,9 @@ export function VirtualFolderDashboard({
   })
 
   const tourSteps: Step[] = [
-    { target: '[data-tour="vf-actions"]', title: "Manage this folder", content: "Add more files, rename the folder, or delete it from here." },
-    ...(files.length > 0 ? [{ target: '[data-tour="vf-filters"]', title: "Filter files", content: "Narrow the list down by file format or by the category tag assigned to each file." }] : []),
-    { target: '[data-tour="vf-files"]', title: "Files", content: "Hover a file to preview it, open it in its default app, or delete it." },
+    { target: '[data-tour="vf-actions"]', title: t("tour.virtualFolder.actions.title"), content: t("tour.virtualFolder.actions.content") },
+    ...(files.length > 0 ? [{ target: '[data-tour="vf-filters"]', title: t("tour.virtualFolder.filters.title"), content: t("tour.virtualFolder.filters.content") }] : []),
+    { target: '[data-tour="vf-files"]', title: t("tour.virtualFolder.files.title"), content: t("tour.virtualFolder.files.content") },
   ]
 
   const dashboardContent = (
@@ -177,19 +184,19 @@ export function VirtualFolderDashboard({
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6, color: muted, fontSize: 12 }}>
           <Calendar size={13} />
-          <ChevronRight size={13} />
+          <BreadcrumbChevron size={13} />
           <button onClick={onBackToYear} style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}>
             {year.name}
           </button>
-          <ChevronRight size={13} />
+          <BreadcrumbChevron size={13} />
           <button onClick={onBackToSemester} style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}>
             {semester.name}
           </button>
-          <ChevronRight size={13} />
+          <BreadcrumbChevron size={13} />
           <button onClick={onBack} style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}>
             {subject.name}
           </button>
-          <ChevronRight size={13} />
+          <BreadcrumbChevron size={13} />
           <span style={{ color: fg }}>{folder?.name ?? "..."}</span>
         </div>
         <HelpButton onClick={() => setRunTour(true)} />
@@ -203,11 +210,11 @@ export function VirtualFolderDashboard({
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
             <Folder size={22} color={muted} />
             <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0, lineHeight: 1.2, color: fg }}>
-              {folder?.name ?? "Loading..."}
+              {folder?.name ?? t("common.loading")}
             </h1>
           </div>
           <p style={{ color: muted, fontSize: 13, margin: 0 }}>
-            {subject.name} · {semester.name} · {files.length} file{files.length !== 1 ? "s" : ""}
+            {subject.name} · {semester.name} · {t("common.fileCount", { count: files.length })}
           </p>
         </div>
 
@@ -221,7 +228,7 @@ export function VirtualFolderDashboard({
             }}
           >
             <Plus size={14} />
-            Add files
+            {t("virtualFolder.addFiles")}
           </button>
           <button
             onClick={() => setRenameOpen(true)}
@@ -232,7 +239,7 @@ export function VirtualFolderDashboard({
             }}
           >
             <Pencil size={14} />
-            Rename
+            {t("common.rename")}
           </button>
           <button
             onClick={() => setDeleteOpen(true)}
@@ -243,7 +250,7 @@ export function VirtualFolderDashboard({
             }}
           >
             <Trash2 size={14} />
-            Delete
+            {t("common.delete")}
           </button>
         </div>
       </div>
@@ -252,15 +259,15 @@ export function VirtualFolderDashboard({
       <div style={{ marginBottom: 28 }}>
         <div style={{ background: card, borderRadius: 12, padding: 20, border: `1px solid ${border}`, display: "inline-block" }}>
           <div style={{ fontSize: 28, fontWeight: 700, color: fg }}>{files.length}</div>
-          <div style={{ color: muted, fontSize: 12, marginTop: 2 }}>Files</div>
+          <div style={{ color: muted, fontSize: 12, marginTop: 2 }}>{t("virtualFolder.statFiles")}</div>
         </div>
       </div>
 
       {/* Files */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-        <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Files</span>
+        <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>{t("virtualFolder.filesHeading")}</span>
         <span style={{ color: muted, fontSize: 11 }}>
-          {filteredFiles.length} of {files.length}
+          {t("common.ofCount", { filtered: filteredFiles.length, total: files.length })}
         </span>
       </div>
 
@@ -270,7 +277,7 @@ export function VirtualFolderDashboard({
           {/* Extension row */}
           {allExts.length > 0 && (
             <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-              <span style={{ color: muted, fontSize: 10, minWidth: 52 }}>Format</span>
+              <span style={{ color: muted, fontSize: 10, minWidth: 52 }}>{t("common.format")}</span>
               {["all", ...allExts].map(ext => (
                 <button
                   key={ext}
@@ -283,7 +290,7 @@ export function VirtualFolderDashboard({
                     cursor: "pointer", textTransform: "uppercase", fontWeight: extFilter === ext ? 600 : 400,
                   }}
                 >
-                  {ext === "all" ? "All" : ext}
+                  {ext === "all" ? t("common.all") : ext}
                 </button>
               ))}
             </div>
@@ -291,7 +298,7 @@ export function VirtualFolderDashboard({
           {/* Category row */}
           {allCategories.length > 0 && (
             <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-              <span style={{ color: muted, fontSize: 10, minWidth: 52 }}>Type</span>
+              <span style={{ color: muted, fontSize: 10, minWidth: 52 }}>{t("common.type")}</span>
               {["all", ...allCategories].map(cat => {
                 const c = cat !== "all" ? CATEGORY_COLORS[cat] : null
                 const active = categoryFilter === cat
@@ -307,7 +314,7 @@ export function VirtualFolderDashboard({
                       cursor: "pointer", fontWeight: active ? 600 : 400,
                     }}
                   >
-                    {cat === "all" ? "All" : cat}
+                    {cat === "all" ? t("common.all") : categoryLabel(t, cat)}
                   </button>
                 )
               })}
@@ -327,13 +334,13 @@ export function VirtualFolderDashboard({
           }}
         >
           <Plus size={36} color={muted} />
-          <p style={{ color: fg, fontSize: 15, fontWeight: 500, marginTop: 12, marginBottom: 4 }}>Add files</p>
-          <p style={{ color: muted, fontSize: 13, margin: 0 }}>Click to open file picker</p>
+          <p style={{ color: fg, fontSize: 15, fontWeight: 500, marginTop: 12, marginBottom: 4 }}>{t("virtualFolder.addFilesEmptyTitle")}</p>
+          <p style={{ color: muted, fontSize: 13, margin: 0 }}>{t("virtualFolder.addFilesEmptySubtitle")}</p>
         </div>
       ) : filteredFiles.length === 0 ? (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 0", color: muted }}>
           <File size={32} />
-          <p style={{ marginTop: 10, fontSize: 13 }}>No files match the selected filters</p>
+          <p style={{ marginTop: 10, fontSize: 13 }}>{t("virtualFolder.noMatch")}</p>
         </div>
       ) : (
         <div style={{ background: card, borderRadius: 14, border: `1px solid ${border}`, overflow: "hidden" }}>
@@ -362,7 +369,7 @@ export function VirtualFolderDashboard({
                   ? <CategoryBadge category={file.file_type} />
                   : <span style={{ color: muted, fontSize: 10 }}>—</span>
                 }
-                <span style={{ color: muted, fontSize: 12, minWidth: 52, textAlign: "right" }}>
+                <span style={{ color: muted, fontSize: 12, minWidth: 52, textAlign: "end" }}>
                   {formatSize(file.file_size)}
                 </span>
                 {hoveredFileId === file.id ? (

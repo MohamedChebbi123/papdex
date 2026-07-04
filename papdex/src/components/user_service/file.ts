@@ -1,9 +1,12 @@
+export type Language = "en" | "fr" | "ar"
+
 export type User = {
   id: number
   display_name: string
   avatar_path: string | null
   theme: "dark" | "light"
   onboarded: number
+  language: Language
 }
 
 export function getUser(): Promise<User> {

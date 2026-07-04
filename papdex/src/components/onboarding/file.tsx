@@ -1,7 +1,9 @@
 import { useState, useCallback, useEffect } from "react"
+import { useTranslation } from "react-i18next"
 import Cropper from "react-easy-crop"
-import { UserRound, Sun, Moon, ImagePlus, ArrowRight, Check, ZoomIn, ZoomOut } from "lucide-react"
+import { UserRound, Sun, Moon, ImagePlus, ArrowRight, ArrowLeft, Check, ZoomIn, ZoomOut } from "lucide-react"
 import { updateUser, pickAvatar } from "@/components/user_service/file"
+import { RTL_LANGUAGES } from "@/i18n"
 
 type Area = { x: number; y: number; width: number; height: number }
 
@@ -25,6 +27,9 @@ interface Props {
 }
 
 export function Onboarding({ onDone }: Props) {
+  const { t, i18n } = useTranslation()
+  const isRTL = RTL_LANGUAGES.has(i18n.language)
+  const StartArrow = isRTL ? ArrowLeft : ArrowRight
   const [name, setName]                 = useState("")
   const [theme, setTheme]               = useState<"dark" | "light">("dark")
   const [rawSrc, setRawSrc]             = useState<string | null>(null)
@@ -134,9 +139,9 @@ export function Onboarding({ onDone }: Props) {
           <button
             type="button"
             onClick={handleCropCancel}
-            style={{ marginLeft: 16, background: "#222", border: "1px solid #333", borderRadius: 8, padding: "8px 18px", cursor: "pointer", color: "#aaa", fontSize: 13 }}
+            style={{ marginInlineStart: 16, background: "#222", border: "1px solid #333", borderRadius: 8, padding: "8px 18px", cursor: "pointer", color: "#aaa", fontSize: 13 }}
           >
-            Cancel
+            {t("common.cancel")}
           </button>
           <button
             type="button"
@@ -147,7 +152,7 @@ export function Onboarding({ onDone }: Props) {
               fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6,
             }}
           >
-            <Check size={14} /> Apply
+            <Check size={14} /> {t("onboarding.apply")}
           </button>
         </div>
       </div>
@@ -173,10 +178,10 @@ export function Onboarding({ onDone }: Props) {
             <UserRound size={26} color="#4ade80" />
           </div>
           <h1 style={{ fontSize: 24, fontWeight: 700, color: fg, margin: "0 0 6px" }}>
-            Welcome to Papdex
+            {t("onboarding.title")}
           </h1>
           <p style={{ color: muted, fontSize: 14, margin: 0 }}>
-            Let's set up your profile before you get started.
+            {t("onboarding.subtitle")}
           </p>
         </div>
 
@@ -195,11 +200,11 @@ export function Onboarding({ onDone }: Props) {
             }}
           >
             {croppedDataUrl ? (
-              <img src={croppedDataUrl} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <img src={croppedDataUrl} alt={t("common.avatarAlt")} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             ) : (
               <>
                 <ImagePlus size={22} color={muted} />
-                <span style={{ color: muted, fontSize: 10 }}>Add photo</span>
+                <span style={{ color: muted, fontSize: 10 }}>{t("onboarding.addPhoto")}</span>
               </>
             )}
           </button>
@@ -209,7 +214,7 @@ export function Onboarding({ onDone }: Props) {
               onClick={() => { setCroppedDataUrl(null); setRawSrc(null) }}
               style={{ background: "none", border: "none", color: muted, fontSize: 11, marginTop: 6, cursor: "pointer" }}
             >
-              Remove
+              {t("onboarding.remove")}
             </button>
           )}
         </div>
@@ -217,12 +222,12 @@ export function Onboarding({ onDone }: Props) {
         {/* Name */}
         <div style={{ marginBottom: 20 }}>
           <label style={{ display: "block", color: muted, fontSize: 12, marginBottom: 6 }}>
-            Your name
+            {t("onboarding.yourName")}
           </label>
           <input
             value={name}
             onChange={e => setName(e.target.value)}
-            placeholder="e.g. Mohamed"
+            placeholder={t("onboarding.namePlaceholder")}
             required
             style={{
               width: "100%", boxSizing: "border-box",
@@ -236,25 +241,25 @@ export function Onboarding({ onDone }: Props) {
         {/* Theme */}
         <div style={{ marginBottom: 32 }}>
           <label style={{ display: "block", color: muted, fontSize: 12, marginBottom: 8 }}>
-            Theme preference
+            {t("onboarding.themePreference")}
           </label>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            {(["dark", "light"] as const).map(t => (
+            {(["dark", "light"] as const).map(themeOption => (
               <button
-                key={t}
+                key={themeOption}
                 type="button"
-                onClick={() => setTheme(t)}
+                onClick={() => setTheme(themeOption)}
                 style={{
                   background: card,
-                  border: `1px solid ${theme === t ? "#4ade80" : border}`,
+                  border: `1px solid ${theme === themeOption ? "#4ade80" : border}`,
                   borderRadius: 10, padding: "12px 0", cursor: "pointer",
                   display: "flex", flexDirection: "column",
                   alignItems: "center", gap: 6,
-                  color: theme === t ? "#4ade80" : muted,
+                  color: theme === themeOption ? "#4ade80" : muted,
                 }}
               >
-                {t === "dark" ? <Moon size={18} /> : <Sun size={18} />}
-                <span style={{ fontSize: 12, textTransform: "capitalize" }}>{t}</span>
+                {themeOption === "dark" ? <Moon size={18} /> : <Sun size={18} />}
+                <span style={{ fontSize: 12, textTransform: "capitalize" }}>{t(`onboarding.${themeOption}`)}</span>
               </button>
             ))}
           </div>
@@ -274,8 +279,8 @@ export function Onboarding({ onDone }: Props) {
             transition: "all 0.15s",
           }}
         >
-          {loading ? "Setting up…" : "Get started"}
-          {!loading && <ArrowRight size={16} />}
+          {loading ? t("onboarding.settingUp") : t("onboarding.getStarted")}
+          {!loading && <StartArrow size={16} />}
         </button>
 
       </form>

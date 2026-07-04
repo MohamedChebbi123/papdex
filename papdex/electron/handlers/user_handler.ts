@@ -8,7 +8,7 @@ function get_user() {
 }
 
 function update_user() {
-    ipcMain.handle("user:update", (_event, fields: { display_name?: string; avatar_path?: string; theme?: string; onboarded?: number }) => {
+    ipcMain.handle("user:update", (_event, fields: { display_name?: string; avatar_path?: string; theme?: string; onboarded?: number; language?: string }) => {
         const sets: string[] = []
         const values: unknown[] = []
 
@@ -16,6 +16,7 @@ function update_user() {
         if (fields.avatar_path  !== undefined) { sets.push("avatar_path = ?");  values.push(fields.avatar_path) }
         if (fields.theme        !== undefined) { sets.push("theme = ?");        values.push(fields.theme) }
         if (fields.onboarded    !== undefined) { sets.push("onboarded = ?");    values.push(fields.onboarded) }
+        if (fields.language     !== undefined) { sets.push("language = ?");     values.push(fields.language) }
 
         if (sets.length === 0) return 0
 

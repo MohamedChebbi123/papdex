@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react"
+import { useTranslation } from "react-i18next"
 import { GraduationCap } from "lucide-react"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
@@ -11,6 +12,7 @@ import { ImportedFolderDashboard } from "@/components/imported_folder_dashboard/
 import { FavoritesDashboard } from "@/components/favorites_dashboard/file"
 import { Onboarding } from "@/components/onboarding/file"
 import { getUser } from "@/components/user_service/file"
+import { applyDocumentDirection } from "@/i18n"
 import type { ImportedFolder } from "@/components/imported_folders_service/file"
 import logo from "@/assets/papdex logo.png"
 
@@ -26,6 +28,7 @@ type RecentFileNav = {
 }
 
 function App() {
+  const { t, i18n } = useTranslation()
   const [onboarded,              setOnboarded]              = useState<boolean | null>(null)
   const [selectedYear,           setSelectedYear]           = useState<AcademicYear | null>(null)
   const [selectedSemester,       setSelectedSemester]       = useState<Semester | null>(null)
@@ -42,9 +45,13 @@ function App() {
         const cls = document.documentElement.classList
         user.theme === "light" ? cls.remove("dark") : cls.add("dark")
       }
+      if (user.language) {
+        i18n.changeLanguage(user.language)
+        applyDocumentDirection(user.language)
+      }
       setOnboarded(!!user.onboarded)
     })
-  }, [])
+  }, [i18n])
 
   function handleSelectYear(year: AcademicYear) {
     setSelectedYear(year)
@@ -172,13 +179,13 @@ function App() {
               <GraduationCap className="size-8 text-muted-foreground" />
             </div>
             <div>
-              <p className="text-sm font-medium">No academic year selected</p>
+              <p className="text-sm font-medium">{t("app.noYearTitle")}</p>
               <p className="text-xs text-muted-foreground mt-1">
-                Create an academic year to start organizing your semesters, subjects, and files.
+                {t("app.noYearSubtitle")}
               </p>
             </div>
             <Button size="sm" onClick={() => sidebarRef.current?.openCreateYear()}>
-              Create academic year
+              {t("app.createYear")}
             </Button>
           </div>
         )}

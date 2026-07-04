@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
+import { useTranslation } from "react-i18next"
 import {
-  Calendar, ChevronRight, Plus, Star, FileText,
+  Calendar, ChevronLeft, ChevronRight, Plus, Star, FileText,
   Video, Pencil, Folder, BookOpen, Trash2,
 } from "lucide-react"
 import type { Step } from "react-joyride"
@@ -9,6 +10,7 @@ import { SemesterUpdate } from "@/components/inputs/Semester_update"
 import { DeleteConfirm } from "@/components/inputs/Delete_confirm"
 import { TourGuide } from "@/components/inputs/tour_guide"
 import { HelpButton } from "@/components/inputs/help_button"
+import { RTL_LANGUAGES } from "@/i18n"
 import { getSemestersByYear, deleteSemester } from "@/components/semester_service/file"
 import { getSubjectsByYear, toggleFavoriteSubject } from "@/components/subjects_service/file"
 import { getRecentFilesByYear, openFile, type RecentFile } from "@/components/file_service/file"
@@ -48,6 +50,9 @@ interface Props {
 }
 
 export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject, onOpenFile }: Props) {
+  const { t, i18n } = useTranslation()
+  const isRTL = RTL_LANGUAGES.has(i18n.language)
+  const BreadcrumbChevron = isRTL ? ChevronLeft : ChevronRight
   const [semesterModalOpen, setSemesterModalOpen] = useState(false)
   const [semesters, setSemesters] = useState<any[]>([])
   const [subjects, setSubjects] = useState<Subject[]>([])
@@ -119,20 +124,11 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
   const card = "var(--card)"
   const fg = "var(--foreground)"
 
-  const today = new Date().toISOString().slice(0, 10)
-  function getStatus(start: string, end: string): "active" | "upcoming" | "ended" {
-    if (today < start) return "upcoming"
-    if (today > end) return "ended"
-    return "active"
-  }
-  const yearStatus = year ? getStatus(year.start_date, year.end_date) : null
-  const yearStatusLabel = yearStatus === "active" ? "Active year" : yearStatus === "upcoming" ? "Upcoming year" : "Past year"
-
   const tourSteps: Step[] = [
-    { target: '[data-tour="year-hero"]', title: "Your academic year", content: "This shows the selected year's date range and quick stats: semesters, subjects, files indexed, and favorites." },
-    { target: '[data-tour="year-semesters"]', title: "Semesters", content: "Semesters break your year into terms. Click one to open it, or add a new semester here." },
-    { target: '[data-tour="year-subjects"]', title: "Subjects", content: "Every subject across this year's semesters shows up here. Click one to browse its folders and files, and star the ones you use often." },
-    ...(recentFiles.length > 0 ? [{ target: '[data-tour="year-recent"]', title: "Recently opened", content: "Files you've recently opened anywhere in this year appear here for quick access." }] : []),
+    { target: '[data-tour="year-hero"]', title: t("tour.year.hero.title"), content: t("tour.year.hero.content") },
+    { target: '[data-tour="year-semesters"]', title: t("tour.year.semesters.title"), content: t("tour.year.semesters.content") },
+    { target: '[data-tour="year-subjects"]', title: t("tour.year.subjects.title"), content: t("tour.year.subjects.content") },
+    ...(recentFiles.length > 0 ? [{ target: '[data-tour="year-recent"]', title: t("tour.year.recent.title"), content: t("tour.year.recent.content") }] : []),
   ]
 
   return (
@@ -142,7 +138,7 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6, color: muted, fontSize: 12 }}>
           <Calendar size={13} />
-          <ChevronRight size={13} />
+          <BreadcrumbChevron size={13} />
           <span>{year?.name ?? "—"}</span>
         </div>
         <HelpButton onClick={() => setRunTour(true)} />
@@ -159,18 +155,18 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
       }}>
         <div>
           <h1 style={{ fontSize: 26, fontWeight: 700, margin: 0, lineHeight: 1.2, color: fg }}>
-            {year?.name ?? "Select an academic year"}
+            {year?.name ?? t("academicYear.selectPrompt")}
           </h1>
           <p style={{ color: muted, fontSize: 12, margin: "5px 0 0" }}>
-            {year ? `${year.start_date} — ${year.end_date} · ${yearStatusLabel}` : ""}
+            {year ? `${year.start_date} — ${year.end_date}` : ""}
           </p>
         </div>
         <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
           {[
-            { value: semesters.length, label: "Semesters" },
-            { value: subjects.length,  label: "Subjects" },
-            { value: totalFiles,       label: "Files indexed" },
-            { value: favoritesCount,   label: "Favorites" },
+            { value: semesters.length, label: t("academicYear.statSemesters") },
+            { value: subjects.length,  label: t("academicYear.statSubjects") },
+            { value: totalFiles,       label: t("academicYear.statFilesIndexed") },
+            { value: favoritesCount,   label: t("academicYear.statFavorites") },
           ].map(stat => (
             <div key={stat.label} style={{ textAlign: "center" }}>
               <div style={{ fontSize: 20, fontWeight: 700, color: fg }}>{stat.value}</div>
@@ -183,14 +179,14 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
       {/* ── Semesters section ── */}
       <div data-tour="year-semesters">
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Semesters</span>
+        <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>{t("academicYear.statSemesters")}</span>
       </div>
 
       {semesters.length === 0 ? (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "32px 0", marginBottom: 28 }}>
           <BookOpen size={36} color={muted} />
-          <p style={{ color: fg, fontSize: 14, fontWeight: 500, marginTop: 10, marginBottom: 4 }}>No semesters yet</p>
-          <p style={{ color: muted, fontSize: 12, margin: 0 }}>Add a semester to start organizing subjects</p>
+          <p style={{ color: fg, fontSize: 14, fontWeight: 500, marginTop: 10, marginBottom: 4 }}>{t("academicYear.noSemestersTitle")}</p>
+          <p style={{ color: muted, fontSize: 12, margin: 0 }}>{t("academicYear.noSemestersSubtitle")}</p>
           <button
             onClick={() => setSemesterModalOpen(true)}
             style={{
@@ -200,14 +196,12 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
             }}
           >
             <Plus size={13} />
-            Add semester
+            {t("academicYear.addSemester")}
           </button>
         </div>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 12, marginBottom: 28 }}>
           {semesters.map((sem: any) => {
-            const status = getStatus(sem.start_date, sem.end_date)
-            const isActive = status === "active"
             const semSubjects = subjects.filter(s => s.semester_id === sem.id)
             const semFileCount = semSubjects.reduce((acc, s) => acc + s.file_count, 0)
             return (
@@ -217,8 +211,8 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
                 onMouseLeave={() => setHoveredSemId(null)}
                 onClick={() => onSelectSemester(sem)}
                 style={{
-                  background: isActive ? "rgba(34,197,94,0.06)" : card,
-                  border: `1px solid ${isActive ? "rgba(34,197,94,0.35)" : border}`,
+                  background: card,
+                  border: `1px solid ${border}`,
                   borderRadius: 14, padding: 18, cursor: "pointer", position: "relative",
                 }}
               >
@@ -228,15 +222,6 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
                     <span style={{ color: fg, fontSize: 14, fontWeight: 600 }}>{sem.name}</span>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    {status !== "ended" && (
-                      <span style={{
-                        fontSize: 9, fontWeight: 500, padding: "2px 8px", borderRadius: 10,
-                        background: isActive ? "rgba(34,197,94,0.15)" : "var(--accent)",
-                        color: isActive ? "#16a34a" : muted,
-                      }}>
-                        {isActive ? "Active" : "Upcoming"}
-                      </span>
-                    )}
                     {hoveredSemId === sem.id && (
                       <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                         <button
@@ -266,8 +251,8 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
                   </div>
                 )}
                 <div style={{ display: "flex", gap: 10, fontSize: 10, color: muted }}>
-                  <span>{semSubjects.length} subject{semSubjects.length === 1 ? "" : "s"}</span>
-                  <span>{semFileCount} file{semFileCount === 1 ? "" : "s"}</span>
+                  <span>{t("common.subjectCount", { count: semSubjects.length })}</span>
+                  <span>{t("common.fileCount", { count: semFileCount })}</span>
                 </div>
               </div>
             )
@@ -281,7 +266,7 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
             }}
           >
             <Plus size={16} />
-            <span style={{ fontSize: 11 }}>Add semester</span>
+            <span style={{ fontSize: 11 }}>{t("academicYear.addSemester")}</span>
           </div>
         </div>
       )}
@@ -290,14 +275,14 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
       {/* Subjects section */}
       <div data-tour="year-subjects">
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Subjects</span>
+        <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>{t("academicYear.statSubjects")}</span>
       </div>
 
       {subjects.length === 0 ? (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 0", marginBottom: 28 }}>
           <Folder size={40} color={muted} />
-          <p style={{ color: fg, fontSize: 15, fontWeight: 500, marginTop: 12, marginBottom: 4 }}>No subjects yet</p>
-          <p style={{ color: muted, fontSize: 13, margin: 0 }}>Add a subject from one of the semesters above to start organizing files</p>
+          <p style={{ color: fg, fontSize: 15, fontWeight: 500, marginTop: 12, marginBottom: 4 }}>{t("academicYear.noSubjectsTitle")}</p>
+          <p style={{ color: muted, fontSize: 13, margin: 0 }}>{t("academicYear.noSubjectsSubtitle")}</p>
         </div>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12, marginBottom: 28 }}>
@@ -322,7 +307,7 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
                   </button>
                 </div>
                 <p style={{ color: muted, fontSize: 11, margin: "8px 0 0" }}>
-                  {subject.semester_name} · {subject.file_count} file{subject.file_count === 1 ? "" : "s"}
+                  {subject.semester_name} · {t("common.fileCount", { count: subject.file_count })}
                 </p>
               </div>
             )
@@ -335,7 +320,7 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
       {recentFiles.length > 0 && (
         <div data-tour="year-recent">
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-            <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Recently Opened</span>
+            <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>{t("common.recentlyOpened")}</span>
           </div>
           <div style={{ marginBottom: 28 }}>
             {recentFiles.map(file => (

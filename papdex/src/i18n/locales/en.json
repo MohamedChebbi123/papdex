@@ -1,0 +1,202 @@
+{
+  "common": {
+    "name": "Name",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "cancel": "Cancel",
+    "create": "Create",
+    "creating": "Creating...",
+    "save": "Save",
+    "saving": "Saving...",
+    "delete": "Delete",
+    "rename": "Rename",
+    "noFolder": "No folder",
+    "loading": "Loading…",
+    "student": "Student",
+    "avatarAlt": "avatar",
+    "recentlyOpened": "Recently Opened",
+    "format": "Format",
+    "type": "Type",
+    "all": "All",
+    "ofCount": "{{filtered}} of {{total}}",
+    "fileCount_one": "{{count}} file",
+    "fileCount_other": "{{count}} files",
+    "folderCount_one": "{{count}} folder",
+    "folderCount_other": "{{count}} folders",
+    "subjectCount_one": "{{count}} subject",
+    "subjectCount_other": "{{count}} subjects"
+  },
+  "app": {
+    "noYearTitle": "No academic year selected",
+    "noYearSubtitle": "Create an academic year to start organizing your semesters, subjects, and files.",
+    "createYear": "Create academic year"
+  },
+  "sidebar": {
+    "home": "Home",
+    "favorites": "Favorites",
+    "academicYears": "Academic Years",
+    "noSemesters": "No semesters",
+    "noSubjects": "No subjects",
+    "noAcademicYears": "No academic years yet",
+    "refresh": "refresh"
+  },
+  "language": {
+    "en": "English",
+    "fr": "French",
+    "ar": "Arabic"
+  },
+  "onboarding": {
+    "title": "Welcome to Papdex",
+    "subtitle": "Let's set up your profile before you get started.",
+    "addPhoto": "Add photo",
+    "remove": "Remove",
+    "yourName": "Your name",
+    "namePlaceholder": "e.g. Mohamed",
+    "themePreference": "Theme preference",
+    "dark": "Dark",
+    "light": "Light",
+    "settingUp": "Setting up…",
+    "getStarted": "Get started",
+    "apply": "Apply"
+  },
+  "favorites": {
+    "title": "Favorites",
+    "count_one": "{{count}} favourite subject",
+    "count_other": "{{count}} favourite subjects",
+    "emptyTitle": "No favourites yet",
+    "emptySubtitle": "Star a subject to add it here",
+    "removeTooltip": "Remove from favourites"
+  },
+  "academicYear": {
+    "loadingName": "Loading...",
+    "selectPrompt": "Select an academic year",
+    "statSemesters": "Semesters",
+    "statSubjects": "Subjects",
+    "statFilesIndexed": "Files indexed",
+    "statFavorites": "Favorites",
+    "noSemestersTitle": "No semesters yet",
+    "noSemestersSubtitle": "Add a semester to start organizing subjects",
+    "addSemester": "Add semester",
+    "noSubjectsTitle": "No subjects yet",
+    "noSubjectsSubtitle": "Add a subject from one of the semesters above to start organizing files"
+  },
+  "semester": {
+    "statSubjects": "Subjects",
+    "statFilesIndexed": "Files indexed",
+    "statExamTagged": "Exam tagged",
+    "statFavorites": "Favorites",
+    "addSubject": "Add subject",
+    "noSubjectsTitle": "No subjects yet",
+    "noSubjectsSubtitle": "Add your first subject to start organizing files"
+  },
+  "subject": {
+    "importFolder": "Import folder",
+    "importing": "Importing...",
+    "newFolder": "New folder",
+    "statFolders": "Folders",
+    "statImported": "Imported",
+    "importedCount": "{{count}} imported",
+    "foldersHeading": "Folders",
+    "noFoldersTitle": "No folders yet",
+    "noFoldersSubtitle": "Create a folder to organize your files",
+    "importedFoldersHeading": "Imported Folders",
+    "noImportedTitle": "No imported folders yet",
+    "noImportedSubtitle": "Import an OS folder to bring in all its files at once",
+    "filesHeading": "Files",
+    "noFilesTitle": "No files yet",
+    "noFilesSubtitle": "File management coming soon"
+  },
+  "virtualFolder": {
+    "addFiles": "Add files",
+    "statFiles": "Files",
+    "filesHeading": "Files",
+    "addFilesEmptyTitle": "Add files",
+    "addFilesEmptySubtitle": "Click to open file picker",
+    "noMatch": "No files match the selected filters"
+  },
+  "importedFolder": {
+    "statFiles": "Files",
+    "filesHeading": "Files",
+    "root": "Root",
+    "emptyTitle": "Folder is empty",
+    "emptySubtitle": "No files were found in the imported folder",
+    "noMatch": "No files match the selected filter"
+  },
+  "category": {
+    "Summary": "Summary",
+    "Lesson": "Lesson",
+    "Quiz": "Quiz",
+    "Exam": "Exam",
+    "Video": "Video",
+    "Notes": "Notes",
+    "Exercise": "Exercise",
+    "TD": "TD",
+    "TP": "TP"
+  },
+  "tour": {
+    "showTutorial": "Show tutorial",
+    "back": "Back",
+    "close": "Close",
+    "last": "Last",
+    "next": "Next",
+    "skip": "Skip",
+    "year": {
+      "hero": { "title": "Your academic year", "content": "This shows the selected year's date range and quick stats: semesters, subjects, files indexed, and favorites." },
+      "semesters": { "title": "Semesters", "content": "Semesters break your year into terms. Click one to open it, or add a new semester here." },
+      "subjects": { "title": "Subjects", "content": "Every subject across this year's semesters shows up here. Click one to browse its folders and files, and star the ones you use often." },
+      "recent": { "title": "Recently opened", "content": "Files you've recently opened anywhere in this year appear here for quick access." }
+    },
+    "semester": {
+      "stats": { "title": "Semester stats", "content": "Quick counts for this semester: subjects, files indexed, exam-tagged files, and favorites." },
+      "subjects": { "title": "Subjects", "content": "Click a subject to browse its folders and files, star the ones you care about, or add a new subject here." },
+      "recent": { "title": "Recently opened", "content": "Files you've recently opened anywhere in this semester show up here for quick access." }
+    },
+    "subject": {
+      "actions": { "title": "Add content", "content": "Import an existing OS folder to bring in all its files at once, or create a virtual folder to organize files inside the app." },
+      "folders": { "title": "Folders", "content": "Virtual folders live inside the app and group related files together. Click one to open it." },
+      "imported": { "title": "Imported folders", "content": "Imported folders mirror a real folder on your computer, including its subfolders, without moving or copying any files." },
+      "recent": { "title": "Recently opened", "content": "Files you've recently opened in this subject appear here, whether they live in a virtual folder or an imported one." }
+    },
+    "virtualFolder": {
+      "actions": { "title": "Manage this folder", "content": "Add more files, rename the folder, or delete it from here." },
+      "filters": { "title": "Filter files", "content": "Narrow the list down by file format or by the category tag assigned to each file." },
+      "files": { "title": "Files", "content": "Hover a file to preview it, open it in its default app, or delete it." }
+    },
+    "importedFolder": {
+      "header": { "title": "Imported folder", "content": "This mirrors a folder on your computer, shown at the path below. Its files aren't moved or copied — this is just a live view." },
+      "filters": { "title": "Filter files", "content": "Narrow the current folder's files down by format." },
+      "files": { "title": "Browse files", "content": "Subfolders and files are listed together. Click a subfolder to navigate into it, and hover a file to preview or open it." }
+    }
+  },
+  "modal": {
+    "yearCreate": { "title": "New Academic Year", "description": "Enter the details for the academic year.", "namePlaceholder": "e.g. 2024-2025" },
+    "yearUpdate": { "title": "Edit Academic Year", "description": "Update the details for this academic year." },
+    "semesterCreate": { "title": "New Semester", "description": "Enter the details for the semester.", "namePlaceholder": "e.g. Semester 1" },
+    "semesterUpdate": { "title": "Edit Semester", "description": "Update the details for this semester." },
+    "subjectCreate": { "title": "New Subject", "description": "Enter a name for the subject.", "namePlaceholder": "e.g. Data Structures" },
+    "folderCreate": { "title": "New Folder", "description": "Enter a name for the virtual folder.", "namePlaceholder": "e.g. Lectures" },
+    "folderUpdate": { "title": "Rename Folder", "description": "Enter a new name for this folder." },
+    "deleteConfirm": {
+      "title": "Delete {{label}}",
+      "description": "This action cannot be undone. Type the code below to confirm.",
+      "placeholder": "Type the code above"
+    },
+    "fileCreate": {
+      "title": "Add File",
+      "description": "Upload a file and assign it a type.",
+      "fileLabel": "File",
+      "dropText": "Drop a file here, or",
+      "clickToBrowse": "click to browse",
+      "typeLabel": "Type",
+      "customTypePlaceholder": "or type custom…",
+      "addFile": "Add file",
+      "adding": "Adding…"
+    }
+  },
+  "filePreview": {
+    "highlighting": "Highlighting…",
+    "couldNotLoad": "Could not load file.",
+    "couldNotRead": "Could not read file.",
+    "pdfViewerTitle": "PDF Viewer"
+  }
+}

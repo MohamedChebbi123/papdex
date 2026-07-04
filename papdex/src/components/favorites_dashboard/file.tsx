@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { FlaskConical, Star } from "lucide-react"
 import { getFavoriteSubjects, toggleFavoriteSubject } from "@/components/subjects_service/file"
 
@@ -30,6 +31,7 @@ const COLORS = [
 ]
 
 export function FavoritesDashboard({ onSelectSubject }: Props) {
+  const { t } = useTranslation()
   const [subjects, setSubjects] = useState<FavoriteSubject[]>([])
 
   useEffect(() => {
@@ -52,18 +54,18 @@ export function FavoritesDashboard({ onSelectSubject }: Props) {
       <div style={{ marginBottom: 28 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
           <Star size={20} fill="#f59e0b" color="#f59e0b" />
-          <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0, color: fg }}>Favorites</h1>
+          <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0, color: fg }}>{t("favorites.title")}</h1>
         </div>
         <p style={{ color: muted, fontSize: 13, margin: 0 }}>
-          {subjects.length} favourite {subjects.length === 1 ? "subject" : "subjects"}
+          {t("favorites.count", { count: subjects.length })}
         </p>
       </div>
 
       {subjects.length === 0 ? (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "60px 0" }}>
           <Star size={40} color={muted} />
-          <p style={{ color: fg, fontSize: 15, fontWeight: 500, marginTop: 12, marginBottom: 4 }}>No favourites yet</p>
-          <p style={{ color: muted, fontSize: 13, margin: 0 }}>Star a subject to add it here</p>
+          <p style={{ color: fg, fontSize: 15, fontWeight: 500, marginTop: 12, marginBottom: 4 }}>{t("favorites.emptyTitle")}</p>
+          <p style={{ color: muted, fontSize: 13, margin: 0 }}>{t("favorites.emptySubtitle")}</p>
         </div>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12 }}>
@@ -92,7 +94,7 @@ export function FavoritesDashboard({ onSelectSubject }: Props) {
                   <button
                     onClick={e => handleUnfavorite(e, subject)}
                     style={{ background: "none", border: "none", cursor: "pointer", padding: 4, flexShrink: 0, display: "flex" }}
-                    title="Remove from favourites"
+                    title={t("favorites.removeTooltip")}
                   >
                     <Star size={15} fill="#f59e0b" color="#f59e0b" />
                   </button>

@@ -1,0 +1,202 @@
+{
+  "common": {
+    "name": "Nom",
+    "startDate": "Date de début",
+    "endDate": "Date de fin",
+    "cancel": "Annuler",
+    "create": "Créer",
+    "creating": "Création...",
+    "save": "Enregistrer",
+    "saving": "Enregistrement...",
+    "delete": "Supprimer",
+    "rename": "Renommer",
+    "noFolder": "Aucun dossier",
+    "loading": "Chargement…",
+    "student": "Étudiant",
+    "avatarAlt": "avatar",
+    "recentlyOpened": "Récemment ouverts",
+    "format": "Format",
+    "type": "Type",
+    "all": "Tous",
+    "ofCount": "{{filtered}} sur {{total}}",
+    "fileCount_one": "{{count}} fichier",
+    "fileCount_other": "{{count}} fichiers",
+    "folderCount_one": "{{count}} dossier",
+    "folderCount_other": "{{count}} dossiers",
+    "subjectCount_one": "{{count}} matière",
+    "subjectCount_other": "{{count}} matières"
+  },
+  "app": {
+    "noYearTitle": "Aucune année scolaire sélectionnée",
+    "noYearSubtitle": "Créez une année scolaire pour commencer à organiser vos semestres, matières et fichiers.",
+    "createYear": "Créer une année scolaire"
+  },
+  "sidebar": {
+    "home": "Accueil",
+    "favorites": "Favoris",
+    "academicYears": "Années scolaires",
+    "noSemesters": "Aucun semestre",
+    "noSubjects": "Aucune matière",
+    "noAcademicYears": "Aucune année scolaire pour l'instant",
+    "refresh": "actualiser"
+  },
+  "language": {
+    "en": "Anglais",
+    "fr": "Français",
+    "ar": "Arabe"
+  },
+  "onboarding": {
+    "title": "Bienvenue sur Papdex",
+    "subtitle": "Configurons votre profil avant de commencer.",
+    "addPhoto": "Ajouter une photo",
+    "remove": "Retirer",
+    "yourName": "Votre nom",
+    "namePlaceholder": "p. ex. Mohamed",
+    "themePreference": "Thème préféré",
+    "dark": "Sombre",
+    "light": "Clair",
+    "settingUp": "Configuration…",
+    "getStarted": "Commencer",
+    "apply": "Appliquer"
+  },
+  "favorites": {
+    "title": "Favoris",
+    "count_one": "{{count}} matière favorite",
+    "count_other": "{{count}} matières favorites",
+    "emptyTitle": "Aucun favori pour l'instant",
+    "emptySubtitle": "Marquez une matière d'une étoile pour l'ajouter ici",
+    "removeTooltip": "Retirer des favoris"
+  },
+  "academicYear": {
+    "loadingName": "Chargement...",
+    "selectPrompt": "Sélectionnez une année scolaire",
+    "statSemesters": "Semestres",
+    "statSubjects": "Matières",
+    "statFilesIndexed": "Fichiers indexés",
+    "statFavorites": "Favoris",
+    "noSemestersTitle": "Aucun semestre pour l'instant",
+    "noSemestersSubtitle": "Ajoutez un semestre pour commencer à organiser vos matières",
+    "addSemester": "Ajouter un semestre",
+    "noSubjectsTitle": "Aucune matière pour l'instant",
+    "noSubjectsSubtitle": "Ajoutez une matière depuis l'un des semestres ci-dessus pour organiser vos fichiers"
+  },
+  "semester": {
+    "statSubjects": "Matières",
+    "statFilesIndexed": "Fichiers indexés",
+    "statExamTagged": "Marqués examen",
+    "statFavorites": "Favoris",
+    "addSubject": "Ajouter une matière",
+    "noSubjectsTitle": "Aucune matière pour l'instant",
+    "noSubjectsSubtitle": "Ajoutez votre première matière pour commencer à organiser vos fichiers"
+  },
+  "subject": {
+    "importFolder": "Importer un dossier",
+    "importing": "Importation...",
+    "newFolder": "Nouveau dossier",
+    "statFolders": "Dossiers",
+    "statImported": "Importés",
+    "importedCount": "{{count}} importés",
+    "foldersHeading": "Dossiers",
+    "noFoldersTitle": "Aucun dossier pour l'instant",
+    "noFoldersSubtitle": "Créez un dossier pour organiser vos fichiers",
+    "importedFoldersHeading": "Dossiers importés",
+    "noImportedTitle": "Aucun dossier importé pour l'instant",
+    "noImportedSubtitle": "Importez un dossier du système pour récupérer tous ses fichiers d'un coup",
+    "filesHeading": "Fichiers",
+    "noFilesTitle": "Aucun fichier pour l'instant",
+    "noFilesSubtitle": "Gestion des fichiers bientôt disponible"
+  },
+  "virtualFolder": {
+    "addFiles": "Ajouter des fichiers",
+    "statFiles": "Fichiers",
+    "filesHeading": "Fichiers",
+    "addFilesEmptyTitle": "Ajouter des fichiers",
+    "addFilesEmptySubtitle": "Cliquez pour ouvrir le sélecteur de fichiers",
+    "noMatch": "Aucun fichier ne correspond aux filtres sélectionnés"
+  },
+  "importedFolder": {
+    "statFiles": "Fichiers",
+    "filesHeading": "Fichiers",
+    "root": "Racine",
+    "emptyTitle": "Le dossier est vide",
+    "emptySubtitle": "Aucun fichier n'a été trouvé dans le dossier importé",
+    "noMatch": "Aucun fichier ne correspond au filtre sélectionné"
+  },
+  "category": {
+    "Summary": "Résumé",
+    "Lesson": "Cours",
+    "Quiz": "Quiz",
+    "Exam": "Examen",
+    "Video": "Vidéo",
+    "Notes": "Notes",
+    "Exercise": "Exercice",
+    "TD": "TD",
+    "TP": "TP"
+  },
+  "tour": {
+    "showTutorial": "Afficher le tutoriel",
+    "back": "Précédent",
+    "close": "Fermer",
+    "last": "Terminer",
+    "next": "Suivant",
+    "skip": "Passer",
+    "year": {
+      "hero": { "title": "Votre année scolaire", "content": "Affiche la période de l'année sélectionnée et des statistiques rapides : semestres, matières, fichiers indexés et favoris." },
+      "semesters": { "title": "Semestres", "content": "Les semestres découpent votre année en périodes. Cliquez sur l'un d'eux pour l'ouvrir, ou ajoutez-en un nouveau ici." },
+      "subjects": { "title": "Matières", "content": "Toutes les matières des semestres de cette année apparaissent ici. Cliquez sur une matière pour parcourir ses dossiers et fichiers, et marquez d'une étoile celles que vous utilisez souvent." },
+      "recent": { "title": "Récemment ouverts", "content": "Les fichiers récemment ouverts dans cette année apparaissent ici pour un accès rapide." }
+    },
+    "semester": {
+      "stats": { "title": "Statistiques du semestre", "content": "Chiffres rapides pour ce semestre : matières, fichiers indexés, fichiers marqués examen et favoris." },
+      "subjects": { "title": "Matières", "content": "Cliquez sur une matière pour parcourir ses dossiers et fichiers, marquez d'une étoile celles qui comptent, ou ajoutez-en une nouvelle ici." },
+      "recent": { "title": "Récemment ouverts", "content": "Les fichiers récemment ouverts dans ce semestre apparaissent ici pour un accès rapide." }
+    },
+    "subject": {
+      "actions": { "title": "Ajouter du contenu", "content": "Importez un dossier existant du système pour récupérer tous ses fichiers d'un coup, ou créez un dossier virtuel pour organiser vos fichiers dans l'application." },
+      "folders": { "title": "Dossiers", "content": "Les dossiers virtuels vivent dans l'application et regroupent des fichiers liés entre eux. Cliquez sur l'un d'eux pour l'ouvrir." },
+      "imported": { "title": "Dossiers importés", "content": "Les dossiers importés reflètent un dossier réel de votre ordinateur, y compris ses sous-dossiers, sans déplacer ni copier aucun fichier." },
+      "recent": { "title": "Récemment ouverts", "content": "Les fichiers récemment ouverts dans cette matière apparaissent ici, qu'ils se trouvent dans un dossier virtuel ou importé." }
+    },
+    "virtualFolder": {
+      "actions": { "title": "Gérer ce dossier", "content": "Ajoutez d'autres fichiers, renommez le dossier, ou supprimez-le depuis ici." },
+      "filters": { "title": "Filtrer les fichiers", "content": "Affinez la liste par format de fichier ou par la catégorie attribuée à chaque fichier." },
+      "files": { "title": "Fichiers", "content": "Survolez un fichier pour le prévisualiser, l'ouvrir dans son application par défaut, ou le supprimer." }
+    },
+    "importedFolder": {
+      "header": { "title": "Dossier importé", "content": "Ceci reflète un dossier de votre ordinateur, indiqué au chemin ci-dessous. Ses fichiers ne sont ni déplacés ni copiés — c'est une vue en direct." },
+      "filters": { "title": "Filtrer les fichiers", "content": "Affinez les fichiers du dossier actuel par format." },
+      "files": { "title": "Parcourir les fichiers", "content": "Les sous-dossiers et les fichiers sont listés ensemble. Cliquez sur un sous-dossier pour y accéder, et survolez un fichier pour le prévisualiser ou l'ouvrir." }
+    }
+  },
+  "modal": {
+    "yearCreate": { "title": "Nouvelle année scolaire", "description": "Saisissez les informations de l'année scolaire.", "namePlaceholder": "p. ex. 2024-2025" },
+    "yearUpdate": { "title": "Modifier l'année scolaire", "description": "Mettez à jour les informations de cette année scolaire." },
+    "semesterCreate": { "title": "Nouveau semestre", "description": "Saisissez les informations du semestre.", "namePlaceholder": "p. ex. Semestre 1" },
+    "semesterUpdate": { "title": "Modifier le semestre", "description": "Mettez à jour les informations de ce semestre." },
+    "subjectCreate": { "title": "Nouvelle matière", "description": "Saisissez un nom pour la matière.", "namePlaceholder": "p. ex. Structures de données" },
+    "folderCreate": { "title": "Nouveau dossier", "description": "Saisissez un nom pour le dossier virtuel.", "namePlaceholder": "p. ex. Cours" },
+    "folderUpdate": { "title": "Renommer le dossier", "description": "Saisissez un nouveau nom pour ce dossier." },
+    "deleteConfirm": {
+      "title": "Supprimer {{label}}",
+      "description": "Cette action est irréversible. Saisissez le code ci-dessous pour confirmer.",
+      "placeholder": "Saisissez le code ci-dessus"
+    },
+    "fileCreate": {
+      "title": "Ajouter un fichier",
+      "description": "Importez un fichier et attribuez-lui un type.",
+      "fileLabel": "Fichier",
+      "dropText": "Déposez un fichier ici, ou",
+      "clickToBrowse": "cliquez pour parcourir",
+      "typeLabel": "Type",
+      "customTypePlaceholder": "ou saisissez un type…",
+      "addFile": "Ajouter le fichier",
+      "adding": "Ajout…"
+    }
+  },
+  "filePreview": {
+    "highlighting": "Coloration syntaxique…",
+    "couldNotLoad": "Impossible de charger le fichier.",
+    "couldNotRead": "Impossible de lire le fichier.",
+    "pdfViewerTitle": "Visionneuse PDF"
+  }
+}

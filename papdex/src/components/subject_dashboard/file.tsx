@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react"
+import { useTranslation } from "react-i18next"
 import {
-  Calendar, ChevronRight, FileText,
+  Calendar, ChevronLeft, ChevronRight, FileText,
   Folder, FolderInput, Pencil, Plus, Star, Trash2,
 } from "lucide-react"
 import type { Step } from "react-joyride"
+import { RTL_LANGUAGES } from "@/i18n"
 import { getSubjectById, toggleFavoriteSubject } from "@/components/subjects_service/file"
 import {
   getVirtualFoldersBySubject,
@@ -69,6 +71,9 @@ type RecentEntry =
   | { kind: "imported"; file: RecentImportedFile }
 
 export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYear, onSelectFolder, onSelectImportedFolder, onOpenFile }: Props) {
+  const { t, i18n } = useTranslation()
+  const isRTL = RTL_LANGUAGES.has(i18n.language)
+  const BreadcrumbChevron = isRTL ? ChevronLeft : ChevronRight
   const [subject, setSubject] = useState<Subject | null>(null)
   const [folders, setFolders] = useState<VirtualFolder[]>([])
   const [importedFolders, setImportedFolders] = useState<ImportedFolder[]>([])
@@ -159,10 +164,10 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
   const fg     = "var(--foreground)"
 
   const tourSteps: Step[] = [
-    { target: '[data-tour="subj-actions"]', title: "Add content", content: "Import an existing OS folder to bring in all its files at once, or create a virtual folder to organize files inside the app." },
-    { target: '[data-tour="subj-folders"]', title: "Folders", content: "Virtual folders live inside the app and group related files together. Click one to open it." },
-    { target: '[data-tour="subj-imported"]', title: "Imported folders", content: "Imported folders mirror a real folder on your computer, including its subfolders, without moving or copying any files." },
-    ...(recentEntries.length > 0 ? [{ target: '[data-tour="subj-recent"]', title: "Recently opened", content: "Files you've recently opened in this subject appear here, whether they live in a virtual folder or an imported one." }] : []),
+    { target: '[data-tour="subj-actions"]', title: t("tour.subject.actions.title"), content: t("tour.subject.actions.content") },
+    { target: '[data-tour="subj-folders"]', title: t("tour.subject.folders.title"), content: t("tour.subject.folders.content") },
+    { target: '[data-tour="subj-imported"]', title: t("tour.subject.imported.title"), content: t("tour.subject.imported.content") },
+    ...(recentEntries.length > 0 ? [{ target: '[data-tour="subj-recent"]', title: t("tour.subject.recent.title"), content: t("tour.subject.recent.content") }] : []),
   ]
 
   return (
@@ -172,21 +177,21 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6, color: muted, fontSize: 12 }}>
           <Calendar size={13} />
-          <ChevronRight size={13} />
+          <BreadcrumbChevron size={13} />
           <button
             onClick={onBackToYear}
             style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}
           >
             {year.name}
           </button>
-          <ChevronRight size={13} />
+          <BreadcrumbChevron size={13} />
           <button
             onClick={onBack}
             style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}
           >
             {semester.name}
           </button>
-          <ChevronRight size={13} />
+          <BreadcrumbChevron size={13} />
           <span style={{ color: fg }}>{subject?.name ?? "..."}</span>
         </div>
         <HelpButton onClick={() => setRunTour(true)} />
@@ -198,7 +203,7 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28 }}>
         <div>
           <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0, lineHeight: 1.2, color: fg, display: "flex", alignItems: "center", gap: 10 }}>
-            {subject?.name ?? "Loading..."}
+            {subject?.name ?? t("common.loading")}
             <button
               onClick={handleToggleSubjectFavorite}
               style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", marginTop: 2 }}
@@ -211,7 +216,7 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
             </button>
           </h1>
           <p style={{ color: muted, fontSize: 13, margin: "4px 0 0" }}>
-            {semester.name} · {folders.length} folders · {importedFolders.length} imported
+            {semester.name} · {t("common.folderCount", { count: folders.length })} · {t("subject.importedCount", { count: importedFolders.length })}
           </p>
         </div>
         <div data-tour="subj-actions" style={{ display: "flex", gap: 8 }}>
@@ -226,7 +231,7 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
             }}
           >
             <FolderInput size={14} />
-            {importing ? "Importing..." : "Import folder"}
+            {importing ? t("subject.importing") : t("subject.importFolder")}
           </button>
           <button
             onClick={() => setCreateOpen(true)}
@@ -237,7 +242,7 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
             }}
           >
             <Plus size={14} />
-            New folder
+            {t("subject.newFolder")}
           </button>
         </div>
       </div>
@@ -245,8 +250,8 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
       {/* Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 28, maxWidth: 480 }}>
         {[
-          { value: folders.length,         label: "Folders" },
-          { value: importedFolders.length, label: "Imported" },
+          { value: folders.length,         label: t("subject.statFolders") },
+          { value: importedFolders.length, label: t("subject.statImported") },
         ].map(stat => (
           <div key={stat.label} style={{ background: card, borderRadius: 12, padding: "14px 16px", border: `1px solid ${border}` }}>
             <div style={{ fontSize: 28, fontWeight: 700, color: fg }}>{stat.value}</div>
@@ -258,14 +263,14 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
       {/* Virtual Folders */}
       <div data-tour="subj-folders">
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Folders</span>
+        <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>{t("subject.foldersHeading")}</span>
       </div>
 
       {folders.length === 0 ? (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 0", marginBottom: 28 }}>
           <Folder size={40} color={muted} />
-          <p style={{ color: fg, fontSize: 15, fontWeight: 500, marginTop: 12, marginBottom: 4 }}>No folders yet</p>
-          <p style={{ color: muted, fontSize: 13, margin: 0 }}>Create a folder to organize your files</p>
+          <p style={{ color: fg, fontSize: 15, fontWeight: 500, marginTop: 12, marginBottom: 4 }}>{t("subject.noFoldersTitle")}</p>
+          <p style={{ color: muted, fontSize: 13, margin: 0 }}>{t("subject.noFoldersSubtitle")}</p>
           <button
             onClick={() => setCreateOpen(true)}
             style={{
@@ -275,7 +280,7 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
             }}
           >
             <Plus size={14} />
-            New folder
+            {t("subject.newFolder")}
           </button>
         </div>
       ) : (
@@ -312,7 +317,7 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
                   )}
                 </div>
               </div>
-              <p style={{ color: muted, fontSize: 11, margin: "6px 0 0" }}>{folder.file_count} file{folder.file_count === 1 ? "" : "s"}</p>
+              <p style={{ color: muted, fontSize: 11, margin: "6px 0 0" }}>{t("common.fileCount", { count: folder.file_count })}</p>
             </div>
           ))}
         </div>
@@ -322,14 +327,14 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
       {/* Imported Folders */}
       <div data-tour="subj-imported">
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Imported Folders</span>
+        <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>{t("subject.importedFoldersHeading")}</span>
       </div>
 
       {importedFolders.length === 0 ? (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 0", marginBottom: 28 }}>
           <FolderInput size={40} color={muted} />
-          <p style={{ color: fg, fontSize: 15, fontWeight: 500, marginTop: 12, marginBottom: 4 }}>No imported folders yet</p>
-          <p style={{ color: muted, fontSize: 13, margin: 0 }}>Import an OS folder to bring in all its files at once</p>
+          <p style={{ color: fg, fontSize: 15, fontWeight: 500, marginTop: 12, marginBottom: 4 }}>{t("subject.noImportedTitle")}</p>
+          <p style={{ color: muted, fontSize: 13, margin: 0 }}>{t("subject.noImportedSubtitle")}</p>
           <button
             onClick={handleImportFolder}
             disabled={importing}
@@ -340,7 +345,7 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
             }}
           >
             <FolderInput size={14} />
-            Import folder
+            {t("subject.importFolder")}
           </button>
         </div>
       ) : (
@@ -370,7 +375,7 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
                 </div>
               </div>
               <p style={{ color: muted, fontSize: 11, margin: "6px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {folder.file_count} file{folder.file_count !== 1 ? "s" : ""} · {folder.original_path}
+                {t("common.fileCount", { count: folder.file_count })} · {folder.original_path}
               </p>
             </div>
           ))}
@@ -382,7 +387,7 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
       {recentEntries.length > 0 && (
         <div data-tour="subj-recent">
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-            <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Recently Opened</span>
+            <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>{t("common.recentlyOpened")}</span>
           </div>
           <div style={{ marginBottom: 28 }}>
             {recentEntries.map(entry => (
@@ -409,7 +414,7 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
                   ) : (
                     <>
                       <Folder size={12} />
-                      {folders.find(f => f.id === entry.file.folder_id)?.name ?? "No folder"}
+                      {folders.find(f => f.id === entry.file.folder_id)?.name ?? t("common.noFolder")}
                     </>
                   )}
                 </span>
@@ -421,12 +426,12 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
 
       {/* Files placeholder */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Files</span>
+        <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>{t("subject.filesHeading")}</span>
       </div>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "32px 0", marginBottom: 28 }}>
         <FileText size={36} color={muted} />
-        <p style={{ color: fg, fontSize: 14, fontWeight: 500, marginTop: 10, marginBottom: 4 }}>No files yet</p>
-        <p style={{ color: muted, fontSize: 12, margin: 0 }}>File management coming soon</p>
+        <p style={{ color: fg, fontSize: 14, fontWeight: 500, marginTop: 10, marginBottom: 4 }}>{t("subject.noFilesTitle")}</p>
+        <p style={{ color: muted, fontSize: 12, margin: 0 }}>{t("subject.noFilesSubtitle")}</p>
       </div>
 
       <VirtualFolderCreation

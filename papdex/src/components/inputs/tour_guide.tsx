@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next"
 import { Joyride, STATUS, type Step } from "react-joyride"
 
 interface Props {
@@ -7,12 +8,21 @@ interface Props {
 }
 
 export function TourGuide({ steps, run, onFinish }: Props) {
+  const { t } = useTranslation()
+
   return (
     <Joyride
       steps={steps}
       run={run}
       continuous
       scrollToFirstStep
+      locale={{
+        back: t("tour.back"),
+        close: t("tour.close"),
+        last: t("tour.last"),
+        next: t("tour.next"),
+        skip: t("tour.skip"),
+      }}
       options={{
         primaryColor: "#6366f1",
         backgroundColor: "var(--card)",

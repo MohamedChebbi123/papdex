@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react"
+import { useTranslation } from "react-i18next"
 import { X } from "lucide-react"
 import { readFileBuffer, type AppFile } from "@/components/file_service/file"
 import type { Highlighter } from "shiki"
@@ -77,10 +78,10 @@ function MarkdownViewer({ content }: { content: string }) {
             h4: ({ children }) => <h4 style={{ fontSize: 15, fontWeight: 600, margin: "20px 0 6px" }}>{children}</h4>,
             p: ({ children }) => <p style={{ margin: "0 0 14px" }}>{children}</p>,
             a: ({ href, children }) => <a href={href} style={{ color: "var(--primary)", textDecoration: "underline" }}>{children}</a>,
-            ul: ({ children }) => <ul style={{ margin: "0 0 14px", paddingLeft: 24 }}>{children}</ul>,
-            ol: ({ children }) => <ol style={{ margin: "0 0 14px", paddingLeft: 24 }}>{children}</ol>,
+            ul: ({ children }) => <ul style={{ margin: "0 0 14px", paddingInlineStart: 24 }}>{children}</ul>,
+            ol: ({ children }) => <ol style={{ margin: "0 0 14px", paddingInlineStart: 24 }}>{children}</ol>,
             li: ({ children }) => <li style={{ margin: "4px 0" }}>{children}</li>,
-            blockquote: ({ children }) => <blockquote style={{ borderLeft: "3px solid var(--border)", margin: "0 0 14px", paddingLeft: 16, color: "var(--muted-foreground)" }}>{children}</blockquote>,
+            blockquote: ({ children }) => <blockquote style={{ borderInlineStart: "3px solid var(--border)", margin: "0 0 14px", paddingInlineStart: 16, color: "var(--muted-foreground)" }}>{children}</blockquote>,
             code: ({ children, className }) => {
               const isBlock = !!className
               return isBlock
@@ -90,7 +91,7 @@ function MarkdownViewer({ content }: { content: string }) {
             pre: ({ children }) => <pre style={{ margin: 0 }}>{children}</pre>,
             hr: () => <hr style={{ border: "none", borderTop: "1px solid var(--border)", margin: "24px 0" }} />,
             table: ({ children }) => <div style={{ overflowX: "auto", margin: "0 0 14px" }}><table style={{ borderCollapse: "collapse", width: "100%" }}>{children}</table></div>,
-            th: ({ children }) => <th style={{ border: "1px solid var(--border)", padding: "8px 12px", background: "var(--muted)", fontWeight: 600, textAlign: "left" }}>{children}</th>,
+            th: ({ children }) => <th style={{ border: "1px solid var(--border)", padding: "8px 12px", background: "var(--muted)", fontWeight: 600, textAlign: "start" }}>{children}</th>,
             td: ({ children }) => <td style={{ border: "1px solid var(--border)", padding: "8px 12px" }}>{children}</td>,
             img: ({ src, alt }) => <img src={src} alt={alt} style={{ maxWidth: "100%", borderRadius: 8, margin: "8px 0" }} />,
           }}
@@ -114,6 +115,7 @@ function getHighlighter(): Promise<Highlighter> {
 }
 
 function CodeViewer({ code, lang }: { code: string; lang: string }) {
+  const { t } = useTranslation()
   const [html, setHtml] = useState<string>("")
   const abortRef = useRef(false)
 
@@ -136,7 +138,7 @@ function CodeViewer({ code, lang }: { code: string; lang: string }) {
   }, [code, lang])
 
   if (!html) return (
-    <span style={{ color: "var(--muted-foreground)", fontSize: 13 }}>Highlighting…</span>
+    <span style={{ color: "var(--muted-foreground)", fontSize: 13 }}>{t("filePreview.highlighting")}</span>
   )
 
   return (
@@ -170,6 +172,7 @@ interface Props {
 }
 
 export function FilePreviewPanel({ file, onClose }: Props) {
+  const { t } = useTranslation()
   const [blobUrl, setBlobUrl] = useState<string | null>(null)
   const [codeText, setCodeText] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -217,7 +220,7 @@ export function FilePreviewPanel({ file, onClose }: Props) {
   return (
     <div style={{
       height: "100%", display: "flex", flexDirection: "column",
-      background: "var(--background)", borderLeft: "1px solid var(--border)",
+      background: "var(--background)", borderInlineStart: "1px solid var(--border)",
     }}>
       {/* Header */}
       <div style={{
@@ -262,7 +265,7 @@ export function FilePreviewPanel({ file, onClose }: Props) {
           <PdfViewerInner filePath={file.file_path} />
         )}
         {!isPdf && loading && (
-          <span style={{ color: "var(--muted-foreground)", fontSize: 13 }}>Loading…</span>
+          <span style={{ color: "var(--muted-foreground)", fontSize: 13 }}>{t("common.loading")}</span>
         )}
         {!isPdf && !loading && isMarkdown && codeText !== null && (
           <MarkdownViewer content={codeText} />
@@ -287,7 +290,7 @@ export function FilePreviewPanel({ file, onClose }: Props) {
           </div>
         )}
         {!isPdf && !loading && !isCode && !isMarkdown && !blobUrl && (
-          <span style={{ color: "var(--muted-foreground)", fontSize: 13 }}>Could not load file.</span>
+          <span style={{ color: "var(--muted-foreground)", fontSize: 13 }}>{t("filePreview.couldNotLoad")}</span>
         )}
       </div>
     </div>

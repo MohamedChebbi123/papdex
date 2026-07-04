@@ -59,7 +59,8 @@ database.exec(`
         display_name TEXT NOT NULL DEFAULT 'Student',
         avatar_path  TEXT,
         theme        TEXT NOT NULL DEFAULT 'dark',
-        onboarded    INTEGER NOT NULL DEFAULT 0
+        onboarded    INTEGER NOT NULL DEFAULT 0,
+        language     TEXT NOT NULL DEFAULT 'en'
     );
 
     CREATE TABLE IF NOT EXISTS imported_folders (
@@ -88,5 +89,10 @@ database.exec(`
         opened_at   TEXT NOT NULL DEFAULT (datetime('now'))
     );
 `)
+
+const userColumns = database.prepare("PRAGMA table_info(user)").all() as { name: string }[]
+if (!userColumns.some(col => col.name === "language")) {
+    database.exec("ALTER TABLE user ADD COLUMN language TEXT NOT NULL DEFAULT 'en'")
+}
 
 database.prepare("INSERT OR IGNORE INTO user (id) VALUES (1)").run()

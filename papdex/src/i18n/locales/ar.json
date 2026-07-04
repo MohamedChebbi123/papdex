@@ -1,0 +1,218 @@
+{
+  "common": {
+    "name": "الاسم",
+    "startDate": "تاريخ البداية",
+    "endDate": "تاريخ النهاية",
+    "cancel": "إلغاء",
+    "create": "إنشاء",
+    "creating": "جارٍ الإنشاء...",
+    "save": "حفظ",
+    "saving": "جارٍ الحفظ...",
+    "delete": "حذف",
+    "rename": "إعادة تسمية",
+    "noFolder": "بدون مجلد",
+    "loading": "جارٍ التحميل…",
+    "student": "طالب",
+    "avatarAlt": "الصورة الرمزية",
+    "recentlyOpened": "فُتحت مؤخرًا",
+    "format": "الصيغة",
+    "type": "النوع",
+    "all": "الكل",
+    "ofCount": "{{filtered}} من {{total}}",
+    "fileCount_zero": "لا توجد ملفات",
+    "fileCount_one": "ملف واحد",
+    "fileCount_two": "ملفان",
+    "fileCount_few": "{{count}} ملفات",
+    "fileCount_many": "{{count}} ملفًا",
+    "fileCount_other": "{{count}} ملف",
+    "folderCount_zero": "لا توجد مجلدات",
+    "folderCount_one": "مجلد واحد",
+    "folderCount_two": "مجلدان",
+    "folderCount_few": "{{count}} مجلدات",
+    "folderCount_many": "{{count}} مجلدًا",
+    "folderCount_other": "{{count}} مجلد",
+    "subjectCount_zero": "لا توجد مواد",
+    "subjectCount_one": "مادة واحدة",
+    "subjectCount_two": "مادتان",
+    "subjectCount_few": "{{count}} مواد",
+    "subjectCount_many": "{{count}} مادة",
+    "subjectCount_other": "{{count}} مادة"
+  },
+  "app": {
+    "noYearTitle": "لم يتم اختيار سنة دراسية",
+    "noYearSubtitle": "أنشئ سنة دراسية لتبدأ في تنظيم السداسيات والمواد والملفات.",
+    "createYear": "إنشاء سنة دراسية"
+  },
+  "sidebar": {
+    "home": "الرئيسية",
+    "favorites": "المفضلة",
+    "academicYears": "السنوات الدراسية",
+    "noSemesters": "لا توجد سداسيات",
+    "noSubjects": "لا توجد مواد",
+    "noAcademicYears": "لا توجد سنوات دراسية بعد",
+    "refresh": "تحديث"
+  },
+  "language": {
+    "en": "الإنجليزية",
+    "fr": "الفرنسية",
+    "ar": "العربية"
+  },
+  "onboarding": {
+    "title": "مرحبًا بك في Papdex",
+    "subtitle": "لنقم بإعداد ملفك الشخصي قبل البدء.",
+    "addPhoto": "إضافة صورة",
+    "remove": "إزالة",
+    "yourName": "اسمك",
+    "namePlaceholder": "مثال: محمد",
+    "themePreference": "المظهر المفضل",
+    "dark": "داكن",
+    "light": "فاتح",
+    "settingUp": "جارٍ الإعداد…",
+    "getStarted": "ابدأ الآن",
+    "apply": "تطبيق"
+  },
+  "favorites": {
+    "title": "المفضلة",
+    "count_zero": "لا توجد مواد مفضلة",
+    "count_one": "مادة مفضلة واحدة",
+    "count_two": "مادتان مفضلتان",
+    "count_few": "{{count}} مواد مفضلة",
+    "count_many": "{{count}} مادة مفضلة",
+    "count_other": "{{count}} مادة مفضلة",
+    "emptyTitle": "لا توجد مفضلات بعد",
+    "emptySubtitle": "أضف نجمة إلى مادة لإضافتها هنا",
+    "removeTooltip": "إزالة من المفضلة"
+  },
+  "academicYear": {
+    "loadingName": "جارٍ التحميل...",
+    "selectPrompt": "اختر سنة دراسية",
+    "statSemesters": "السداسيات",
+    "statSubjects": "المواد",
+    "statFilesIndexed": "الملفات المفهرسة",
+    "statFavorites": "المفضلة",
+    "noSemestersTitle": "لا توجد سداسيات بعد",
+    "noSemestersSubtitle": "أضف سداسيًا لتبدأ في تنظيم المواد",
+    "addSemester": "إضافة سداسي",
+    "noSubjectsTitle": "لا توجد مواد بعد",
+    "noSubjectsSubtitle": "أضف مادة من أحد السداسيات أعلاه لتبدأ في تنظيم ملفاتك"
+  },
+  "semester": {
+    "statSubjects": "المواد",
+    "statFilesIndexed": "الملفات المفهرسة",
+    "statExamTagged": "ملفات الامتحان",
+    "statFavorites": "المفضلة",
+    "addSubject": "إضافة مادة",
+    "noSubjectsTitle": "لا توجد مواد بعد",
+    "noSubjectsSubtitle": "أضف أول مادة لتبدأ في تنظيم ملفاتك"
+  },
+  "subject": {
+    "importFolder": "استيراد مجلد",
+    "importing": "جارٍ الاستيراد...",
+    "newFolder": "مجلد جديد",
+    "statFolders": "المجلدات",
+    "statImported": "المستوردة",
+    "importedCount": "{{count}} مستوردة",
+    "foldersHeading": "المجلدات",
+    "noFoldersTitle": "لا توجد مجلدات بعد",
+    "noFoldersSubtitle": "أنشئ مجلدًا لتنظيم ملفاتك",
+    "importedFoldersHeading": "المجلدات المستوردة",
+    "noImportedTitle": "لا توجد مجلدات مستوردة بعد",
+    "noImportedSubtitle": "استورد مجلدًا من نظام التشغيل لإحضار جميع ملفاته دفعة واحدة",
+    "filesHeading": "الملفات",
+    "noFilesTitle": "لا توجد ملفات بعد",
+    "noFilesSubtitle": "إدارة الملفات قريبًا"
+  },
+  "virtualFolder": {
+    "addFiles": "إضافة ملفات",
+    "statFiles": "الملفات",
+    "filesHeading": "الملفات",
+    "addFilesEmptyTitle": "إضافة ملفات",
+    "addFilesEmptySubtitle": "انقر لفتح منتقي الملفات",
+    "noMatch": "لا توجد ملفات مطابقة للمرشحات المحددة"
+  },
+  "importedFolder": {
+    "statFiles": "الملفات",
+    "filesHeading": "الملفات",
+    "root": "الجذر",
+    "emptyTitle": "المجلد فارغ",
+    "emptySubtitle": "لم يتم العثور على ملفات في المجلد المستورد",
+    "noMatch": "لا توجد ملفات مطابقة للمرشح المحدد"
+  },
+  "category": {
+    "Summary": "ملخص",
+    "Lesson": "درس",
+    "Quiz": "اختبار قصير",
+    "Exam": "امتحان",
+    "Video": "فيديو",
+    "Notes": "ملاحظات",
+    "Exercise": "تمرين",
+    "TD": "TD",
+    "TP": "TP"
+  },
+  "tour": {
+    "showTutorial": "عرض الشرح التفاعلي",
+    "back": "السابق",
+    "close": "إغلاق",
+    "last": "إنهاء",
+    "next": "التالي",
+    "skip": "تخطي",
+    "year": {
+      "hero": { "title": "سنتك الدراسية", "content": "يعرض هذا الفترة الزمنية للسنة المحددة وإحصائيات سريعة: السداسيات والمواد والملفات المفهرسة والمفضلة." },
+      "semesters": { "title": "السداسيات", "content": "تقسّم السداسيات سنتك إلى فترات. انقر على أحدها لفتحه، أو أضف سداسيًا جديدًا من هنا." },
+      "subjects": { "title": "المواد", "content": "تظهر هنا جميع مواد سداسيات هذه السنة. انقر على مادة لتصفح مجلداتها وملفاتها، وأضف نجمة إلى التي تستخدمها كثيرًا." },
+      "recent": { "title": "فُتحت مؤخرًا", "content": "تظهر هنا الملفات التي فتحتها مؤخرًا في أي مكان بهذه السنة للوصول السريع إليها." }
+    },
+    "semester": {
+      "stats": { "title": "إحصائيات السداسي", "content": "أرقام سريعة لهذا السداسي: المواد والملفات المفهرسة وملفات الامتحان والمفضلة." },
+      "subjects": { "title": "المواد", "content": "انقر على مادة لتصفح مجلداتها وملفاتها، وأضف نجمة إلى ما يهمك، أو أضف مادة جديدة من هنا." },
+      "recent": { "title": "فُتحت مؤخرًا", "content": "تظهر هنا الملفات التي فتحتها مؤخرًا في هذا السداسي للوصول السريع إليها." }
+    },
+    "subject": {
+      "actions": { "title": "إضافة محتوى", "content": "استورد مجلدًا موجودًا من نظام التشغيل لإحضار جميع ملفاته دفعة واحدة، أو أنشئ مجلدًا افتراضيًا لتنظيم الملفات داخل التطبيق." },
+      "folders": { "title": "المجلدات", "content": "المجلدات الافتراضية موجودة داخل التطبيق وتجمع الملفات ذات الصلة معًا. انقر على أحدها لفتحه." },
+      "imported": { "title": "المجلدات المستوردة", "content": "تعكس المجلدات المستوردة مجلدًا حقيقيًا على جهازك، بما في ذلك مجلداته الفرعية، دون نقل أو نسخ أي ملفات." },
+      "recent": { "title": "فُتحت مؤخرًا", "content": "تظهر هنا الملفات التي فتحتها مؤخرًا في هذه المادة، سواء كانت في مجلد افتراضي أو مستورد." }
+    },
+    "virtualFolder": {
+      "actions": { "title": "إدارة هذا المجلد", "content": "أضف مزيدًا من الملفات، أو أعد تسمية المجلد، أو احذفه من هنا." },
+      "filters": { "title": "تصفية الملفات", "content": "ضيّق القائمة حسب صيغة الملف أو حسب الفئة المخصصة لكل ملف." },
+      "files": { "title": "الملفات", "content": "مرّر فوق ملف لمعاينته أو فتحه في تطبيقه الافتراضي أو حذفه." }
+    },
+    "importedFolder": {
+      "header": { "title": "مجلد مستورد", "content": "يعكس هذا مجلدًا على جهازك، موضحًا في المسار أدناه. ملفاته لا تُنقل ولا تُنسخ — إنها مجرد عرض مباشر." },
+      "filters": { "title": "تصفية الملفات", "content": "ضيّق ملفات المجلد الحالي حسب الصيغة." },
+      "files": { "title": "تصفح الملفات", "content": "تُعرض المجلدات الفرعية والملفات معًا. انقر على مجلد فرعي للانتقال إليه، ومرّر فوق ملف لمعاينته أو فتحه." }
+    }
+  },
+  "modal": {
+    "yearCreate": { "title": "سنة دراسية جديدة", "description": "أدخل تفاصيل السنة الدراسية.", "namePlaceholder": "مثال: 2024-2025" },
+    "yearUpdate": { "title": "تعديل السنة الدراسية", "description": "حدّث تفاصيل هذه السنة الدراسية." },
+    "semesterCreate": { "title": "سداسي جديد", "description": "أدخل تفاصيل السداسي.", "namePlaceholder": "مثال: السداسي 1" },
+    "semesterUpdate": { "title": "تعديل السداسي", "description": "حدّث تفاصيل هذا السداسي." },
+    "subjectCreate": { "title": "مادة جديدة", "description": "أدخل اسمًا للمادة.", "namePlaceholder": "مثال: هياكل البيانات" },
+    "folderCreate": { "title": "مجلد جديد", "description": "أدخل اسمًا للمجلد الافتراضي.", "namePlaceholder": "مثال: المحاضرات" },
+    "folderUpdate": { "title": "إعادة تسمية المجلد", "description": "أدخل اسمًا جديدًا لهذا المجلد." },
+    "deleteConfirm": {
+      "title": "حذف {{label}}",
+      "description": "لا يمكن التراجع عن هذا الإجراء. اكتب الرمز أدناه للتأكيد.",
+      "placeholder": "اكتب الرمز أعلاه"
+    },
+    "fileCreate": {
+      "title": "إضافة ملف",
+      "description": "ارفع ملفًا وحدد نوعه.",
+      "fileLabel": "الملف",
+      "dropText": "أفلت ملفًا هنا، أو",
+      "clickToBrowse": "انقر للتصفح",
+      "typeLabel": "النوع",
+      "customTypePlaceholder": "أو اكتب نوعًا مخصصًا…",
+      "addFile": "إضافة الملف",
+      "adding": "جارٍ الإضافة…"
+    }
+  },
+  "filePreview": {
+    "highlighting": "جارٍ تلوين الشيفرة…",
+    "couldNotLoad": "تعذّر تحميل الملف.",
+    "couldNotRead": "تعذّر قراءة الملف.",
+    "pdfViewerTitle": "عارض PDF"
+  }
+}

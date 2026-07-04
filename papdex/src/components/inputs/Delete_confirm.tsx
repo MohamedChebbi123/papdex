@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Dialog } from "@base-ui/react/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -15,6 +16,7 @@ function generateCode() {
 }
 
 export function DeleteConfirm({ open, onOpenChange, onConfirmed, label }: Props) {
+  const { t } = useTranslation()
   const [code, setCode] = useState("")
   const [input, setInput] = useState("")
 
@@ -39,9 +41,9 @@ export function DeleteConfirm({ open, onOpenChange, onConfirmed, label }: Props)
           <div className="w-full max-w-sm rounded-xl border bg-background shadow-xl transition-all duration-150 data-ending-style:opacity-0 data-ending-style:scale-95 data-starting-style:opacity-0 data-starting-style:scale-95">
             <div className="p-6 space-y-4">
               <div>
-                <Dialog.Title className="text-base font-semibold text-destructive">Delete {label}</Dialog.Title>
+                <Dialog.Title className="text-base font-semibold text-destructive">{t("modal.deleteConfirm.title", { label })}</Dialog.Title>
                 <Dialog.Description className="mt-1 text-sm text-muted-foreground">
-                  This action cannot be undone. Type the code below to confirm.
+                  {t("modal.deleteConfirm.description")}
                 </Dialog.Description>
               </div>
 
@@ -52,20 +54,20 @@ export function DeleteConfirm({ open, onOpenChange, onConfirmed, label }: Props)
               <Input
                 value={input}
                 onChange={e => setInput(e.target.value.toUpperCase())}
-                placeholder="Type the code above"
+                placeholder={t("modal.deleteConfirm.placeholder")}
                 className="font-mono tracking-widest"
               />
 
               <div className="flex justify-end gap-2">
                 <Dialog.Close render={<Button type="button" variant="outline" />}>
-                  Cancel
+                  {t("common.cancel")}
                 </Dialog.Close>
                 <Button
                   variant="destructive"
                   disabled={input !== code}
                   onClick={handleConfirm}
                 >
-                  Delete
+                  {t("common.delete")}
                 </Button>
               </div>
             </div>

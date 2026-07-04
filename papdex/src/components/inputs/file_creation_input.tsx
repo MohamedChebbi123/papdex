@@ -1,9 +1,11 @@
 import { useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Dialog } from "@base-ui/react/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { FileText, UploadCloud, X } from "lucide-react"
 import { createFile } from "@/components/file_service/file"
+import { categoryLabel } from "@/lib/category_label"
 
 const QUICK_TYPES = ["Summary", "Lesson", "Quiz", "Exam", "Video", "Notes", "Exercise", "TD", "TP"] 
 
@@ -23,6 +25,7 @@ interface Props {
 }
 
 export function FileCreationInput({ open, onOpenChange, subjectId, folderId, onCreated }: Props) {
+  const { t } = useTranslation()
   const [picked, setPicked] = useState<PickedFile | null>(null)
   const [fileType, setFileType] = useState("")
   const [dragging, setDragging] = useState(false)
@@ -74,16 +77,16 @@ export function FileCreationInput({ open, onOpenChange, subjectId, folderId, onC
         <Dialog.Popup className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="w-full max-w-md rounded-xl border bg-background shadow-xl transition-all duration-150 data-ending-style:opacity-0 data-ending-style:scale-95 data-starting-style:opacity-0 data-starting-style:scale-95">
             <div className="p-6">
-              <Dialog.Title className="text-base font-semibold">Add File</Dialog.Title>
+              <Dialog.Title className="text-base font-semibold">{t("modal.fileCreate.title")}</Dialog.Title>
               <Dialog.Description className="mt-1 text-sm text-muted-foreground">
-                Upload a file and assign it a type.
+                {t("modal.fileCreate.description")}
               </Dialog.Description>
 
               <form onSubmit={handleSubmit} className="mt-5 space-y-4">
 
                 {/* Drop zone */}
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium">File</label>
+                  <label className="text-sm font-medium">{t("modal.fileCreate.fileLabel")}</label>
 
                   <input
                     ref={inputRef}
@@ -121,7 +124,7 @@ export function FileCreationInput({ open, onOpenChange, subjectId, folderId, onC
                     >
                       <UploadCloud className="size-8 text-muted-foreground" />
                       <p className="text-sm text-muted-foreground text-center">
-                        Drop a file here, or <span className="text-foreground font-medium">click to browse</span>
+                        {t("modal.fileCreate.dropText")} <span className="text-foreground font-medium">{t("modal.fileCreate.clickToBrowse")}</span>
                       </p>
                     </div>
                   )}
@@ -129,37 +132,37 @@ export function FileCreationInput({ open, onOpenChange, subjectId, folderId, onC
 
                 {/* Type */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Type</label>
+                  <label className="text-sm font-medium">{t("modal.fileCreate.typeLabel")}</label>
                   <div className="flex flex-wrap gap-1.5">
-                    {QUICK_TYPES.map(t => (
+                    {QUICK_TYPES.map(qt => (
                       <button
-                        key={t}
+                        key={qt}
                         type="button"
-                        onClick={() => setFileType(t)}
+                        onClick={() => setFileType(qt)}
                         className="rounded-md border px-2.5 py-1 text-xs transition-colors"
                         style={{
-                          background:   fileType === t ? "var(--primary)"            : "var(--muted)",
-                          color:        fileType === t ? "var(--primary-foreground)"  : "var(--muted-foreground)",
-                          borderColor:  fileType === t ? "var(--primary)"             : "var(--border)",
+                          background:   fileType === qt ? "var(--primary)"            : "var(--muted)",
+                          color:        fileType === qt ? "var(--primary-foreground)"  : "var(--muted-foreground)",
+                          borderColor:  fileType === qt ? "var(--primary)"             : "var(--border)",
                         }}
                       >
-                        {t}
+                        {categoryLabel(t, qt)}
                       </button>
                     ))}
                   </div>
                   <Input
                     value={fileType}
                     onChange={e => setFileType(e.target.value)}
-                    placeholder="or type custom…"
+                    placeholder={t("modal.fileCreate.customTypePlaceholder")}
                   />
                 </div>
 
                 <div className="flex justify-end gap-2 pt-2">
                   <Button type="button" variant="outline" onClick={handleClose}>
-                    Cancel
+                    {t("common.cancel")}
                   </Button>
                   <Button type="submit" disabled={!picked || !fileType.trim() || loading}>
-                    {loading ? "Adding…" : "Add file"}
+                    {loading ? t("modal.fileCreate.adding") : t("modal.fileCreate.addFile")}
                   </Button>
                 </div>
               </form>
