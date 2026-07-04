@@ -130,7 +130,16 @@
     "filesHeading": "الملفات",
     "addFilesEmptyTitle": "إضافة ملفات",
     "addFilesEmptySubtitle": "انقر لفتح منتقي الملفات",
-    "noMatch": "لا توجد ملفات مطابقة للمرشحات المحددة"
+    "noMatch": "لا توجد ملفات مطابقة للمرشحات المحددة",
+    "selectAll": "تحديد الكل",
+    "selectedCount_zero": "لم يتم تحديد أي ملف",
+    "selectedCount_one": "تم تحديد ملف واحد",
+    "selectedCount_two": "تم تحديد ملفين",
+    "selectedCount_few": "تم تحديد {{count}} ملفات",
+    "selectedCount_many": "تم تحديد {{count}} ملفًا",
+    "selectedCount_other": "تم تحديد {{count}} ملف",
+    "bulkMove": "نقل إلى…",
+    "bulkRecategorize": "إعادة تصنيف…"
   },
   "importedFolder": {
     "statFiles": "الملفات",
@@ -225,6 +234,24 @@
       "selectPlaceholder": "اختر مجلدًا",
       "noOtherFolders": "لا يوجد مجلد آخر في هذه المادة لنقل هذا الملف إليه.",
       "move": "نقل"
+    },
+    "fileBulkMove": {
+      "title": "نقل الملفات",
+      "description_zero": "اختر مجلدًا لنقل الملفات المحددة إليه.",
+      "description_one": "اختر مجلدًا لنقل ملف واحد إليه.",
+      "description_two": "اختر مجلدًا لنقل ملفين إليه.",
+      "description_few": "اختر مجلدًا لنقل {{count}} ملفات إليه.",
+      "description_many": "اختر مجلدًا لنقل {{count}} ملفًا إليه.",
+      "description_other": "اختر مجلدًا لنقل {{count}} ملف إليه."
+    },
+    "fileBulkRecategorize": {
+      "title": "إعادة تصنيف الملفات",
+      "description_zero": "اختر فئة لتعيينها للملفات المحددة.",
+      "description_one": "اختر فئة لتعيينها لملف واحد.",
+      "description_two": "اختر فئة لتعيينها لملفين.",
+      "description_few": "اختر فئة لتعيينها لـ {{count}} ملفات.",
+      "description_many": "اختر فئة لتعيينها لـ {{count}} ملفًا.",
+      "description_other": "اختر فئة لتعيينها لـ {{count}} ملف."
     }
   },
   "filePreview": {

@@ -114,7 +114,12 @@
     "filesHeading": "Fichiers",
     "addFilesEmptyTitle": "Ajouter des fichiers",
     "addFilesEmptySubtitle": "Cliquez pour ouvrir le sélecteur de fichiers",
-    "noMatch": "Aucun fichier ne correspond aux filtres sélectionnés"
+    "noMatch": "Aucun fichier ne correspond aux filtres sélectionnés",
+    "selectAll": "Tout sélectionner",
+    "selectedCount_one": "{{count}} fichier sélectionné",
+    "selectedCount_other": "{{count}} fichiers sélectionnés",
+    "bulkMove": "Déplacer vers…",
+    "bulkRecategorize": "Recatégoriser…"
   },
   "importedFolder": {
     "statFiles": "Fichiers",
@@ -209,6 +214,16 @@
       "selectPlaceholder": "Sélectionnez un dossier",
       "noOtherFolders": "Il n'y a pas d'autre dossier dans cette matière vers lequel déplacer ce fichier.",
       "move": "Déplacer"
+    },
+    "fileBulkMove": {
+      "title": "Déplacer les fichiers",
+      "description_one": "Choisissez un dossier vers lequel déplacer {{count}} fichier.",
+      "description_other": "Choisissez un dossier vers lequel déplacer {{count}} fichiers."
+    },
+    "fileBulkRecategorize": {
+      "title": "Recatégoriser les fichiers",
+      "description_one": "Choisissez une catégorie à attribuer à {{count}} fichier.",
+      "description_other": "Choisissez une catégorie à attribuer à {{count}} fichiers."
     }
   },
   "filePreview": {

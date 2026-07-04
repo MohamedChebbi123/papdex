@@ -114,7 +114,12 @@
     "filesHeading": "Files",
     "addFilesEmptyTitle": "Add files",
     "addFilesEmptySubtitle": "Click to open file picker",
-    "noMatch": "No files match the selected filters"
+    "noMatch": "No files match the selected filters",
+    "selectAll": "Select all",
+    "selectedCount_one": "{{count}} file selected",
+    "selectedCount_other": "{{count}} files selected",
+    "bulkMove": "Move to…",
+    "bulkRecategorize": "Recategorize…"
   },
   "importedFolder": {
     "statFiles": "Files",
@@ -209,6 +214,16 @@
       "selectPlaceholder": "Select a folder",
       "noOtherFolders": "There are no other folders in this subject to move this file to.",
       "move": "Move"
+    },
+    "fileBulkMove": {
+      "title": "Move Files",
+      "description_one": "Choose a folder to move {{count}} file to.",
+      "description_other": "Choose a folder to move {{count}} files to."
+    },
+    "fileBulkRecategorize": {
+      "title": "Recategorize Files",
+      "description_one": "Choose a category to assign to {{count}} file.",
+      "description_other": "Choose a category to assign to {{count}} files."
     }
   },
   "filePreview": {

@@ -59,6 +59,21 @@ function update_file() {
     })
 }
 
+function update_file_category() {
+    ipcMain.handle("files:updateCategory", (
+        _event,
+        id: number,
+        file_type: string
+    ) => {
+        const result = database.prepare(`
+            UPDATE files
+            SET file_type = ?, updated_at = datetime('now')
+            WHERE id = ?
+        `).run(file_type, id)
+        return result.changes
+    })
+}
+
 function delete_file() {
     ipcMain.handle("files:delete", (_event, id: number) => {
         const result = database.prepare("DELETE FROM files WHERE id = ?").run(id)
@@ -276,6 +291,7 @@ export function file_handlers() {
     fetch_files_by_folder()
     fetch_file_by_id()
     update_file()
+    update_file_category()
     delete_file()
     delete_files_by_subject()
     fetch_file_count_by_semester()

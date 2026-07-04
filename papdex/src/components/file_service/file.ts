@@ -52,6 +52,10 @@ export async function updateFile(id: number, file_name: string, folder_id: numbe
   return await window.ipcRenderer.invoke('files:update', id, file_name, folder_id)
 }
 
+export async function updateFileCategory(id: number, file_type: string): Promise<number> {
+  return await window.ipcRenderer.invoke('files:updateCategory', id, file_type)
+}
+
 export async function deleteFile(id: number): Promise<number> {
   return await window.ipcRenderer.invoke('files:delete', id)
 }

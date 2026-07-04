@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import {
   Calendar, ChevronLeft, ChevronRight, ExternalLink, Eye, File, FileText,
-  Folder, FolderInput, Image, Pencil, Plus, Trash2, Video,
+  Folder, FolderInput, Image, Pencil, Plus, Tag, Trash2, Video, X,
 } from "lucide-react"
 import type { Step } from "react-joyride"
 import { Group, Panel, Separator } from "react-resizable-panels"
@@ -22,6 +22,8 @@ import { DeleteConfirm } from "@/components/inputs/Delete_confirm"
 import { FileCreationInput } from "@/components/inputs/file_creation_input"
 import { FileRename } from "@/components/inputs/file_rename"
 import { FileMove } from "@/components/inputs/file_move"
+import { FileBulkMove } from "@/components/inputs/file_bulk_move"
+import { FileBulkRecategorize } from "@/components/inputs/file_bulk_recategorize"
 import { FilePreviewPanel, canPreview } from "@/components/inputs/file_preview_modal"
 import { TourGuide } from "@/components/inputs/tour_guide"
 import { HelpButton } from "@/components/inputs/help_button"
@@ -122,6 +124,10 @@ export function VirtualFolderDashboard({
   const [renamingFile, setRenamingFile] = useState<AppFile | null>(null)
   const [movingFile, setMovingFile] = useState<AppFile | null>(null)
   const [hoveredFileId, setHoveredFileId] = useState<number | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
+  const [bulkMoveOpen, setBulkMoveOpen] = useState(false)
+  const [bulkRecategorizeOpen, setBulkRecategorizeOpen] = useState(false)
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
   const [addFileOpen, setAddFileOpen] = useState(false)
   const [previewFile, setPreviewFile] = useState<AppFile | null>(null)
   const [extFilter, setExtFilter]           = useState<string>("all")
@@ -131,6 +137,7 @@ export function VirtualFolderDashboard({
   useEffect(() => {
     getVirtualFolderById(folderId).then(setFolder)
     getFilesByFolder(folderId).then(setFiles)
+    setSelectedIds(new Set())
   }, [folderId])
 
   useEffect(() => {
@@ -158,6 +165,34 @@ export function VirtualFolderDashboard({
     await deleteFile(deletingFile.id)
     setFiles(prev => prev.filter(f => f.id !== deletingFile.id))
     setDeletingFile(null)
+  }
+
+  function toggleSelect(id: number, checked: boolean) {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (checked) next.add(id)
+      else next.delete(id)
+      return next
+    })
+  }
+
+  function toggleSelectAllFiltered() {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      const allSelected = filteredFiles.every(f => next.has(f.id))
+      for (const f of filteredFiles) {
+        if (allSelected) next.delete(f.id)
+        else next.add(f.id)
+      }
+      return next
+    })
+  }
+
+  async function handleBulkDelete() {
+    const ids = [...selectedIds]
+    await Promise.all(ids.map(id => deleteFile(id)))
+    setFiles(prev => prev.filter(f => !selectedIds.has(f.id)))
+    setSelectedIds(new Set())
   }
 
   const muted  = "var(--muted-foreground)"
@@ -269,11 +304,76 @@ export function VirtualFolderDashboard({
 
       {/* Files */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-        <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>{t("virtualFolder.filesHeading")}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {filteredFiles.length > 0 && (
+            <input
+              type="checkbox"
+              checked={filteredFiles.every(f => selectedIds.has(f.id))}
+              onChange={toggleSelectAllFiltered}
+              style={{ cursor: "pointer" }}
+              aria-label={t("virtualFolder.selectAll")}
+            />
+          )}
+          <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>{t("virtualFolder.filesHeading")}</span>
+        </div>
         <span style={{ color: muted, fontSize: 11 }}>
           {t("common.ofCount", { filtered: filteredFiles.length, total: files.length })}
         </span>
       </div>
+
+      {/* Bulk actions bar */}
+      {selectedIds.size > 0 && (
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          background: "var(--muted)", border: `1px solid ${border}`, borderRadius: 10,
+          padding: "8px 14px", marginBottom: 10,
+        }}>
+          <span style={{ color: fg, fontSize: 12, fontWeight: 500 }}>
+            {t("virtualFolder.selectedCount", { count: selectedIds.size })}
+          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <button
+              onClick={() => setBulkMoveOpen(true)}
+              style={{
+                background: card, border: `1px solid ${border}`, borderRadius: 8,
+                color: fg, fontSize: 12, padding: "6px 12px",
+                display: "flex", alignItems: "center", gap: 6, cursor: "pointer",
+              }}
+            >
+              <FolderInput size={13} />
+              {t("virtualFolder.bulkMove")}
+            </button>
+            <button
+              onClick={() => setBulkRecategorizeOpen(true)}
+              style={{
+                background: card, border: `1px solid ${border}`, borderRadius: 8,
+                color: fg, fontSize: 12, padding: "6px 12px",
+                display: "flex", alignItems: "center", gap: 6, cursor: "pointer",
+              }}
+            >
+              <Tag size={13} />
+              {t("virtualFolder.bulkRecategorize")}
+            </button>
+            <button
+              onClick={() => setBulkDeleteOpen(true)}
+              style={{
+                background: "transparent", border: "1px solid #ef4444", borderRadius: 8,
+                color: "#ef4444", fontSize: 12, padding: "6px 12px",
+                display: "flex", alignItems: "center", gap: 6, cursor: "pointer",
+              }}
+            >
+              <Trash2 size={13} />
+              {t("common.delete")}
+            </button>
+            <button
+              onClick={() => setSelectedIds(new Set())}
+              style={{ background: "none", border: "none", cursor: "pointer", padding: 6, display: "flex", borderRadius: 6 }}
+            >
+              <X size={14} color={muted} />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Filter chips */}
       {files.length > 0 && (
@@ -361,6 +461,15 @@ export function VirtualFolderDashboard({
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                <input
+                  type="checkbox"
+                  checked={selectedIds.has(file.id)}
+                  onChange={e => toggleSelect(file.id, e.target.checked)}
+                  style={{
+                    cursor: "pointer", flexShrink: 0,
+                    opacity: selectedIds.size > 0 || hoveredFileId === file.id ? 1 : 0,
+                  }}
+                />
                 <span style={{ color: muted, flexShrink: 0 }}>
                   <FileIcon type={file.file_type} />
                 </span>
@@ -487,6 +596,33 @@ export function VirtualFolderDashboard({
         onMoved={() => {
           setFiles(prev => prev.filter(f => f.id !== movingFile?.id))
         }}
+      />
+      <FileBulkMove
+        open={bulkMoveOpen}
+        onOpenChange={setBulkMoveOpen}
+        fileIds={[...selectedIds]}
+        fileNames={Object.fromEntries(files.map(f => [f.id, f.file_name]))}
+        currentFolderId={folderId}
+        subjectId={subject.id}
+        onMoved={() => {
+          setFiles(prev => prev.filter(f => !selectedIds.has(f.id)))
+          setSelectedIds(new Set())
+        }}
+      />
+      <FileBulkRecategorize
+        open={bulkRecategorizeOpen}
+        onOpenChange={setBulkRecategorizeOpen}
+        fileIds={[...selectedIds]}
+        onRecategorized={category => {
+          setFiles(prev => prev.map(f => selectedIds.has(f.id) ? { ...f, file_type: category } : f))
+          setSelectedIds(new Set())
+        }}
+      />
+      <DeleteConfirm
+        open={bulkDeleteOpen}
+        onOpenChange={setBulkDeleteOpen}
+        label={t("virtualFolder.selectedCount", { count: selectedIds.size })}
+        onConfirmed={handleBulkDelete}
       />
     </>
   )
