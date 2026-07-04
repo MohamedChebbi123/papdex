@@ -213,6 +213,18 @@
       "customTypePlaceholder": "أو اكتب نوعًا مخصصًا…",
       "addFile": "إضافة الملف",
       "adding": "جارٍ الإضافة…"
+    },
+    "fileRename": {
+      "title": "إعادة تسمية الملف",
+      "description": "أدخل اسمًا جديدًا لهذا الملف."
+    },
+    "fileMove": {
+      "title": "نقل الملف",
+      "description": "اختر مجلدًا لنقل هذا الملف إليه.",
+      "folderLabel": "المجلد",
+      "selectPlaceholder": "اختر مجلدًا",
+      "noOtherFolders": "لا يوجد مجلد آخر في هذه المادة لنقل هذا الملف إليه.",
+      "move": "نقل"
     }
   },
   "filePreview": {

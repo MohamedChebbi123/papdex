@@ -197,6 +197,18 @@
       "customTypePlaceholder": "ou saisissez un type…",
       "addFile": "Ajouter le fichier",
       "adding": "Ajout…"
+    },
+    "fileRename": {
+      "title": "Renommer le fichier",
+      "description": "Saisissez un nouveau nom pour ce fichier."
+    },
+    "fileMove": {
+      "title": "Déplacer le fichier",
+      "description": "Choisissez un dossier vers lequel déplacer ce fichier.",
+      "folderLabel": "Dossier",
+      "selectPlaceholder": "Sélectionnez un dossier",
+      "noOtherFolders": "Il n'y a pas d'autre dossier dans cette matière vers lequel déplacer ce fichier.",
+      "move": "Déplacer"
     }
   },
   "filePreview": {

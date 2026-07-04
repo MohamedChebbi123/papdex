@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import {
   Calendar, ChevronLeft, ChevronRight, ExternalLink, Eye, File, FileText,
-  Folder, Image, Pencil, Plus, Trash2, Video,
+  Folder, FolderInput, Image, Pencil, Plus, Trash2, Video,
 } from "lucide-react"
 import type { Step } from "react-joyride"
 import { Group, Panel, Separator } from "react-resizable-panels"
@@ -20,6 +20,8 @@ import {
 import { VirtualFolderUpdate } from "@/components/inputs/virtual_folder_update"
 import { DeleteConfirm } from "@/components/inputs/Delete_confirm"
 import { FileCreationInput } from "@/components/inputs/file_creation_input"
+import { FileRename } from "@/components/inputs/file_rename"
+import { FileMove } from "@/components/inputs/file_move"
 import { FilePreviewPanel, canPreview } from "@/components/inputs/file_preview_modal"
 import { TourGuide } from "@/components/inputs/tour_guide"
 import { HelpButton } from "@/components/inputs/help_button"
@@ -117,6 +119,8 @@ export function VirtualFolderDashboard({
   const [renameOpen, setRenameOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deletingFile, setDeletingFile] = useState<AppFile | null>(null)
+  const [renamingFile, setRenamingFile] = useState<AppFile | null>(null)
+  const [movingFile, setMovingFile] = useState<AppFile | null>(null)
   const [hoveredFileId, setHoveredFileId] = useState<number | null>(null)
   const [addFileOpen, setAddFileOpen] = useState(false)
   const [previewFile, setPreviewFile] = useState<AppFile | null>(null)
@@ -392,6 +396,18 @@ export function VirtualFolderDashboard({
                       <ExternalLink size={13} color={muted} />
                     </button>
                     <button
+                      onClick={() => setRenamingFile(file)}
+                      style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex", borderRadius: 6 }}
+                    >
+                      <Pencil size={13} color={muted} />
+                    </button>
+                    <button
+                      onClick={() => setMovingFile(file)}
+                      style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex", borderRadius: 6 }}
+                    >
+                      <FolderInput size={13} color={muted} />
+                    </button>
+                    <button
                       onClick={() => setDeletingFile(file)}
                       style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex", borderRadius: 6 }}
                     >
@@ -399,7 +415,7 @@ export function VirtualFolderDashboard({
                     </button>
                   </div>
                 ) : (
-                  <div style={{ width: 46 }} />
+                  <div style={{ width: 94 }} />
                 )}
               </div>
             </div>
@@ -454,6 +470,23 @@ export function VirtualFolderDashboard({
         onOpenChange={open => { if (!open) setDeletingFile(null) }}
         label={deletingFile?.file_name ?? ""}
         onConfirmed={handleDeleteFile}
+      />
+      <FileRename
+        open={renamingFile !== null}
+        onOpenChange={open => { if (!open) setRenamingFile(null) }}
+        file={renamingFile}
+        onRenamed={name => {
+          setFiles(prev => prev.map(f => f.id === renamingFile?.id ? { ...f, file_name: name } : f))
+        }}
+      />
+      <FileMove
+        open={movingFile !== null}
+        onOpenChange={open => { if (!open) setMovingFile(null) }}
+        file={movingFile}
+        subjectId={subject.id}
+        onMoved={() => {
+          setFiles(prev => prev.filter(f => f.id !== movingFile?.id))
+        }}
       />
     </>
   )

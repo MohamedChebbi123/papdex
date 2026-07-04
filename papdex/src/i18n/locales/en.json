@@ -197,6 +197,18 @@
       "customTypePlaceholder": "or type custom…",
       "addFile": "Add file",
       "adding": "Adding…"
+    },
+    "fileRename": {
+      "title": "Rename File",
+      "description": "Enter a new name for this file."
+    },
+    "fileMove": {
+      "title": "Move File",
+      "description": "Choose a folder to move this file to.",
+      "folderLabel": "Folder",
+      "selectPlaceholder": "Select a folder",
+      "noOtherFolders": "There are no other folders in this subject to move this file to.",
+      "move": "Move"
     }
   },
   "filePreview": {
