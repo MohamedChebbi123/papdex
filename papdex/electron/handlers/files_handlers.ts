@@ -235,45 +235,120 @@ function fetch_file_type_count_by_semester() {
     })
 }
 
+interface SearchFilters {
+    subjectId?: number | null
+    semesterId?: number | null
+    fileType?: string | null
+}
+
 function search_files() {
-    ipcMain.handle("files:search", (_event, query: string) => {
+    ipcMain.handle("files:search", (_event, query: string, filters?: SearchFilters) => {
         const like = `%${query}%`
+        const exact = query
+        const prefix = `${query}%`
+
+        const sharedConditions: string[] = []
+        const sharedParams: (string | number)[] = []
+        if (filters?.subjectId) {
+            sharedConditions.push("s.id = ?")
+            sharedParams.push(filters.subjectId)
+        }
+        if (filters?.semesterId) {
+            sharedConditions.push("sem.id = ?")
+            sharedParams.push(filters.semesterId)
+        }
+
+        function buildExtraSql(fileTypeColumn: string) {
+            const conditions = [...sharedConditions]
+            const params = [...sharedParams]
+            if (filters?.fileType) {
+                conditions.push(`${fileTypeColumn} = ? COLLATE NOCASE`)
+                params.push(filters.fileType)
+            }
+            return {
+                sql: conditions.length ? ` AND ${conditions.join(" AND ")}` : "",
+                params,
+            }
+        }
+        const virtualExtra = buildExtraSql("f.file_type")
+        const importedExtra = buildExtraSql("iff.file_type")
+
+        const rankSql = `
+            CASE
+                WHEN file_name = ? COLLATE NOCASE THEN 0
+                WHEN file_name LIKE ? COLLATE NOCASE THEN 1
+                ELSE 2
+            END`
+
         return database.prepare(`
-            SELECT
-                f.id, f.file_name, f.file_path, f.file_type, 'virtual' AS kind,
-                f.folder_id, vf.name AS folder_name,
-                s.id AS subject_id, s.name AS subject_name,
-                sem.id AS semester_id, sem.name AS semester_name,
-                sem.start_date AS semester_start_date, sem.end_date AS semester_end_date,
-                y.id AS year_id, y.name AS year_name,
-                y.start_date AS year_start_date, y.end_date AS year_end_date
-            FROM files f
-            JOIN subjects s ON s.id = f.subject_id
+            SELECT * FROM (
+                SELECT
+                    f.id, f.file_name, f.file_path, f.file_type, 'virtual' AS kind,
+                    f.folder_id, vf.name AS folder_name,
+                    s.id AS subject_id, s.name AS subject_name,
+                    sem.id AS semester_id, sem.name AS semester_name,
+                    sem.start_date AS semester_start_date, sem.end_date AS semester_end_date,
+                    y.id AS year_id, y.name AS year_name,
+                    y.start_date AS year_start_date, y.end_date AS year_end_date
+                FROM files f
+                JOIN subjects s ON s.id = f.subject_id
+                JOIN semesters sem ON sem.id = s.semester_id
+                JOIN academic_years y ON y.id = sem.year_id
+                LEFT JOIN virtual_folders vf ON vf.id = f.folder_id
+                WHERE f.file_name LIKE ? COLLATE NOCASE${virtualExtra.sql}
+
+                UNION ALL
+
+                SELECT
+                    iff.id, iff.file_name, iff.file_path, iff.file_type, 'imported' AS kind,
+                    imf.id AS folder_id, imf.name AS folder_name,
+                    s.id AS subject_id, s.name AS subject_name,
+                    sem.id AS semester_id, sem.name AS semester_name,
+                    sem.start_date AS semester_start_date, sem.end_date AS semester_end_date,
+                    y.id AS year_id, y.name AS year_name,
+                    y.start_date AS year_start_date, y.end_date AS year_end_date
+                FROM imported_folder_files iff
+                JOIN imported_folders imf ON imf.id = iff.imported_folder_id
+                JOIN subjects s ON s.id = imf.subject_id
+                JOIN semesters sem ON sem.id = s.semester_id
+                JOIN academic_years y ON y.id = sem.year_id
+                WHERE iff.file_name LIKE ? COLLATE NOCASE${importedExtra.sql}
+            )
+            ORDER BY ${rankSql}, file_name
+            LIMIT 50
+        `).all(like, ...virtualExtra.params, like, ...importedExtra.params, exact, prefix)
+    })
+}
+
+function fetch_search_filter_options() {
+    ipcMain.handle("files:getSearchFilterOptions", () => {
+        const semesters = database.prepare(`
+            SELECT sem.id, sem.name, y.id AS year_id, y.name AS year_name
+            FROM semesters sem
+            JOIN academic_years y ON y.id = sem.year_id
+            ORDER BY y.start_date DESC, sem.start_date DESC
+        `).all()
+
+        const subjects = database.prepare(`
+            SELECT s.id, s.name, sem.id AS semester_id, sem.name AS semester_name,
+                y.id AS year_id, y.name AS year_name
+            FROM subjects s
             JOIN semesters sem ON sem.id = s.semester_id
             JOIN academic_years y ON y.id = sem.year_id
-            LEFT JOIN virtual_folders vf ON vf.id = f.folder_id
-            WHERE f.file_name LIKE ? COLLATE NOCASE
+            ORDER BY s.name
+        `).all()
 
-            UNION ALL
+        const types = database.prepare(`
+            SELECT DISTINCT file_type FROM (
+                SELECT file_type FROM files
+                UNION
+                SELECT file_type FROM imported_folder_files
+            )
+            WHERE file_type IS NOT NULL AND file_type != ''
+            ORDER BY file_type
+        `).all().map((row: any) => row.file_type as string)
 
-            SELECT
-                iff.id, iff.file_name, iff.file_path, iff.file_type, 'imported' AS kind,
-                imf.id AS folder_id, imf.name AS folder_name,
-                s.id AS subject_id, s.name AS subject_name,
-                sem.id AS semester_id, sem.name AS semester_name,
-                sem.start_date AS semester_start_date, sem.end_date AS semester_end_date,
-                y.id AS year_id, y.name AS year_name,
-                y.start_date AS year_start_date, y.end_date AS year_end_date
-            FROM imported_folder_files iff
-            JOIN imported_folders imf ON imf.id = iff.imported_folder_id
-            JOIN subjects s ON s.id = imf.subject_id
-            JOIN semesters sem ON sem.id = s.semester_id
-            JOIN academic_years y ON y.id = sem.year_id
-            WHERE iff.file_name LIKE ? COLLATE NOCASE
-
-            ORDER BY file_name
-            LIMIT 40
-        `).all(like, like)
+        return { semesters, subjects, types }
     })
 }
 
@@ -308,6 +383,7 @@ export function file_handlers() {
     open_file_picker()
     pick_single_file()
     search_files()
+    fetch_search_filter_options()
     read_file_buffer()
     open_file()
     mark_file_opened()

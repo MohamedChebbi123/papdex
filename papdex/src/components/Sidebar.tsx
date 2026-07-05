@@ -11,9 +11,9 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import {
-  BookOpen, ChevronDown, ChevronLeft, ChevronRight,
+  BookOpen, Calendar, ChevronDown, ChevronLeft, ChevronRight,
   GraduationCap, Home, Pencil,
-  Plus, Search, Settings, Star, Trash2, FlaskConical,
+  Plus, Search, Settings, Star, Trash2, FlaskConical, Tag, X,
 } from "lucide-react"
 import { forwardRef, useEffect, useImperativeHandle, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -25,7 +25,8 @@ import { deleteAcademicYear, getAllAcademicYears } from "./academic_year_service
 import { getSemestersByYear } from "./semester_service/file"
 import { getSubjectsBySemester } from "./subjects_service/file"
 import { getUser, type User } from "./user_service/file"
-import { searchFiles, type SearchResult } from "./file_service/file"
+import { searchFiles, getSearchFilterOptions, type SearchResult, type SearchFilterOptions } from "./file_service/file"
+import { categoryLabel } from "@/lib/category_label"
 
 type AcademicYear = {
   id: number
@@ -82,6 +83,10 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
   const [searching, setSearching] = useState(false)
+  const [searchFilterOptions, setSearchFilterOptions] = useState<SearchFilterOptions | null>(null)
+  const [searchSubjectId, setSearchSubjectId] = useState<number | "">("")
+  const [searchSemesterId, setSearchSemesterId] = useState<number | "">("")
+  const [searchFileType, setSearchFileType] = useState("")
 
   useImperativeHandle(ref, () => ({
     openCreateYear: () => setShowCreateYear(true),
@@ -90,30 +95,48 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
   useEffect(() => {
     getAllAcademicYears().then(setAcademicYears)
     getUser().then(setUser)
+    getSearchFilterOptions().then(setSearchFilterOptions)
   }, [])
+
+  const hasSearchFilters = searchSubjectId !== "" || searchSemesterId !== "" || searchFileType !== ""
 
   useEffect(() => {
     const term = searchQuery.trim()
-    if (!term) {
+    if (!term && !hasSearchFilters) {
       setSearchResults([])
       setSearching(false)
       return
     }
     setSearching(true)
     const handle = setTimeout(() => {
-      searchFiles(term).then(results => {
+      searchFiles(term, {
+        subjectId: searchSubjectId === "" ? null : searchSubjectId,
+        semesterId: searchSemesterId === "" ? null : searchSemesterId,
+        fileType: searchFileType === "" ? null : searchFileType,
+      }).then(results => {
         setSearchResults(results)
         setSearching(false)
       })
     }, 250)
     return () => clearTimeout(handle)
-  }, [searchQuery])
+  }, [searchQuery, searchSubjectId, searchSemesterId, searchFileType, hasSearchFilters])
 
   function handleSelectResult(result: SearchResult) {
     onSelectSearchResult(result)
     setSearchQuery("")
     setSearchResults([])
   }
+
+  function clearSearchFilters() {
+    setSearchSemesterId("")
+    setSearchSubjectId("")
+    setSearchFileType("")
+  }
+
+  const searchActive = searchQuery.trim().length > 0 || hasSearchFilters
+  const filteredSearchSubjects = (searchFilterOptions?.subjects ?? []).filter(
+    subj => searchSemesterId === "" || subj.semester_id === searchSemesterId
+  )
 
   function refresh() {
     getAllAcademicYears().then(setAcademicYears)
@@ -195,7 +218,92 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
             placeholder={t("sidebar.searchPlaceholder")}
             className="w-full rounded-md border border-input bg-background ps-8 pe-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-ring"
           />
-          {searchQuery.trim() && (
+
+          <div className="mt-1.5 flex items-center gap-1">
+            <div className="relative min-w-0 flex-1">
+              <Calendar className="pointer-events-none absolute start-1.5 top-1/2 size-3 -translate-y-1/2 text-muted-foreground/70" />
+              <select
+                value={searchSemesterId}
+                onChange={e => {
+                  const value = e.target.value === "" ? "" : Number(e.target.value)
+                  setSearchSemesterId(value)
+                  setSearchSubjectId("")
+                }}
+                title={
+                  searchSemesterId === ""
+                    ? t("sidebar.searchAllSemesters")
+                    : `${(searchFilterOptions?.semesters ?? []).find(s => s.id === searchSemesterId)?.year_name} · ${(searchFilterOptions?.semesters ?? []).find(s => s.id === searchSemesterId)?.name}`
+                }
+                className={`w-full min-w-0 appearance-none truncate rounded-md border py-1 ps-5 pe-4 text-[10px] outline-none transition-colors focus:ring-1 focus:ring-ring ${
+                  searchSemesterId !== ""
+                    ? "border-primary/40 bg-primary/10 font-medium text-foreground"
+                    : "border-input bg-background text-muted-foreground"
+                }`}
+              >
+                <option value="">{t("sidebar.searchAllSemesters")}</option>
+                {(searchFilterOptions?.semesters ?? []).map(sem => (
+                  <option key={sem.id} value={sem.id}>{sem.year_name} · {sem.name}</option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute end-1 top-1/2 size-2.5 -translate-y-1/2 text-muted-foreground/70" />
+            </div>
+
+            <div className="relative min-w-0 flex-1">
+              <FlaskConical className="pointer-events-none absolute start-1.5 top-1/2 size-3 -translate-y-1/2 text-muted-foreground/70" />
+              <select
+                value={searchSubjectId}
+                onChange={e => setSearchSubjectId(e.target.value === "" ? "" : Number(e.target.value))}
+                title={
+                  searchSubjectId === ""
+                    ? t("sidebar.searchAllSubjects")
+                    : filteredSearchSubjects.find(s => s.id === searchSubjectId)?.name
+                }
+                className={`w-full min-w-0 appearance-none truncate rounded-md border py-1 ps-5 pe-4 text-[10px] outline-none transition-colors focus:ring-1 focus:ring-ring ${
+                  searchSubjectId !== ""
+                    ? "border-primary/40 bg-primary/10 font-medium text-foreground"
+                    : "border-input bg-background text-muted-foreground"
+                }`}
+              >
+                <option value="">{t("sidebar.searchAllSubjects")}</option>
+                {filteredSearchSubjects.map(subj => (
+                  <option key={subj.id} value={subj.id}>{subj.name}</option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute end-1 top-1/2 size-2.5 -translate-y-1/2 text-muted-foreground/70" />
+            </div>
+
+            <div className="relative min-w-0 flex-1">
+              <Tag className="pointer-events-none absolute start-1.5 top-1/2 size-3 -translate-y-1/2 text-muted-foreground/70" />
+              <select
+                value={searchFileType}
+                onChange={e => setSearchFileType(e.target.value)}
+                title={searchFileType === "" ? t("sidebar.searchAllTypes") : categoryLabel(t, searchFileType)}
+                className={`w-full min-w-0 appearance-none truncate rounded-md border py-1 ps-5 pe-4 text-[10px] outline-none transition-colors focus:ring-1 focus:ring-ring ${
+                  searchFileType !== ""
+                    ? "border-primary/40 bg-primary/10 font-medium text-foreground"
+                    : "border-input bg-background text-muted-foreground"
+                }`}
+              >
+                <option value="">{t("sidebar.searchAllTypes")}</option>
+                {(searchFilterOptions?.types ?? []).map(type => (
+                  <option key={type} value={type}>{categoryLabel(t, type)}</option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute end-1 top-1/2 size-2.5 -translate-y-1/2 text-muted-foreground/70" />
+            </div>
+
+            {hasSearchFilters && (
+              <button
+                onClick={clearSearchFilters}
+                title={t("sidebar.searchClearFilters")}
+                className="flex-shrink-0 rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+              >
+                <X className="size-3" />
+              </button>
+            )}
+          </div>
+
+          {searchActive && (
             <div className="absolute inset-x-0 top-full z-20 mt-1 max-h-72 overflow-auto rounded-md border bg-popover shadow-md">
               {searching ? (
                 <p className="px-3 py-2 text-xs text-muted-foreground">{t("common.loading")}</p>

@@ -126,6 +126,38 @@ export interface SearchResult {
   year_end_date: string
 }
 
-export async function searchFiles(query: string): Promise<SearchResult[]> {
-  return await window.ipcRenderer.invoke('files:search', query)
+export interface SearchFilters {
+  subjectId?: number | null
+  semesterId?: number | null
+  fileType?: string | null
+}
+
+export async function searchFiles(query: string, filters?: SearchFilters): Promise<SearchResult[]> {
+  return await window.ipcRenderer.invoke('files:search', query, filters)
+}
+
+export interface SearchFilterSemester {
+  id: number
+  name: string
+  year_id: number
+  year_name: string
+}
+
+export interface SearchFilterSubject {
+  id: number
+  name: string
+  semester_id: number
+  semester_name: string
+  year_id: number
+  year_name: string
+}
+
+export interface SearchFilterOptions {
+  semesters: SearchFilterSemester[]
+  subjects: SearchFilterSubject[]
+  types: string[]
+}
+
+export async function getSearchFilterOptions(): Promise<SearchFilterOptions> {
+  return await window.ipcRenderer.invoke('files:getSearchFilterOptions')
 }

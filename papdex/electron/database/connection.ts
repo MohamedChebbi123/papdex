@@ -15,4 +15,5 @@ const database = new Database(database_path);
 
 database.pragma("journal_mode = WAL");
 
+export { database_path };
 export default database;

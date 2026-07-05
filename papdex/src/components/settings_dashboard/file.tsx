@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { AlertCircle, ImagePlus, Moon, Settings as SettingsIcon, Sun, Trash2, UserRound } from "lucide-react"
+import { AlertCircle, Download, ImagePlus, Moon, Settings as SettingsIcon, Sun, Trash2, Upload, UserRound } from "lucide-react"
 import { getUser, updateUser, pickAvatar, type User, type Language } from "@/components/user_service/file"
-import { deleteAllData } from "@/components/data_service/file"
+import { deleteAllData, exportBackup, restoreBackup } from "@/components/data_service/file"
 import { AvatarCropper } from "@/components/inputs/avatar_cropper"
 import { DeleteConfirm } from "@/components/inputs/Delete_confirm"
 import { applyDocumentDirection, RTL_LANGUAGES } from "@/i18n"
@@ -20,6 +20,9 @@ export function SettingsDashboard() {
   const [savingName, setSavingName] = useState(false)
   const [deleteAllOpen, setDeleteAllOpen] = useState(false)
   const [deletingAll, setDeletingAll] = useState(false)
+  const [exportingBackup, setExportingBackup] = useState(false)
+  const [restoringBackup, setRestoringBackup] = useState(false)
+  const [backupMessage, setBackupMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
   const [pendingTheme, setPendingTheme] = useState<"dark" | "light">(dark ? "dark" : "light")
   const [pendingLanguage, setPendingLanguage] = useState<Language>(i18n.language as Language)
   const [applyingAppearance, setApplyingAppearance] = useState(false)
@@ -99,6 +102,32 @@ export function SettingsDashboard() {
       }
     } finally {
       setApplyingAppearance(false)
+    }
+  }
+
+  async function handleExportBackup() {
+    setExportingBackup(true)
+    setBackupMessage(null)
+    try {
+      const savedPath = await exportBackup()
+      if (savedPath) setBackupMessage({ type: "success", text: t("settings.exportSuccess") })
+    } catch (err) {
+      setBackupMessage({ type: "error", text: err instanceof Error ? err.message : String(err) })
+    } finally {
+      setExportingBackup(false)
+    }
+  }
+
+  async function handleRestoreBackup() {
+    if (!window.confirm(t("settings.restoreConfirm"))) return
+    setRestoringBackup(true)
+    setBackupMessage(null)
+    try {
+      const restored = await restoreBackup()
+      if (!restored) setRestoringBackup(false)
+    } catch (err) {
+      setBackupMessage({ type: "error", text: err instanceof Error ? err.message : String(err) })
+      setRestoringBackup(false)
     }
   }
 
@@ -300,6 +329,73 @@ export function SettingsDashboard() {
             >
               {applyingAppearance ? t("settings.applying") : t("settings.apply")}
             </button>
+          </div>
+        )}
+      </div>
+
+      {/* Backup */}
+      <div style={{ background: card, border: `1px solid ${border}`, borderRadius: 14, padding: 24, marginTop: 20 }}>
+        <h2 style={{ fontSize: 13, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: muted, margin: "0 0 18px" }}>
+          {t("settings.backupSection")}
+        </h2>
+
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, marginBottom: 16 }}>
+          <div>
+            <p style={{ color: fg, fontSize: 13, fontWeight: 500, margin: 0 }}>
+              {t("settings.exportBackup")}
+            </p>
+            <p style={{ color: muted, fontSize: 12, margin: "4px 0 0" }}>
+              {t("settings.exportBackupDescription")}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleExportBackup}
+            disabled={exportingBackup}
+            style={{
+              background: "none", border: `1px solid ${border}`, borderRadius: 8,
+              color: fg, fontSize: 12, padding: "8px 16px", flexShrink: 0,
+              display: "flex", alignItems: "center", gap: 6,
+              cursor: exportingBackup ? "not-allowed" : "pointer", opacity: exportingBackup ? 0.5 : 1,
+            }}
+          >
+            <Download size={13} />
+            {exportingBackup ? t("settings.exporting") : t("settings.exportBackup")}
+          </button>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+          <div>
+            <p style={{ color: fg, fontSize: 13, fontWeight: 500, margin: 0 }}>
+              {t("settings.restoreBackup")}
+            </p>
+            <p style={{ color: muted, fontSize: 12, margin: "4px 0 0" }}>
+              {t("settings.restoreBackupDescription")}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleRestoreBackup}
+            disabled={restoringBackup}
+            style={{
+              background: "none", border: `1px solid ${border}`, borderRadius: 8,
+              color: fg, fontSize: 12, padding: "8px 16px", flexShrink: 0,
+              display: "flex", alignItems: "center", gap: 6,
+              cursor: restoringBackup ? "not-allowed" : "pointer", opacity: restoringBackup ? 0.5 : 1,
+            }}
+          >
+            <Upload size={13} />
+            {restoringBackup ? t("settings.restoring") : t("settings.restoreBackup")}
+          </button>
+        </div>
+
+        {backupMessage && (
+          <div style={{
+            display: "flex", alignItems: "center", gap: 6, fontSize: 12, marginTop: 14,
+            color: backupMessage.type === "error" ? "#ef4444" : "#22c55e",
+          }}>
+            <AlertCircle size={14} />
+            <span>{backupMessage.text}</span>
           </div>
         )}
       </div>
