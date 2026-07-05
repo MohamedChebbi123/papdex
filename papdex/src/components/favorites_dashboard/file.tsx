@@ -82,7 +82,7 @@ export function FavoritesDashboard({ onSelectSubject }: Props) {
           <p style={{ color: muted, fontSize: 13, margin: 0 }}>{t("favorites.emptySubtitle")}</p>
         </div>
       ) : (
-        <div data-tour="favorites-list" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12 }}>
+        <div data-tour="favorites-list" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 240px))", gap: 12 }}>
           {subjects.map((subject, i) => {
             const color = COLORS[i % COLORS.length]
             return (

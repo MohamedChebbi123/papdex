@@ -345,12 +345,6 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
                   <span>{t("sidebar.favorites")}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton onClick={onShowSettings}>
-                  <Settings className="size-4" />
-                  <span>{t("sidebar.settings")}</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

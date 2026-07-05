@@ -346,7 +346,7 @@ function fetch_search_filter_options() {
             )
             WHERE file_type IS NOT NULL AND file_type != ''
             ORDER BY file_type
-        `).all().map((row: any) => row.file_type as string)
+        `).all().map((row: { file_type: string }) => row.file_type)
 
         return { semesters, subjects, types }
     })

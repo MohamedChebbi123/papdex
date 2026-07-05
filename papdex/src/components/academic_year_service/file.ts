@@ -1,3 +1,12 @@
+export interface AcademicYear {
+  id: number
+  name: string
+  start_date: string
+  end_date: string
+  created_at: string
+  updated_at: string
+}
+
 export async function createAcademicYear(
   name: string,
   start_date: string,
@@ -7,14 +16,12 @@ export async function createAcademicYear(
   return id as number
 }
 
-export async function getAllAcademicYears(): Promise<any[]> {
-  const rows = await window.ipcRenderer.invoke('academic_years:getAll')
-  return rows as any[]
+export async function getAllAcademicYears(): Promise<AcademicYear[]> {
+  return await window.ipcRenderer.invoke('academic_years:getAll')
 }
 
-export async function getAcademicYearById(id: number): Promise<any> {
-  const row = await window.ipcRenderer.invoke('academic_years:getById', id)
-  return row
+export async function getAcademicYearById(id: number): Promise<AcademicYear | null> {
+  return await window.ipcRenderer.invoke('academic_years:getById', id)
 }
 
 export async function updateAcademicYear(

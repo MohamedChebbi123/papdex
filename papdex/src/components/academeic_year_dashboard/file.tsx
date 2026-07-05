@@ -54,11 +54,11 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
   const isRTL = RTL_LANGUAGES.has(i18n.language)
   const BreadcrumbChevron = isRTL ? ChevronLeft : ChevronRight
   const [semesterModalOpen, setSemesterModalOpen] = useState(false)
-  const [semesters, setSemesters] = useState<any[]>([])
+  const [semesters, setSemesters] = useState<Semester[]>([])
   const [subjects, setSubjects] = useState<Subject[]>([])
   const [recentFiles, setRecentFiles] = useState<RecentFile[]>([])
-  const [editingSemester, setEditingSemester] = useState<any | null>(null)
-  const [deletingSemester, setDeletingSemester] = useState<any | null>(null)
+  const [editingSemester, setEditingSemester] = useState<Semester | null>(null)
+  const [deletingSemester, setDeletingSemester] = useState<Semester | null>(null)
   const [hoveredSemId, setHoveredSemId] = useState<number | null>(null)
   const [runTour, setRunTour] = useState(false)
 
@@ -200,8 +200,8 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
           </button>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 12, marginBottom: 28 }}>
-          {semesters.map((sem: any) => {
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 300px))", gap: 12, marginBottom: 28 }}>
+          {semesters.map((sem) => {
             const semSubjects = subjects.filter(s => s.semester_id === sem.id)
             const semFileCount = semSubjects.reduce((acc, s) => acc + s.file_count, 0)
             return (
@@ -285,7 +285,7 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
           <p style={{ color: muted, fontSize: 13, margin: 0 }}>{t("academicYear.noSubjectsSubtitle")}</p>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12, marginBottom: 28 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 240px))", gap: 12, marginBottom: 28 }}>
           {subjects.map((subject, i) => {
             const isFav = subject.is_favorite === 1
             const color = COLORS[i % COLORS.length]

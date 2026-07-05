@@ -58,7 +58,7 @@ interface Props {
   onOpenFile?: (params: {
     subject: Subject
     semester: Semester
-    folder: { id: number; subject_id: number; name: string; is_favorite: number } | null
+    folder: { id: number; subject_id: number; name: string } | null
     fileId: number
   }) => void
 }
@@ -215,7 +215,7 @@ export function SemesterDashboard({ semester, year, onBack, onSelectSubject, onO
           </button>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12, marginBottom: 28 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 240px))", gap: 12, marginBottom: 28 }}>
           {subjects.map((subject, i) => {
             const color = COLORS[i % COLORS.length]
             const isFav = subject.is_favorite === 1

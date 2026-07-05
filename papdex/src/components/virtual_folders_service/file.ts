@@ -1,12 +1,24 @@
+export interface VirtualFolder {
+  id: number
+  subject_id: number
+  name: string
+  created_at: string
+  updated_at: string
+}
+
+export interface VirtualFolderWithFileCount extends VirtualFolder {
+  file_count: number
+}
+
 export async function createVirtualFolder(subject_id: number, name: string): Promise<number> {
   return await window.ipcRenderer.invoke('virtualFolders:create', subject_id, name)
 }
 
-export async function getVirtualFoldersBySubject(subject_id: number): Promise<any[]> {
+export async function getVirtualFoldersBySubject(subject_id: number): Promise<VirtualFolderWithFileCount[]> {
   return await window.ipcRenderer.invoke('virtualFolders:getBySubject', subject_id)
 }
 
-export async function getVirtualFolderById(id: number): Promise<any> {
+export async function getVirtualFolderById(id: number): Promise<VirtualFolder | null> {
   return await window.ipcRenderer.invoke('virtualFolders:getById', id)
 }
 

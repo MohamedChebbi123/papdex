@@ -286,7 +286,7 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
           </button>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12, marginBottom: 28 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 240px))", gap: 12, marginBottom: 28 }}>
           {folders.map(folder => (
             <div
               key={folder.id}
@@ -351,7 +351,7 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
           </button>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12, marginBottom: 28 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 240px))", gap: 12, marginBottom: 28 }}>
           {importedFolders.map(folder => (
             <div
               key={folder.id}

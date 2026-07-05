@@ -1,3 +1,13 @@
+export interface Semester {
+  id: number
+  year_id: number
+  name: string
+  start_date: string
+  end_date: string
+  created_at: string
+  updated_at: string
+}
+
 export async function createSemester(
   year_id: number,
   name: string,
@@ -8,17 +18,15 @@ export async function createSemester(
   return id as number
 }
 
-export async function getAllSemesters(): Promise<any[]> {
-  const rows = await window.ipcRenderer.invoke('semesters:getAll')
-  return rows as any[]
+export async function getAllSemesters(): Promise<Semester[]> {
+  return await window.ipcRenderer.invoke('semesters:getAll')
 }
 
-export async function getSemestersByYear(year_id: number): Promise<any[]> {
-  const rows = await window.ipcRenderer.invoke('semesters:getByYear', year_id)
-  return rows as any[]
+export async function getSemestersByYear(year_id: number): Promise<Semester[]> {
+  return await window.ipcRenderer.invoke('semesters:getByYear', year_id)
 }
 
-export async function getSemesterById(id: number): Promise<any> {
+export async function getSemesterById(id: number): Promise<Semester | null> {
   return await window.ipcRenderer.invoke('semesters:getById', id)
 }
 
