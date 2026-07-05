@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import {
   Calendar, ChevronLeft, ChevronRight, Plus, Star, FileText,
@@ -62,20 +62,20 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
   const [hoveredSemId, setHoveredSemId] = useState<number | null>(null)
   const [runTour, setRunTour] = useState(false)
 
+  const refreshSemesters = useCallback(() => {
+    if (year) getSemestersByYear(year.id).then(setSemesters)
+  }, [year])
+
+  const refreshSubjects = useCallback(() => {
+    if (year) getSubjectsByYear(year.id).then(setSubjects)
+  }, [year])
+
   useEffect(() => {
     if (!year) return
     refreshSemesters()
     refreshSubjects()
     getRecentFilesByYear(year.id).then(setRecentFiles)
-  }, [year?.id])
-
-  function refreshSemesters() {
-    if (year) getSemestersByYear(year.id).then(setSemesters)
-  }
-
-  function refreshSubjects() {
-    if (year) getSubjectsByYear(year.id).then(setSubjects)
-  }
+  }, [year, refreshSemesters, refreshSubjects])
 
   async function handleDeleteSemester() {
     if (!deletingSemester) return

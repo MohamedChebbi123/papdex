@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { GraduationCap } from "lucide-react"
 import { SidebarProvider } from "@/components/ui/sidebar"
@@ -42,6 +42,7 @@ function App() {
   const [showSettings,           setShowSettings]           = useState(false)
   const [pendingFileId,          setPendingFileId]          = useState<number | null>(null)
   const sidebarRef = useRef<AppSidebarHandle>(null)
+  const handleInitialFileHandled = useCallback(() => setPendingFileId(null), [])
 
   useEffect(() => {
     getUser().then(user => {
@@ -191,7 +192,7 @@ function App() {
             semester={selectedSemester}
             year={selectedYear}
             initialFileId={pendingFileId}
-            onInitialFileHandled={() => setPendingFileId(null)}
+            onInitialFileHandled={handleInitialFileHandled}
             onBack={() => setSelectedFolder(null)}
             onBackToSemester={() => { setSelectedSubject(null); setSelectedFolder(null) }}
             onBackToYear={() => { setSelectedSemester(null); setSelectedSubject(null); setSelectedFolder(null) }}

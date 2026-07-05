@@ -207,7 +207,7 @@ export function FilePreviewPanel({ file, onClose }: Props) {
       .finally(() => { if (!cancelled) setLoading(false) })
 
     return () => { cancelled = true }
-  }, [file?.id])
+  }, [file, ext, isCode, isMarkdown, isPdf])
 
   useEffect(() => {
     return () => { setBlobUrl(prev => { if (prev) URL.revokeObjectURL(prev); return null }) }

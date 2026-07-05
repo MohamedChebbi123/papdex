@@ -156,7 +156,7 @@ export function VirtualFolderDashboard({
       markFileOpened(file.id)
     }
     onInitialFileHandled?.()
-  }, [initialFileId, files])
+  }, [initialFileId, files, onInitialFileHandled])
 
   async function handleDelete() {
     await deleteVirtualFolder(folderId)
