@@ -424,16 +424,6 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
         </div>
       )}
 
-      {/* Files placeholder */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>{t("subject.filesHeading")}</span>
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "32px 0", marginBottom: 28 }}>
-        <FileText size={36} color={muted} />
-        <p style={{ color: fg, fontSize: 14, fontWeight: 500, marginTop: 10, marginBottom: 4 }}>{t("subject.noFilesTitle")}</p>
-        <p style={{ color: muted, fontSize: 12, margin: 0 }}>{t("subject.noFilesSubtitle")}</p>
-      </div>
-
       <VirtualFolderCreation
         open={createOpen}
         onOpenChange={setCreateOpen}

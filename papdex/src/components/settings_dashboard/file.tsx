@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { ImagePlus, Moon, Settings as SettingsIcon, Sun, Trash2, UserRound } from "lucide-react"
+import { AlertCircle, ImagePlus, Moon, Settings as SettingsIcon, Sun, Trash2, UserRound } from "lucide-react"
 import { getUser, updateUser, pickAvatar, type User, type Language } from "@/components/user_service/file"
 import { deleteAllData } from "@/components/data_service/file"
 import { AvatarCropper } from "@/components/inputs/avatar_cropper"
@@ -20,6 +20,12 @@ export function SettingsDashboard() {
   const [savingName, setSavingName] = useState(false)
   const [deleteAllOpen, setDeleteAllOpen] = useState(false)
   const [deletingAll, setDeletingAll] = useState(false)
+  const [pendingTheme, setPendingTheme] = useState<"dark" | "light">(dark ? "dark" : "light")
+  const [pendingLanguage, setPendingLanguage] = useState<Language>(i18n.language as Language)
+  const [applyingAppearance, setApplyingAppearance] = useState(false)
+
+  const appearanceDirty = pendingTheme !== (dark ? "dark" : "light") || pendingLanguage !== i18n.language
+  const nameDirty = !!name.trim() && name.trim() !== user?.display_name
 
   useEffect(() => {
     getUser().then(u => {
@@ -68,18 +74,32 @@ export function SettingsDashboard() {
     }
   }
 
-  async function handleSelectTheme(theme: "dark" | "light") {
-    setDark(theme === "dark")
-    document.documentElement.classList.toggle("dark", theme === "dark")
-    await updateUser({ theme })
-    setUser(prev => prev ? { ...prev, theme } : prev)
+  function handleSelectTheme(theme: "dark" | "light") {
+    setPendingTheme(theme)
   }
 
-  async function handleLanguageChange(language: Language) {
-    i18n.changeLanguage(language)
-    applyDocumentDirection(language)
-    await updateUser({ language })
-    setUser(prev => prev ? { ...prev, language } : prev)
+  function handleLanguageChange(language: Language) {
+    setPendingLanguage(language)
+  }
+
+  async function handleApplyAppearance() {
+    setApplyingAppearance(true)
+    try {
+      if (pendingTheme !== (dark ? "dark" : "light")) {
+        document.documentElement.classList.toggle("dark", pendingTheme === "dark")
+        await updateUser({ theme: pendingTheme })
+        setDark(pendingTheme === "dark")
+        setUser(prev => prev ? { ...prev, theme: pendingTheme } : prev)
+      }
+      if (pendingLanguage !== i18n.language) {
+        i18n.changeLanguage(pendingLanguage)
+        applyDocumentDirection(pendingLanguage)
+        await updateUser({ language: pendingLanguage })
+        setUser(prev => prev ? { ...prev, language: pendingLanguage } : prev)
+      }
+    } finally {
+      setApplyingAppearance(false)
+    }
   }
 
   async function handleDeleteAllData() {
@@ -195,6 +215,12 @@ export function SettingsDashboard() {
               {savingName ? t("common.saving") : t("common.save")}
             </button>
           </div>
+          {nameDirty && (
+            <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#f59e0b", fontSize: 12, marginTop: 8 }}>
+              <AlertCircle size={14} />
+              <span>{t("settings.unsavedChanges")}</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -216,11 +242,11 @@ export function SettingsDashboard() {
                 onClick={() => handleSelectTheme(themeOption)}
                 style={{
                   background: "var(--background)",
-                  border: `1px solid ${(dark ? "dark" : "light") === themeOption ? "var(--primary)" : border}`,
+                  border: `1px solid ${pendingTheme === themeOption ? "var(--primary)" : border}`,
                   borderRadius: 10, padding: "10px 0", cursor: "pointer",
                   display: "flex", flexDirection: "column",
                   alignItems: "center", gap: 6,
-                  color: (dark ? "dark" : "light") === themeOption ? "var(--primary)" : muted,
+                  color: pendingTheme === themeOption ? "var(--primary)" : muted,
                 }}
               >
                 {themeOption === "dark" ? <Moon size={16} /> : <Sun size={16} />}
@@ -230,7 +256,7 @@ export function SettingsDashboard() {
           </div>
         </div>
 
-        <div>
+        <div style={{ marginBottom: appearanceDirty ? 20 : 0 }}>
           <label style={{ display: "block", color: muted, fontSize: 12, marginBottom: 8 }}>
             {t("settings.language")}
           </label>
@@ -243,9 +269,9 @@ export function SettingsDashboard() {
                 style={{
                   flex: 1, borderRadius: 8, padding: "8px 0", fontSize: 12, fontWeight: 500,
                   cursor: "pointer", textTransform: "uppercase",
-                  background: i18n.language === lang ? "var(--primary)" : "var(--background)",
-                  color: i18n.language === lang ? "var(--primary-foreground)" : muted,
-                  border: `1px solid ${i18n.language === lang ? "var(--primary)" : border}`,
+                  background: pendingLanguage === lang ? "var(--primary)" : "var(--background)",
+                  color: pendingLanguage === lang ? "var(--primary-foreground)" : muted,
+                  border: `1px solid ${pendingLanguage === lang ? "var(--primary)" : border}`,
                 }}
               >
                 {lang}
@@ -253,6 +279,29 @@ export function SettingsDashboard() {
             ))}
           </div>
         </div>
+
+        {appearanceDirty && (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#f59e0b", fontSize: 12 }}>
+              <AlertCircle size={14} />
+              <span>{t("settings.unsavedChanges")}</span>
+            </div>
+            <button
+              type="button"
+              onClick={handleApplyAppearance}
+              disabled={applyingAppearance}
+              style={{
+                background: "var(--primary)", border: "none", borderRadius: 8,
+                color: "var(--primary-foreground)", fontSize: 13, padding: "8px 16px",
+                cursor: applyingAppearance ? "not-allowed" : "pointer",
+                opacity: applyingAppearance ? 0.5 : 1,
+                flexShrink: 0,
+              }}
+            >
+              {applyingAppearance ? t("settings.applying") : t("settings.apply")}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Danger zone */}

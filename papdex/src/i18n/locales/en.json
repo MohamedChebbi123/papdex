@@ -107,10 +107,7 @@
     "noFoldersSubtitle": "Create a folder to organize your files",
     "importedFoldersHeading": "Imported Folders",
     "noImportedTitle": "No imported folders yet",
-    "noImportedSubtitle": "Import an OS folder to bring in all its files at once",
-    "filesHeading": "Files",
-    "noFilesTitle": "No files yet",
-    "noFilesSubtitle": "File management coming soon"
+    "noImportedSubtitle": "Import an OS folder to bring in all its files at once"
   },
   "virtualFolder": {
     "addFiles": "Add files",
@@ -241,6 +238,10 @@
     "language": "Language",
     "dark": "Dark",
     "light": "Light",
+    "apply": "Apply",
+    "applying": "Applying...",
+    "applied": "Applied",
+    "unsavedChanges": "You have unsaved changes",
     "dangerZoneSection": "Danger Zone",
     "deleteAllData": "Delete all data",
     "deleteAllDataDescription": "Permanently delete all academic years, semesters, subjects, folders, and file records. Your profile and preferences are kept, and files on disk are not touched. This cannot be undone.",

@@ -107,10 +107,7 @@
     "noFoldersSubtitle": "Créez un dossier pour organiser vos fichiers",
     "importedFoldersHeading": "Dossiers importés",
     "noImportedTitle": "Aucun dossier importé pour l'instant",
-    "noImportedSubtitle": "Importez un dossier du système pour récupérer tous ses fichiers d'un coup",
-    "filesHeading": "Fichiers",
-    "noFilesTitle": "Aucun fichier pour l'instant",
-    "noFilesSubtitle": "Gestion des fichiers bientôt disponible"
+    "noImportedSubtitle": "Importez un dossier du système pour récupérer tous ses fichiers d'un coup"
   },
   "virtualFolder": {
     "addFiles": "Ajouter des fichiers",
@@ -241,6 +238,10 @@
     "language": "Langue",
     "dark": "Sombre",
     "light": "Clair",
+    "apply": "Appliquer",
+    "applying": "Application...",
+    "applied": "Appliqué",
+    "unsavedChanges": "Vous avez des modifications non enregistrées",
     "dangerZoneSection": "Zone de danger",
     "deleteAllData": "Supprimer toutes les données",
     "deleteAllDataDescription": "Supprime définitivement toutes les années scolaires, semestres, matières, dossiers et enregistrements de fichiers. Votre profil et vos préférences sont conservés, et les fichiers sur le disque ne sont pas touchés. Cette action est irréversible.",
