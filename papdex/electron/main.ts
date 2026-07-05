@@ -1,5 +1,4 @@
 import { app, BrowserWindow, Menu } from 'electron'
-import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import './database/schema'
@@ -11,7 +10,6 @@ import { file_handlers } from './handlers/files_handlers'
 import { user_handlers } from './handlers/user_handler'
 import { imported_folder_handlers } from './handlers/imported_folders_handler'
 import { data_handlers } from './handlers/data_handlers'
-const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 
