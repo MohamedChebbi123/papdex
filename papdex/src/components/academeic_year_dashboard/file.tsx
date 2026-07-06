@@ -365,12 +365,14 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
         open={semesterModalOpen}
         onOpenChange={setSemesterModalOpen}
         yearId={year?.id ?? 0}
+        semesters={semesters}
         onCreated={refreshSemesters}
       />
       <SemesterUpdate
         open={editingSemester !== null}
         onOpenChange={open => { if (!open) setEditingSemester(null) }}
         semester={editingSemester}
+        semesters={semesters}
         onUpdated={refreshSemesters}
       />
       <DeleteConfirm

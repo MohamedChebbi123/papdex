@@ -191,7 +191,7 @@
   "modal": {
     "yearCreate": { "title": "New Academic Year", "description": "Enter the details for the academic year.", "namePlaceholder": "e.g. 2024-2025" },
     "yearUpdate": { "title": "Edit Academic Year", "description": "Update the details for this academic year." },
-    "semesterCreate": { "title": "New Semester", "description": "Enter the details for the semester.", "namePlaceholder": "e.g. Semester 1" },
+    "semesterCreate": { "title": "New Semester", "description": "Enter the details for the semester.", "namePlaceholder": "e.g. Semester 1", "dateOrderError": "End date must be after the start date.", "overlapError": "These dates overlap with \"{{name}}\". Semesters in the same year can't overlap." },
     "semesterUpdate": { "title": "Edit Semester", "description": "Update the details for this semester." },
     "subjectCreate": { "title": "New Subject", "description": "Enter a name for the subject.", "namePlaceholder": "e.g. Data Structures" },
     "folderCreate": { "title": "New Folder", "description": "Enter a name for the virtual folder.", "namePlaceholder": "e.g. Lectures" },

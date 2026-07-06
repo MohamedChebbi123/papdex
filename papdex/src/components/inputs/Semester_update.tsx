@@ -4,33 +4,46 @@ import { Dialog } from "@base-ui/react/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { updateSemester } from "@/components/semester_service/file"
+import { rangesOverlap } from "@/lib/date_ranges"
 
 interface Props {
   open: boolean
   onOpenChange: (open: boolean) => void
   semester: { id: number; name: string; start_date: string; end_date: string } | null
+  semesters: { id: number; name: string; start_date: string; end_date: string }[]
   onUpdated?: () => void
 }
 
-export function SemesterUpdate({ open, onOpenChange, semester, onUpdated }: Props) {
+export function SemesterUpdate({ open, onOpenChange, semester, semesters, onUpdated }: Props) {
   const { t } = useTranslation()
   const [name, setName] = useState("")
   const [startDate, setStartDate] = useState("")
   const [endDate, setEndDate] = useState("")
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (semester) {
       setName(semester.name)
       setStartDate(semester.start_date)
       setEndDate(semester.end_date)
+      setError(null)
     }
   }, [semester])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!semester) return
-    if (startDate && endDate && endDate < startDate) return
+    setError(null)
+    if (startDate && endDate && endDate < startDate) {
+      setError(t("modal.semesterCreate.dateOrderError"))
+      return
+    }
+    const conflict = semesters.find(s => s.id !== semester.id && rangesOverlap(startDate, endDate, s.start_date, s.end_date))
+    if (conflict) {
+      setError(t("modal.semesterCreate.overlapError", { name: conflict.name }))
+      return
+    }
     setLoading(true)
     try {
       await updateSemester(semester.id, name, startDate, endDate)
@@ -85,6 +98,10 @@ export function SemesterUpdate({ open, onOpenChange, semester, onUpdated }: Prop
                     required
                   />
                 </div>
+
+                {error && (
+                  <p className="text-sm text-red-500">{error}</p>
+                )}
 
                 <div className="flex justify-end gap-2 pt-2">
                   <Dialog.Close render={<Button type="button" variant="outline" />}>

@@ -191,7 +191,7 @@
   "modal": {
     "yearCreate": { "title": "Nouvelle année scolaire", "description": "Saisissez les informations de l'année scolaire.", "namePlaceholder": "p. ex. 2024-2025" },
     "yearUpdate": { "title": "Modifier l'année scolaire", "description": "Mettez à jour les informations de cette année scolaire." },
-    "semesterCreate": { "title": "Nouveau semestre", "description": "Saisissez les informations du semestre.", "namePlaceholder": "p. ex. Semestre 1" },
+    "semesterCreate": { "title": "Nouveau semestre", "description": "Saisissez les informations du semestre.", "namePlaceholder": "p. ex. Semestre 1", "dateOrderError": "La date de fin doit être postérieure à la date de début.", "overlapError": "Ces dates chevauchent \"{{name}}\". Les semestres d'une même année ne peuvent pas se chevaucher." },
     "semesterUpdate": { "title": "Modifier le semestre", "description": "Mettez à jour les informations de ce semestre." },
     "subjectCreate": { "title": "Nouvelle matière", "description": "Saisissez un nom pour la matière.", "namePlaceholder": "p. ex. Structures de données" },
     "folderCreate": { "title": "Nouveau dossier", "description": "Saisissez un nom pour le dossier virtuel.", "namePlaceholder": "p. ex. Cours" },

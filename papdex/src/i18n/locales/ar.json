@@ -211,7 +211,7 @@
   "modal": {
     "yearCreate": { "title": "سنة دراسية جديدة", "description": "أدخل تفاصيل السنة الدراسية.", "namePlaceholder": "مثال: 2024-2025" },
     "yearUpdate": { "title": "تعديل السنة الدراسية", "description": "حدّث تفاصيل هذه السنة الدراسية." },
-    "semesterCreate": { "title": "سداسي جديد", "description": "أدخل تفاصيل السداسي.", "namePlaceholder": "مثال: السداسي 1" },
+    "semesterCreate": { "title": "سداسي جديد", "description": "أدخل تفاصيل السداسي.", "namePlaceholder": "مثال: السداسي 1", "dateOrderError": "يجب أن يكون تاريخ الانتهاء بعد تاريخ البداية.", "overlapError": "تتداخل هذه التواريخ مع \"{{name}}\". لا يمكن أن تتداخل السداسيات ضمن نفس السنة." },
     "semesterUpdate": { "title": "تعديل السداسي", "description": "حدّث تفاصيل هذا السداسي." },
     "subjectCreate": { "title": "مادة جديدة", "description": "أدخل اسمًا للمادة.", "namePlaceholder": "مثال: هياكل البيانات" },
     "folderCreate": { "title": "مجلد جديد", "description": "أدخل اسمًا للمجلد الافتراضي.", "namePlaceholder": "مثال: المحاضرات" },
