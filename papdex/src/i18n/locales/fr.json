@@ -1,6 +1,7 @@
 {
   "common": {
     "name": "Nom",
+    "year": "Année",
     "startDate": "Date de début",
     "endDate": "Date de fin",
     "cancel": "Annuler",
@@ -88,7 +89,8 @@
     "noSemestersSubtitle": "Ajoutez un semestre pour commencer à organiser vos matières",
     "addSemester": "Ajouter un semestre",
     "noSubjectsTitle": "Aucune matière pour l'instant",
-    "noSubjectsSubtitle": "Ajoutez une matière depuis l'un des semestres ci-dessus pour organiser vos fichiers"
+    "noSubjectsSubtitle": "Ajoutez une matière depuis l'un des semestres ci-dessus pour organiser vos fichiers",
+    "colorHint": "La couleur aide à distinguer les matières en un coup d'œil"
   },
   "semester": {
     "statSubjects": "Matières",

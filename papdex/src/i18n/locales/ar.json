@@ -1,6 +1,7 @@
 {
   "common": {
     "name": "الاسم",
+    "year": "سنة",
     "startDate": "تاريخ البداية",
     "endDate": "تاريخ النهاية",
     "cancel": "إلغاء",
@@ -104,7 +105,8 @@
     "noSemestersSubtitle": "أضف سداسيًا لتبدأ في تنظيم المواد",
     "addSemester": "إضافة سداسي",
     "noSubjectsTitle": "لا توجد مواد بعد",
-    "noSubjectsSubtitle": "أضف مادة من أحد السداسيات أعلاه لتبدأ في تنظيم ملفاتك"
+    "noSubjectsSubtitle": "أضف مادة من أحد السداسيات أعلاه لتبدأ في تنظيم ملفاتك",
+    "colorHint": "يساعدك اللون على تمييز المواد بسرعة"
   },
   "semester": {
     "statSubjects": "المواد",

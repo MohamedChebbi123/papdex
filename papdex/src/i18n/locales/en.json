@@ -1,6 +1,7 @@
 {
   "common": {
     "name": "Name",
+    "year": "Year",
     "startDate": "Start Date",
     "endDate": "End Date",
     "cancel": "Cancel",
@@ -88,7 +89,8 @@
     "noSemestersSubtitle": "Add a semester to start organizing subjects",
     "addSemester": "Add semester",
     "noSubjectsTitle": "No subjects yet",
-    "noSubjectsSubtitle": "Add a subject from one of the semesters above to start organizing files"
+    "noSubjectsSubtitle": "Add a subject from one of the semesters above to start organizing files",
+    "colorHint": "Color helps you tell subjects apart at a glance"
   },
   "semester": {
     "statSubjects": "Subjects",

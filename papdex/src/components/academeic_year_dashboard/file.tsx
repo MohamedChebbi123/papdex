@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import {
-  Calendar, ChevronLeft, ChevronRight, Plus, Star, FileText,
-  Video, Pencil, Folder, BookOpen, Trash2,
+  Calendar, ChevronLeft, ChevronRight, Plus, Star,
+  Pencil, Folder, BookOpen, Trash2,
 } from "lucide-react"
 import type { Step } from "react-joyride"
 import { SemesterCreation } from "@/components/inputs/Semester_creation"
@@ -10,6 +10,7 @@ import { SemesterUpdate } from "@/components/inputs/Semester_update"
 import { DeleteConfirm } from "@/components/inputs/Delete_confirm"
 import { TourGuide } from "@/components/inputs/tour_guide"
 import { HelpButton } from "@/components/inputs/help_button"
+import { FileTypeIcon } from "@/components/inputs/file_type_icon"
 import { RTL_LANGUAGES } from "@/i18n"
 import { getSemestersByYear, deleteSemester } from "@/components/semester_service/file"
 import { getSubjectsByYear, toggleFavoriteSubject } from "@/components/subjects_service/file"
@@ -20,8 +21,6 @@ const COLORS = [
   "#6366f1", "#0891b2", "#059669", "#d97706",
   "#7c3aed", "#dc2626", "#0d9488", "#db2777",
 ]
-
-const VIDEO_EXTENSIONS = ["mp4", "mov", "mkv", "avi", "webm"]
 
 type Semester = { id: number; name: string; start_date: string; end_date: string }
 type Year = { id: number; name: string; start_date: string; end_date: string }
@@ -136,10 +135,15 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
 
       {/* Breadcrumb */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, color: muted, fontSize: 12 }}>
-          <Calendar size={13} />
-          <BreadcrumbChevron size={13} />
-          <span>{year?.name ?? "—"}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}>
+          <span style={{ display: "flex", alignItems: "center", gap: 4, color: muted }}>
+            <Calendar size={13} />
+            <span style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              {t("common.year")}
+            </span>
+          </span>
+          <BreadcrumbChevron size={13} color={muted} />
+          <span style={{ color: fg, fontWeight: 500 }}>{year?.name ?? "—"}</span>
         </div>
         <HelpButton onClick={() => setRunTour(true)} />
       </div>
@@ -203,7 +207,6 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 300px))", gap: 12, marginBottom: 28 }}>
           {semesters.map((sem) => {
             const semSubjects = subjects.filter(s => s.semester_id === sem.id)
-            const semFileCount = semSubjects.reduce((acc, s) => acc + s.file_count, 0)
             return (
               <div
                 key={sem.id}
@@ -211,15 +214,15 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
                 onMouseLeave={() => setHoveredSemId(null)}
                 onClick={() => onSelectSemester(sem)}
                 style={{
-                  background: card,
-                  border: `1px solid ${border}`,
-                  borderRadius: 14, padding: 18, cursor: "pointer", position: "relative",
+                  background: "linear-gradient(rgba(99,102,241,0.05), rgba(99,102,241,0.05)), " + card,
+                  border: `1.5px solid ${border}`,
+                  borderRadius: 16, padding: "20px 22px", cursor: "pointer", position: "relative",
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <BookOpen size={15} color={muted} />
-                    <span style={{ color: fg, fontSize: 14, fontWeight: 600 }}>{sem.name}</span>
+                    <BookOpen size={17} color={muted} />
+                    <span style={{ color: fg, fontSize: 15, fontWeight: 700 }}>{sem.name}</span>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     {hoveredSemId === sem.id && (
@@ -240,29 +243,28 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
                     )}
                   </div>
                 </div>
-                <p style={{ color: muted, fontSize: 11, margin: "0 0 10px" }}>
+                <p style={{ color: muted, fontSize: 11, margin: "0 0 12px" }}>
                   {sem.start_date} — {sem.end_date}
                 </p>
                 {semSubjects.length > 0 && (
-                  <div style={{ display: "flex", gap: 4, marginBottom: 6 }}>
+                  <div
+                    style={{ display: "flex", gap: 5 }}
+                    title={t("academicYear.colorHint")}
+                  >
                     {semSubjects.slice(0, 8).map((s, i) => (
-                      <span key={s.id} style={{ width: 7, height: 7, borderRadius: "50%", background: COLORS[i % COLORS.length] }} />
+                      <span key={s.id} style={{ width: 8, height: 8, borderRadius: "50%", background: COLORS[i % COLORS.length] }} />
                     ))}
                   </div>
                 )}
-                <div style={{ display: "flex", gap: 10, fontSize: 10, color: muted }}>
-                  <span>{t("common.subjectCount", { count: semSubjects.length })}</span>
-                  <span>{t("common.fileCount", { count: semFileCount })}</span>
-                </div>
               </div>
             )
           })}
           <div
             onClick={() => setSemesterModalOpen(true)}
             style={{
-              border: `1px dashed ${border}`, borderRadius: 14,
+              border: `1px dashed ${border}`, borderRadius: 16,
               display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-              gap: 4, padding: 18, cursor: "pointer", color: muted, minHeight: 90,
+              gap: 4, padding: "20px 22px", cursor: "pointer", color: muted, minHeight: 100,
             }}
           >
             <Plus size={16} />
@@ -285,7 +287,7 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
           <p style={{ color: muted, fontSize: 13, margin: 0 }}>{t("academicYear.noSubjectsSubtitle")}</p>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 240px))", gap: 12, marginBottom: 28 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 220px))", gap: 10, marginBottom: 28 }}>
           {subjects.map((subject, i) => {
             const isFav = subject.is_favorite === 1
             const color = COLORS[i % COLORS.length]
@@ -293,20 +295,23 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
               <div
                 key={subject.id}
                 onClick={() => handleSelectSubject(subject)}
-                style={{ background: card, border: `1px solid ${border}`, borderRadius: 14, padding: 16, cursor: "pointer" }}
+                title={t("academicYear.colorHint")}
+                style={{
+                  background: card,
+                  border: `1px solid ${border}`,
+                  borderInlineStart: `4px solid ${color}`,
+                  borderRadius: 10, padding: "12px 14px", cursor: "pointer",
+                }}
               >
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                    <div style={{ width: 10, height: 10, borderRadius: "50%", background: color, flexShrink: 0 }} />
-                    <span style={{ color: fg, fontSize: 13, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {subject.name}
-                    </span>
-                  </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ color: fg, fontSize: 13, fontWeight: 500, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {subject.name}
+                  </span>
                   <button onClick={e => handleToggleFavorite(e, subject)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", flexShrink: 0 }}>
-                    <Star size={16} fill={isFav ? "#f59e0b" : "none"} color={isFav ? "#f59e0b" : muted} />
+                    <Star size={14} fill={isFav ? "#f59e0b" : "none"} color={isFav ? "#f59e0b" : muted} />
                   </button>
                 </div>
-                <p style={{ color: muted, fontSize: 11, margin: "8px 0 0" }}>
+                <p style={{ color: muted, fontSize: 11, margin: "6px 0 0" }}>
                   {subject.semester_name} · {t("common.fileCount", { count: subject.file_count })}
                 </p>
               </div>
@@ -333,7 +338,7 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  {VIDEO_EXTENSIONS.includes(file.file_type) ? <Video size={16} color={muted} /> : <FileText size={16} color={muted} />}
+                  <FileTypeIcon fileName={file.file_name} fileType={file.file_type} filePath={file.file_path} size={16} />
                   <span style={{ color: fg, fontSize: 13 }}>{file.file_name}</span>
                 </div>
                 <span style={{ color: muted, fontSize: 11 }}>{file.subject_name}</span>
