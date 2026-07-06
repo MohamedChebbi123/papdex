@@ -9,10 +9,11 @@ interface Props {
   open: boolean
   onOpenChange: (open: boolean) => void
   subjectId: number
+  parentFolderId?: number | null
   onCreated?: (id: number) => void
 }
 
-export function VirtualFolderCreation({ open, onOpenChange, subjectId, onCreated }: Props) {
+export function VirtualFolderCreation({ open, onOpenChange, subjectId, parentFolderId = null, onCreated }: Props) {
   const { t } = useTranslation()
   const [name, setName] = useState("")
   const [loading, setLoading] = useState(false)
@@ -21,7 +22,7 @@ export function VirtualFolderCreation({ open, onOpenChange, subjectId, onCreated
     e.preventDefault()
     setLoading(true)
     try {
-      const id = await createVirtualFolder(subjectId, name)
+      const id = await createVirtualFolder(subjectId, name, parentFolderId)
       onCreated?.(id)
       onOpenChange(false)
       setName("")

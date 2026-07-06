@@ -193,6 +193,7 @@ function App() {
             year={selectedYear}
             initialFileId={pendingFileId}
             onInitialFileHandled={handleInitialFileHandled}
+            onSelectFolder={setSelectedFolder}
             onBack={() => setSelectedFolder(null)}
             onBackToSemester={() => { setSelectedSubject(null); setSelectedFolder(null) }}
             onBackToYear={() => { setSelectedSemester(null); setSelectedSubject(null); setSelectedFolder(null) }}

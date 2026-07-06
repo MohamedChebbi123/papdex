@@ -111,6 +111,7 @@
     "statImported": "Imported",
     "importedCount": "{{count}} imported",
     "foldersHeading": "Folders",
+    "folderTreeHeading": "Folder Tree",
     "noFoldersTitle": "No folders yet",
     "noFoldersSubtitle": "Create a folder to organize your files",
     "importedFoldersHeading": "Imported Folders",
@@ -119,6 +120,8 @@
   },
   "virtualFolder": {
     "addFiles": "Add files",
+    "newSubfolder": "New subfolder",
+    "subfoldersHeading": "Folders",
     "statFiles": "Files",
     "filesHeading": "Files",
     "addFilesEmptyTitle": "Add files",
@@ -175,6 +178,7 @@
     },
     "virtualFolder": {
       "actions": { "title": "Manage this folder", "content": "Add more files, rename the folder, or delete it from here." },
+      "subfolders": { "title": "Subfolders", "content": "Create subfolders to nest related files deeper inside this folder. Click one to open it." },
       "filters": { "title": "Filter files", "content": "Narrow the list down by file format or by the category tag assigned to each file." },
       "files": { "title": "Files", "content": "Hover a file to reveal its actions. The eye icon opens a side-by-side preview panel you can resize, without leaving this page; you can also open it in its default app, or delete it." }
     },

@@ -30,11 +30,12 @@ database.exec(`
     );
 
     CREATE TABLE IF NOT EXISTS virtual_folders (
-        id          INTEGER PRIMARY KEY AUTOINCREMENT,
-        subject_id  INTEGER NOT NULL REFERENCES subjects(id) ON DELETE CASCADE,
-        name        TEXT NOT NULL,
-        created_at  TEXT NOT NULL DEFAULT (datetime('now')),
-        updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
+        id                INTEGER PRIMARY KEY AUTOINCREMENT,
+        subject_id        INTEGER NOT NULL REFERENCES subjects(id) ON DELETE CASCADE,
+        parent_folder_id  INTEGER REFERENCES virtual_folders(id) ON DELETE CASCADE,
+        name              TEXT NOT NULL,
+        created_at        TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at        TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
     CREATE TABLE IF NOT EXISTS files (
@@ -93,6 +94,11 @@ database.exec(`
 const userColumns = database.prepare("PRAGMA table_info(user)").all() as { name: string }[]
 if (!userColumns.some(col => col.name === "language")) {
     database.exec("ALTER TABLE user ADD COLUMN language TEXT NOT NULL DEFAULT 'en'")
+}
+
+const virtualFolderColumns = database.prepare("PRAGMA table_info(virtual_folders)").all() as { name: string }[]
+if (!virtualFolderColumns.some(col => col.name === "parent_folder_id")) {
+    database.exec("ALTER TABLE virtual_folders ADD COLUMN parent_folder_id INTEGER REFERENCES virtual_folders(id) ON DELETE CASCADE")
 }
 
 database.prepare("INSERT OR IGNORE INTO user (id) VALUES (1)").run()

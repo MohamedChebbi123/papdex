@@ -14,6 +14,7 @@ const database_path = app.isPackaged
 const database = new Database(database_path);
 
 database.pragma("journal_mode = WAL");
+database.pragma("foreign_keys = ON");
 
 export { database_path };
 export default database;

@@ -111,6 +111,7 @@
     "statImported": "Importés",
     "importedCount": "{{count}} importés",
     "foldersHeading": "Dossiers",
+    "folderTreeHeading": "Arborescence des dossiers",
     "noFoldersTitle": "Aucun dossier pour l'instant",
     "noFoldersSubtitle": "Créez un dossier pour organiser vos fichiers",
     "importedFoldersHeading": "Dossiers importés",
@@ -119,6 +120,8 @@
   },
   "virtualFolder": {
     "addFiles": "Ajouter des fichiers",
+    "newSubfolder": "Nouveau sous-dossier",
+    "subfoldersHeading": "Dossiers",
     "statFiles": "Fichiers",
     "filesHeading": "Fichiers",
     "addFilesEmptyTitle": "Ajouter des fichiers",
@@ -175,6 +178,7 @@
     },
     "virtualFolder": {
       "actions": { "title": "Gérer ce dossier", "content": "Ajoutez d'autres fichiers, renommez le dossier, ou supprimez-le depuis ici." },
+      "subfolders": { "title": "Sous-dossiers", "content": "Créez des sous-dossiers pour imbriquer des fichiers plus profondément dans ce dossier. Cliquez sur l'un d'eux pour l'ouvrir." },
       "filters": { "title": "Filtrer les fichiers", "content": "Affinez la liste par format de fichier ou par la catégorie attribuée à chaque fichier." },
       "files": { "title": "Fichiers", "content": "Survolez un fichier pour voir ses actions. L'icône œil ouvre un panneau de prévisualisation redimensionnable, sans quitter cette page ; vous pouvez aussi l'ouvrir dans son application par défaut, ou le supprimer." }
     },

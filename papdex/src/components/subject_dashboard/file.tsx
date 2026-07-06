@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import {
   Calendar, ChevronLeft, ChevronRight, ExternalLink, FileText,
@@ -9,6 +9,7 @@ import { RTL_LANGUAGES } from "@/i18n"
 import { getSubjectById, toggleFavoriteSubject } from "@/components/subjects_service/file"
 import {
   getVirtualFoldersBySubject,
+  getVirtualFolderChildren,
   deleteVirtualFolder,
 } from "@/components/virtual_folders_service/file"
 import {
@@ -20,18 +21,32 @@ import {
   type ImportedFolder,
   type RecentImportedFile,
 } from "@/components/imported_folders_service/file"
-import { getRecentFilesBySubject, openFile, type RecentFile } from "@/components/file_service/file"
+import { getFilesBySubject, getRecentFilesBySubject, openFile, type AppFile, type RecentFile } from "@/components/file_service/file"
 import { VirtualFolderCreation } from "@/components/inputs/virtual_folder_creation"
 import { VirtualFolderUpdate } from "@/components/inputs/virtual_folder_update"
 import { DeleteConfirm } from "@/components/inputs/Delete_confirm"
 import { TourGuide } from "@/components/inputs/tour_guide"
 import { HelpButton } from "@/components/inputs/help_button"
+import { FileTypeIcon } from "@/components/inputs/file_type_icon"
 
 interface VirtualFolder {
   id: number
   subject_id: number
   name: string
   file_count: number
+  subfolder_count?: number
+}
+
+interface FolderTreeItem {
+  id: number
+  parent_folder_id: number | null
+  name: string
+  file_count: number
+}
+
+interface FolderTreeChildren {
+  folders: FolderTreeItem[]
+  files: AppFile[]
 }
 
 interface Subject {
@@ -58,7 +73,7 @@ interface Props {
   year: Year
   onBack: () => void
   onBackToYear: () => void
-  onSelectFolder: (folder: VirtualFolder) => void
+  onSelectFolder: (folder: { id: number; name: string }) => void
   onSelectImportedFolder: (folder: ImportedFolder) => void
   onOpenFile?: (params: {
     subject: Subject
@@ -72,12 +87,83 @@ type RecentEntry =
   | { kind: "virtual"; file: RecentFile }
   | { kind: "imported"; file: RecentImportedFile }
 
+function TreeExpandBox({ hasChildren, isExpanded }: { hasChildren: boolean; isExpanded: boolean }) {
+  if (!hasChildren) return <span className="flex size-3.5 flex-shrink-0" />
+  return (
+    <span className="flex size-3.5 flex-shrink-0 items-center justify-center rounded-[3px] border border-border bg-card text-[9px] leading-none text-muted-foreground">
+      {isExpanded ? "−" : "+"}
+    </span>
+  )
+}
+
+function FolderTreeNode({
+  node, childrenMap, depth, collapsed, onToggle, onSelect,
+}: {
+  node: FolderTreeItem
+  childrenMap: Map<number | null, FolderTreeChildren>
+  depth: number
+  collapsed: Set<number>
+  onToggle: (id: number) => void
+  onSelect: (folder: { id: number; name: string }) => void
+}) {
+  const { folders: childFolders, files: childFiles } = childrenMap.get(node.id) ?? { folders: [], files: [] }
+  const hasChildren = childFolders.length > 0 || childFiles.length > 0
+  const isExpanded = !collapsed.has(node.id)
+  const indent = 8 + Math.min(depth, 6) * 18
+
+  return (
+    <div>
+      <div
+        onClick={() => onSelect(node)}
+        className="group flex items-center gap-1.5 rounded-md py-1.5 pr-2 cursor-pointer hover:bg-accent transition-colors"
+        style={{ paddingInlineStart: indent }}
+      >
+        <button onClick={e => { e.stopPropagation(); if (hasChildren) onToggle(node.id) }} className="flex flex-shrink-0">
+          <TreeExpandBox hasChildren={hasChildren} isExpanded={isExpanded} />
+        </button>
+        <Folder size={14} className="text-primary flex-shrink-0" />
+        <span className="text-foreground text-[13px] truncate group-hover:underline">{node.name}</span>
+      </div>
+      {isExpanded && (
+        <>
+          {childFolders.map(child => (
+            <FolderTreeNode
+              key={`folder-${child.id}`}
+              node={child}
+              childrenMap={childrenMap}
+              depth={depth + 1}
+              collapsed={collapsed}
+              onToggle={onToggle}
+              onSelect={onSelect}
+            />
+          ))}
+          {childFiles.map(file => (
+            <div
+              key={`file-${file.id}`}
+              className="flex items-center gap-1.5 py-1.5 pr-2 text-muted-foreground"
+              style={{ paddingInlineStart: indent + 18 + 6 }}
+            >
+              <span className="flex size-3.5 flex-shrink-0" />
+              <FileTypeIcon fileName={file.file_name} fileType={file.file_type} filePath={file.file_path} size={13} />
+              <span className="text-[13px] truncate">{file.file_name}</span>
+            </div>
+          ))}
+        </>
+      )}
+    </div>
+  )
+}
+
 export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYear, onSelectFolder, onSelectImportedFolder, onOpenFile }: Props) {
   const { t, i18n } = useTranslation()
   const isRTL = RTL_LANGUAGES.has(i18n.language)
   const BreadcrumbChevron = isRTL ? ChevronLeft : ChevronRight
   const [subject, setSubject] = useState<Subject | null>(null)
   const [folders, setFolders] = useState<VirtualFolder[]>([])
+  const [allFolders, setAllFolders] = useState<FolderTreeItem[]>([])
+  const [allFiles, setAllFiles] = useState<AppFile[]>([])
+  const [collapsedFolderIds, setCollapsedFolderIds] = useState<Set<number>>(new Set())
+  const [rootCollapsed, setRootCollapsed] = useState(false)
   const [importedFolders, setImportedFolders] = useState<ImportedFolder[]>([])
   const [recentFiles, setRecentFiles] = useState<RecentFile[]>([])
   const [recentImported, setRecentImported] = useState<RecentImportedFile[]>([])
@@ -90,7 +176,9 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
 
   useEffect(() => {
     getSubjectById(subjectId).then(setSubject)
-    getVirtualFoldersBySubject(subjectId).then(setFolders)
+    getVirtualFolderChildren(subjectId, null).then(setFolders)
+    getVirtualFoldersBySubject(subjectId).then(setAllFolders)
+    getFilesBySubject(subjectId).then(setAllFiles)
     getImportedFoldersBySubject(subjectId).then(setImportedFolders)
     getRecentFilesBySubject(subjectId).then(setRecentFiles)
     getRecentImportedFilesBySubject(subjectId).then(setRecentImported)
@@ -98,7 +186,9 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
 
   function refresh() {
     getSubjectById(subjectId).then(setSubject)
-    getVirtualFoldersBySubject(subjectId).then(setFolders)
+    getVirtualFolderChildren(subjectId, null).then(setFolders)
+    getVirtualFoldersBySubject(subjectId).then(setAllFolders)
+    getFilesBySubject(subjectId).then(setAllFiles)
     getImportedFoldersBySubject(subjectId).then(setImportedFolders)
   }
 
@@ -117,7 +207,7 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
     const file = entry.file
     if (!subject) return
     if (file.folder_id) {
-      const folder = folders.find(f => f.id === file.folder_id)
+      const folder = allFolders.find(f => f.id === file.folder_id)
       if (folder) {
         onOpenFile?.({ subject, semester, folder, fileId: file.id })
         return
@@ -138,7 +228,9 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
     if (!deletingFolder) return
     await deleteVirtualFolder(deletingFolder.id)
     setDeletingFolder(null)
-    getVirtualFoldersBySubject(subjectId).then(setFolders)
+    getVirtualFolderChildren(subjectId, null).then(setFolders)
+    getVirtualFoldersBySubject(subjectId).then(setAllFolders)
+    getFilesBySubject(subjectId).then(setAllFiles)
   }
 
   async function handleDeleteImported() {
@@ -157,6 +249,33 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
       setImporting(false)
     }
   }
+
+  function toggleFolderCollapsed(id: number) {
+    setCollapsedFolderIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const folderChildrenMap = useMemo(() => {
+    const map = new Map<number | null, FolderTreeChildren>()
+    function bucket(key: number | null): FolderTreeChildren {
+      let entry = map.get(key)
+      if (!entry) { entry = { folders: [], files: [] }; map.set(key, entry) }
+      return entry
+    }
+    for (const f of allFolders) bucket(f.parent_folder_id).folders.push(f)
+    for (const f of allFiles) bucket(f.folder_id).files.push(f)
+    for (const entry of map.values()) {
+      entry.folders.sort((a, b) => a.name.localeCompare(b.name))
+      entry.files.sort((a, b) => a.file_name.localeCompare(b.file_name))
+    }
+    return map
+  }, [allFolders, allFiles])
+  const rootTreeFolders = folderChildrenMap.get(null)?.folders ?? []
+  const rootTreeFiles = folderChildrenMap.get(null)?.files ?? []
 
   const muted  = "var(--muted-foreground)"
   const fg     = "var(--foreground)"
@@ -304,12 +423,66 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
                 </div>
               </div>
               <h4 className="text-foreground text-sm font-medium truncate">{folder.name}</h4>
-              <p className="text-muted-foreground text-xs mt-1">{t("common.fileCount", { count: folder.file_count })}</p>
+              <p className="text-muted-foreground text-xs mt-1">
+                {t("common.fileCount", { count: folder.file_count })}
+                {!!folder.subfolder_count && ` · ${t("common.folderCount", { count: folder.subfolder_count })}`}
+              </p>
             </div>
           ))}
         </div>
       )}
       </div>
+
+      {/* Folder Tree */}
+      {(allFolders.length > 0 || allFiles.length > 0) && (
+        <div className="mb-7">
+          <div className="flex items-center mb-3">
+            <span className="text-muted-foreground text-[10px] font-semibold uppercase tracking-wider flex-shrink-0">{t("subject.folderTreeHeading")}</span>
+            <div className="h-px flex-1 mx-4 bg-border" />
+          </div>
+          <div className="rounded-xl border border-border bg-card p-2">
+            <div className="flex items-center gap-1.5 py-1.5 pr-2 font-medium" style={{ paddingInlineStart: 8 }}>
+              <button
+                onClick={() => setRootCollapsed(prev => !prev)}
+                className="flex flex-shrink-0"
+              >
+                <TreeExpandBox
+                  hasChildren={rootTreeFolders.length > 0 || rootTreeFiles.length > 0}
+                  isExpanded={!rootCollapsed}
+                />
+              </button>
+              <Folder size={14} className="text-primary flex-shrink-0" />
+              <span className="text-foreground text-[13px] truncate">{subject?.name ?? t("common.loading")}</span>
+            </div>
+            {!rootCollapsed && (
+              <>
+                {rootTreeFolders.map(root => (
+                  <FolderTreeNode
+                    key={`folder-${root.id}`}
+                    node={root}
+                    childrenMap={folderChildrenMap}
+                    depth={1}
+                    collapsed={collapsedFolderIds}
+                    onToggle={toggleFolderCollapsed}
+                    onSelect={onSelectFolder}
+                  />
+                ))}
+                {rootTreeFiles.map(file => (
+                  <div
+                    key={`file-${file.id}`}
+                    className="flex items-center gap-1.5 py-1.5 pr-2 text-muted-foreground"
+                    style={{ paddingInlineStart: 8 + 18 + 6 }}
+                  >
+                    <span className="flex size-3.5 flex-shrink-0" />
+                    <FileTypeIcon fileName={file.file_name} fileType={file.file_type} filePath={file.file_path} size={13} />
+                    <span className="text-[13px] truncate">{file.file_name}</span>
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Imported Folders */}
       <div data-tour="subj-imported">
@@ -388,7 +561,7 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
                   ) : (
                     <span className="hidden sm:flex items-center gap-1.5 rounded-full border border-border bg-secondary/40 px-3 py-1 text-xs font-medium text-foreground">
                       <Folder size={12} />
-                      {folders.find(f => f.id === entry.file.folder_id)?.name ?? t("common.noFolder")}
+                      {allFolders.find(f => f.id === entry.file.folder_id)?.name ?? t("common.noFolder")}
                     </span>
                   )}
                   <ExternalLink size={16} className="text-muted-foreground group-hover:text-primary transition-colors" />

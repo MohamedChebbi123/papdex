@@ -2,13 +2,16 @@ import { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import {
   AlertTriangle, Calendar, ChevronLeft, ChevronRight, ExternalLink, Eye, File, FileText,
-  Folder, FolderInput, Image, Pencil, Plus, Tag, Trash2, Video, X,
+  Folder, FolderInput, FolderPlus, Image, Pencil, Plus, Tag, Trash2, Video, X,
 } from "lucide-react"
 import type { Step } from "react-joyride"
 import { Group, Panel, Separator } from "react-resizable-panels"
 import {
   getVirtualFolderById,
+  getVirtualFolderChildren,
+  getVirtualFolderPath,
   deleteVirtualFolder,
+  type VirtualFolderWithCounts,
 } from "@/components/virtual_folders_service/file"
 import {
   getFilesByFolder,
@@ -17,6 +20,7 @@ import {
   markFileOpened,
   type AppFile,
 } from "@/components/file_service/file"
+import { VirtualFolderCreation } from "@/components/inputs/virtual_folder_creation"
 import { VirtualFolderUpdate } from "@/components/inputs/virtual_folder_update"
 import { DeleteConfirm } from "@/components/inputs/Delete_confirm"
 import { FileCreationInput } from "@/components/inputs/file_creation_input"
@@ -61,6 +65,7 @@ function CategoryBadge({ category }: { category: string }) {
 interface VirtualFolder {
   id: number
   subject_id: number
+  parent_folder_id: number | null
   name: string
 }
 
@@ -86,6 +91,7 @@ interface Props {
   year: Year
   initialFileId?: number | null
   onInitialFileHandled?: () => void
+  onSelectFolder: (folder: { id: number; name: string }) => void
   onBack: () => void
   onBackToSemester: () => void
   onBackToYear: () => void
@@ -108,7 +114,7 @@ function FileIcon({ type }: { type: string }) {
 
 export function VirtualFolderDashboard({
   folderId, subject, semester, year,
-  initialFileId, onInitialFileHandled,
+  initialFileId, onInitialFileHandled, onSelectFolder,
   onBack, onBackToSemester, onBackToYear,
 }: Props) {
   const { t, i18n } = useTranslation()
@@ -116,8 +122,13 @@ export function VirtualFolderDashboard({
   const BreadcrumbChevron = isRTL ? ChevronLeft : ChevronRight
   const [folder, setFolder] = useState<VirtualFolder | null>(null)
   const [files, setFiles] = useState<AppFile[]>([])
+  const [subfolders, setSubfolders] = useState<VirtualFolderWithCounts[]>([])
+  const [ancestorPath, setAncestorPath] = useState<{ id: number; name: string }[]>([])
   const [renameOpen, setRenameOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [createSubfolderOpen, setCreateSubfolderOpen] = useState(false)
+  const [renamingSubfolder, setRenamingSubfolder] = useState<VirtualFolderWithCounts | null>(null)
+  const [deletingSubfolder, setDeletingSubfolder] = useState<VirtualFolderWithCounts | null>(null)
   const [deletingFile, setDeletingFile] = useState<AppFile | null>(null)
   const [renamingFile, setRenamingFile] = useState<AppFile | null>(null)
   const [movingFile, setMovingFile] = useState<AppFile | null>(null)
@@ -131,11 +142,17 @@ export function VirtualFolderDashboard({
   const [categoryFilter, setCategoryFilter] = useState<string>("all")
   const [runTour, setRunTour] = useState(false)
 
+  function refreshSubfolders() {
+    getVirtualFolderChildren(subject.id, folderId).then(setSubfolders)
+  }
+
   useEffect(() => {
     getVirtualFolderById(folderId).then(setFolder)
     getFilesByFolder(folderId).then(setFiles)
+    getVirtualFolderChildren(subject.id, folderId).then(setSubfolders)
+    getVirtualFolderPath(folderId).then(setAncestorPath)
     setSelectedIds(new Set())
-  }, [folderId])
+  }, [folderId, subject.id])
 
   useEffect(() => {
     if (initialFileId == null) return
@@ -158,7 +175,16 @@ export function VirtualFolderDashboard({
   async function handleDelete() {
     await deleteVirtualFolder(folderId)
     setDeleteOpen(false)
-    onBack()
+    const parent = ancestorPath[ancestorPath.length - 1]
+    if (parent) onSelectFolder(parent)
+    else onBack()
+  }
+
+  async function handleDeleteSubfolder() {
+    if (!deletingSubfolder) return
+    await deleteVirtualFolder(deletingSubfolder.id)
+    setDeletingSubfolder(null)
+    refreshSubfolders()
   }
 
   async function handleDeleteFile() {
@@ -212,6 +238,7 @@ export function VirtualFolderDashboard({
 
   const tourSteps: Step[] = [
     { target: '[data-tour="vf-actions"]', title: t("tour.virtualFolder.actions.title"), content: t("tour.virtualFolder.actions.content") },
+    ...(subfolders.length > 0 ? [{ target: '[data-tour="vf-subfolders"]', title: t("tour.virtualFolder.subfolders.title"), content: t("tour.virtualFolder.subfolders.content") }] : []),
     ...(files.length > 0 ? [{ target: '[data-tour="vf-filters"]', title: t("tour.virtualFolder.filters.title"), content: t("tour.virtualFolder.filters.content") }] : []),
     { target: '[data-tour="vf-files"]', title: t("tour.virtualFolder.files.title"), content: t("tour.virtualFolder.files.content") },
   ]
@@ -235,6 +262,16 @@ export function VirtualFolderDashboard({
           <button onClick={onBack} style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}>
             {subject.name}
           </button>
+          {ancestorPath.flatMap(ancestor => [
+            <BreadcrumbChevron key={`chevron-${ancestor.id}`} size={13} />,
+            <button
+              key={ancestor.id}
+              onClick={() => onSelectFolder(ancestor)}
+              style={{ background: "none", border: "none", color: muted, fontSize: 12, cursor: "pointer", padding: 0 }}
+            >
+              {ancestor.name}
+            </button>,
+          ])}
           <BreadcrumbChevron size={13} />
           <span style={{ color: fg }}>{folder?.name ?? "..."}</span>
         </div>
@@ -275,6 +312,13 @@ export function VirtualFolderDashboard({
             {t("common.delete")}
           </button>
           <button
+            onClick={() => setCreateSubfolderOpen(true)}
+            className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors"
+          >
+            <FolderPlus size={14} />
+            {t("virtualFolder.newSubfolder")}
+          </button>
+          <button
             onClick={() => setAddFileOpen(true)}
             className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground shadow-sm hover:opacity-90 transition-opacity"
           >
@@ -283,6 +327,47 @@ export function VirtualFolderDashboard({
           </button>
         </div>
       </div>
+
+      {/* Subfolders */}
+      {subfolders.length > 0 && (
+        <div data-tour="vf-subfolders" className="mb-7">
+          <div className="flex items-center mb-2.5">
+            <span className="text-muted-foreground text-[10px] font-semibold uppercase tracking-wider">{t("virtualFolder.subfoldersHeading")}</span>
+          </div>
+          <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(200px, 240px))" }}>
+            {subfolders.map(sub => (
+              <div
+                key={sub.id}
+                onClick={() => onSelectFolder(sub)}
+                className="group relative rounded-xl border border-border bg-card p-4 cursor-pointer hover:border-primary transition-colors"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <Folder size={24} className="text-primary" />
+                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={e => { e.stopPropagation(); setRenamingSubfolder(sub) }}
+                      className="flex rounded-md p-1.5 text-muted-foreground hover:bg-accent transition-colors"
+                    >
+                      <Pencil size={13} />
+                    </button>
+                    <button
+                      onClick={e => { e.stopPropagation(); setDeletingSubfolder(sub) }}
+                      className="flex rounded-md p-1.5 text-red-500 hover:bg-red-500/10 transition-colors"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                </div>
+                <h4 className="text-foreground text-sm font-medium truncate">{sub.name}</h4>
+                <p className="text-muted-foreground text-xs mt-1">
+                  {t("common.fileCount", { count: sub.file_count })}
+                  {sub.subfolder_count > 0 && ` · ${t("common.folderCount", { count: sub.subfolder_count })}`}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Files */}
       <div className="flex items-center justify-between mb-2.5">
@@ -545,6 +630,25 @@ export function VirtualFolderDashboard({
         onOpenChange={setDeleteOpen}
         label={folder?.name ?? ""}
         onConfirmed={handleDelete}
+      />
+      <VirtualFolderCreation
+        open={createSubfolderOpen}
+        onOpenChange={setCreateSubfolderOpen}
+        subjectId={subject.id}
+        parentFolderId={folderId}
+        onCreated={refreshSubfolders}
+      />
+      <VirtualFolderUpdate
+        open={renamingSubfolder !== null}
+        onOpenChange={open => { if (!open) setRenamingSubfolder(null) }}
+        folder={renamingSubfolder}
+        onUpdated={refreshSubfolders}
+      />
+      <DeleteConfirm
+        open={deletingSubfolder !== null}
+        onOpenChange={open => { if (!open) setDeletingSubfolder(null) }}
+        label={deletingSubfolder?.name ?? ""}
+        onConfirmed={handleDeleteSubfolder}
       />
       <DeleteConfirm
         open={deletingFile !== null}
