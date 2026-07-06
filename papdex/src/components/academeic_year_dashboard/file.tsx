@@ -152,29 +152,30 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
 
       {/* Hero */}
       <div data-tour="year-hero" style={{
-        background: "linear-gradient(120deg, rgba(59,130,246,0.16) 0%, rgba(99,102,241,0.08) 100%)",
-        border: "1px solid rgba(59,130,246,0.25)",
-        borderRadius: 14, padding: "20px 24px", marginBottom: 28,
-        display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, flexWrap: "wrap",
+        background: "linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 65%, black))",
+        boxShadow: "0 12px 30px -14px color-mix(in srgb, var(--primary) 60%, transparent)",
+        borderRadius: 16, padding: "28px 32px", marginBottom: 28,
+        color: "var(--primary-foreground)",
       }}>
-        <div>
-          <h1 style={{ fontSize: 26, fontWeight: 700, margin: 0, lineHeight: 1.2, color: fg }}>
-            {year?.name ?? t("academicYear.selectPrompt")}
-          </h1>
-          <p style={{ color: muted, fontSize: 12, margin: "5px 0 0" }}>
-            {year ? `${year.start_date} — ${year.end_date}` : ""}
-          </p>
-        </div>
-        <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+        <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0, lineHeight: 1.2 }}>
+          {year?.name ?? t("academicYear.selectPrompt")}
+        </h1>
+        <p style={{ opacity: 0.85, fontSize: 13, margin: "6px 0 24px" }}>
+          {year ? `${year.start_date} — ${year.end_date}` : ""}
+        </p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 12 }}>
           {[
             { value: semesters.length, label: t("academicYear.statSemesters") },
             { value: subjects.length,  label: t("academicYear.statSubjects") },
             { value: totalFiles,       label: t("academicYear.statFilesIndexed") },
             { value: favoritesCount,   label: t("academicYear.statFavorites") },
           ].map(stat => (
-            <div key={stat.label} style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 20, fontWeight: 700, color: fg }}>{stat.value}</div>
-              <div style={{ fontSize: 10, color: muted }}>{stat.label}</div>
+            <div key={stat.label} style={{
+              background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.15)",
+              borderRadius: 10, padding: "10px 14px",
+            }}>
+              <div style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", opacity: 0.75 }}>{stat.label}</div>
+              <div style={{ fontSize: 24, fontWeight: 700, marginTop: 2 }}>{stat.value}</div>
             </div>
           ))}
         </div>
@@ -182,8 +183,9 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
 
       {/* ── Semesters section ── */}
       <div data-tour="year-semesters">
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>{t("academicYear.statSemesters")}</span>
+      <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
+        <span style={{ color: muted, fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", flexShrink: 0 }}>{t("academicYear.statSemesters")}</span>
+        <div style={{ height: 1, flex: 1, margin: "0 16px", background: border }} />
       </div>
 
       {semesters.length === 0 ? (
@@ -213,8 +215,9 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
                 onMouseEnter={() => setHoveredSemId(sem.id)}
                 onMouseLeave={() => setHoveredSemId(null)}
                 onClick={() => onSelectSemester(sem)}
+                className="transition-all duration-150 hover:shadow-lg hover:-translate-y-0.5"
                 style={{
-                  background: "linear-gradient(rgba(99,102,241,0.05), rgba(99,102,241,0.05)), " + card,
+                  background: card,
                   border: `1.5px solid ${border}`,
                   borderRadius: 16, padding: "20px 22px", cursor: "pointer", position: "relative",
                 }}
@@ -261,14 +264,15 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
           })}
           <div
             onClick={() => setSemesterModalOpen(true)}
+            className="border-2 border-dashed border-[color:var(--border)] text-muted-foreground hover:border-primary hover:text-primary transition-colors"
             style={{
-              border: `1px dashed ${border}`, borderRadius: 16,
+              borderRadius: 16,
               display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-              gap: 4, padding: "20px 22px", cursor: "pointer", color: muted, minHeight: 100,
+              gap: 4, padding: "20px 22px", cursor: "pointer", minHeight: 100,
             }}
           >
-            <Plus size={16} />
-            <span style={{ fontSize: 11 }}>{t("academicYear.addSemester")}</span>
+            <Plus size={18} />
+            <span style={{ fontSize: 11, fontWeight: 500 }}>{t("academicYear.addSemester")}</span>
           </div>
         </div>
       )}
@@ -276,8 +280,9 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
 
       {/* Subjects section */}
       <div data-tour="year-subjects">
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>{t("academicYear.statSubjects")}</span>
+      <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
+        <span style={{ color: muted, fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", flexShrink: 0 }}>{t("academicYear.statSubjects")}</span>
+        <div style={{ height: 1, flex: 1, margin: "0 16px", background: border }} />
       </div>
 
       {subjects.length === 0 ? (
@@ -296,6 +301,7 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
                 key={subject.id}
                 onClick={() => handleSelectSubject(subject)}
                 title={t("academicYear.colorHint")}
+                className="transition-shadow hover:shadow-md"
                 style={{
                   background: card,
                   border: `1px solid ${border}`,
@@ -324,21 +330,28 @@ export function Academicyeardashaboard({ year, onSelectSemester, onSelectSubject
       {/* Recent files */}
       {recentFiles.length > 0 && (
         <div data-tour="year-recent">
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-            <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>{t("common.recentlyOpened")}</span>
+          <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
+            <span style={{ color: muted, fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", flexShrink: 0 }}>{t("common.recentlyOpened")}</span>
+            <div style={{ height: 1, flex: 1, margin: "0 16px", background: border }} />
           </div>
           <div style={{ marginBottom: 28 }}>
             {recentFiles.map(file => (
               <div
                 key={file.id}
                 onClick={() => handleOpenRecentFile(file)}
+                className="hover:bg-accent transition-colors rounded-lg"
                 style={{
                   display: "flex", alignItems: "center", justifyContent: "space-between",
-                  borderBottom: `1px solid ${border}`, padding: "10px 0", cursor: "pointer",
+                  borderBottom: `1px solid ${border}`, padding: "10px 12px", margin: "0 -12px", cursor: "pointer",
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <FileTypeIcon fileName={file.file_name} fileType={file.file_type} filePath={file.file_path} size={16} />
+                  <div style={{
+                    width: 28, height: 28, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
+                    background: "color-mix(in srgb, var(--primary) 12%, transparent)", flexShrink: 0,
+                  }}>
+                    <FileTypeIcon fileName={file.file_name} fileType={file.file_type} filePath={file.file_path} size={14} />
+                  </div>
                   <span style={{ color: fg, fontSize: 13 }}>{file.file_name}</span>
                 </div>
                 <span style={{ color: muted, fontSize: 11 }}>{file.subject_name}</span>

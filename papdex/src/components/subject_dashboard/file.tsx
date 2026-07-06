@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import {
-  Calendar, ChevronLeft, ChevronRight, FileText,
+  Calendar, ChevronLeft, ChevronRight, ExternalLink, FileText,
   Folder, FolderInput, Pencil, Plus, Star, Trash2,
 } from "lucide-react"
 import type { Step } from "react-joyride"
@@ -85,8 +85,6 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
   const [editingFolder, setEditingFolder] = useState<VirtualFolder | null>(null)
   const [deletingFolder, setDeletingFolder] = useState<VirtualFolder | null>(null)
   const [deletingImported, setDeletingImported] = useState<ImportedFolder | null>(null)
-  const [hoveredId, setHoveredId] = useState<number | null>(null)
-  const [hoveredImportedId, setHoveredImportedId] = useState<number | null>(null)
   const [importing, setImporting] = useState(false)
   const [runTour, setRunTour] = useState(false)
 
@@ -161,8 +159,6 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
   }
 
   const muted  = "var(--muted-foreground)"
-  const border = "var(--border)"
-  const card   = "var(--card)"
   const fg     = "var(--foreground)"
 
   const tourSteps: Step[] = [
@@ -202,13 +198,13 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
       <TourGuide steps={tourSteps} run={runTour} onFinish={() => setRunTour(false)} />
 
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28 }}>
+      <div className="flex items-start justify-between gap-6 mb-8">
         <div>
-          <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0, lineHeight: 1.2, color: fg, display: "flex", alignItems: "center", gap: 10 }}>
+          <h1 className="flex items-center gap-2 text-[28px] font-bold leading-tight text-foreground m-0">
             {subject?.name ?? t("common.loading")}
             <button
               onClick={handleToggleSubjectFavorite}
-              style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", marginTop: 2 }}
+              className="bg-transparent border-none cursor-pointer p-0 flex mt-0.5"
             >
               <Star
                 size={20}
@@ -217,31 +213,22 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
               />
             </button>
           </h1>
-          <p style={{ color: muted, fontSize: 13, margin: "4px 0 0" }}>
+          <p className="text-muted-foreground text-[13px] mt-1 m-0">
             {semester.name} · {t("common.folderCount", { count: folders.length })} · {t("subject.importedCount", { count: importedFolders.length })}
           </p>
         </div>
-        <div data-tour="subj-actions" style={{ display: "flex", gap: 8 }}>
+        <div data-tour="subj-actions" className="flex items-center gap-2 flex-shrink-0">
           <button
             onClick={handleImportFolder}
             disabled={importing}
-            style={{
-              background: card, border: `1px solid ${border}`, borderRadius: 10,
-              color: fg, fontSize: 14, padding: "10px 20px",
-              display: "flex", alignItems: "center", gap: 6, cursor: importing ? "not-allowed" : "pointer",
-              opacity: importing ? 0.6 : 1,
-            }}
+            className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <FolderInput size={14} />
             {importing ? t("subject.importing") : t("subject.importFolder")}
           </button>
           <button
             onClick={() => setCreateOpen(true)}
-            style={{
-              background: card, border: `1px solid ${border}`, borderRadius: 10,
-              color: fg, fontSize: 14, padding: "10px 20px",
-              display: "flex", alignItems: "center", gap: 6, cursor: "pointer",
-            }}
+            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground shadow-sm hover:opacity-90 transition-opacity"
           >
             <Plus size={14} />
             {t("subject.newFolder")}
@@ -250,76 +237,74 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
       </div>
 
       {/* Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12, marginBottom: 28, maxWidth: 480 }}>
-        {[
-          { value: folders.length,         label: t("subject.statFolders") },
-          { value: importedFolders.length, label: t("subject.statImported") },
-        ].map(stat => (
-          <div key={stat.label} style={{ background: card, borderRadius: 12, padding: "14px 16px", border: `1px solid ${border}` }}>
-            <div style={{ fontSize: 28, fontWeight: 700, color: fg }}>{stat.value}</div>
-            <div style={{ color: muted, fontSize: 12, marginTop: 2 }}>{stat.label}</div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 max-w-[480px]">
+        <div className="flex items-center gap-4 rounded-xl border border-border bg-card p-5">
+          <div className="flex size-12 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10">
+            <Folder size={20} className="text-primary" />
           </div>
-        ))}
+          <div>
+            <div className="text-[28px] font-bold leading-tight text-foreground">{folders.length}</div>
+            <div className="text-xs text-muted-foreground mt-0.5">{t("subject.statFolders")}</div>
+          </div>
+        </div>
+        <div className="flex items-center gap-4 rounded-xl border border-border bg-card p-5">
+          <div className="flex size-12 flex-shrink-0 items-center justify-center rounded-lg bg-amber-500/10">
+            <FolderInput size={20} className="text-amber-600 dark:text-amber-400" />
+          </div>
+          <div>
+            <div className="text-[28px] font-bold leading-tight text-foreground">{importedFolders.length}</div>
+            <div className="text-xs text-muted-foreground mt-0.5">{t("subject.statImported")}</div>
+          </div>
+        </div>
       </div>
 
       {/* Virtual Folders */}
       <div data-tour="subj-folders">
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>{t("subject.foldersHeading")}</span>
+      <div className="flex items-center mb-3">
+        <span className="text-muted-foreground text-[10px] font-semibold uppercase tracking-wider flex-shrink-0">{t("subject.foldersHeading")}</span>
+        <div className="h-px flex-1 mx-4 bg-border" />
       </div>
 
       {folders.length === 0 ? (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 0", marginBottom: 28 }}>
+        <div className="flex flex-col items-center rounded-xl border border-dashed border-border py-10 mb-7">
           <Folder size={40} color={muted} />
-          <p style={{ color: fg, fontSize: 15, fontWeight: 500, marginTop: 12, marginBottom: 4 }}>{t("subject.noFoldersTitle")}</p>
-          <p style={{ color: muted, fontSize: 13, margin: 0 }}>{t("subject.noFoldersSubtitle")}</p>
+          <p className="text-foreground text-[15px] font-medium mt-3 mb-1">{t("subject.noFoldersTitle")}</p>
+          <p className="text-muted-foreground text-[13px] m-0">{t("subject.noFoldersSubtitle")}</p>
           <button
             onClick={() => setCreateOpen(true)}
-            style={{
-              background: card, border: `1px solid ${border}`, borderRadius: 10,
-              color: fg, fontSize: 14, padding: "10px 20px", marginTop: 16,
-              display: "flex", alignItems: "center", gap: 6, cursor: "pointer",
-            }}
+            className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors mt-4"
           >
             <Plus size={14} />
             {t("subject.newFolder")}
           </button>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 240px))", gap: 12, marginBottom: 28 }}>
+        <div className="grid gap-3 mb-7" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(200px, 240px))" }}>
           {folders.map(folder => (
             <div
               key={folder.id}
-              onMouseEnter={() => setHoveredId(folder.id)}
-              onMouseLeave={() => setHoveredId(null)}
               onClick={() => onSelectFolder(folder)}
-              style={{ background: card, border: `1px solid ${border}`, borderRadius: 14, padding: 16, cursor: "pointer", position: "relative" }}
+              className="group relative rounded-xl border border-border bg-card p-4 cursor-pointer hover:border-primary transition-colors"
             >
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <Folder size={15} color={muted} />
-                  <span style={{ color: fg, fontSize: 13, fontWeight: 500 }}>{folder.name}</span>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                  {hoveredId === folder.id && (
-                    <>
-                      <button
-                        onClick={e => { e.stopPropagation(); setEditingFolder(folder) }}
-                        style={{ background: "none", border: "none", cursor: "pointer", padding: 4, borderRadius: 6, display: "flex" }}
-                      >
-                        <Pencil size={13} color={muted} />
-                      </button>
-                      <button
-                        onClick={e => { e.stopPropagation(); setDeletingFolder(folder) }}
-                        style={{ background: "none", border: "none", cursor: "pointer", padding: 4, borderRadius: 6, display: "flex" }}
-                      >
-                        <Trash2 size={13} color="#ef4444" />
-                      </button>
-                    </>
-                  )}
+              <div className="flex items-start justify-between mb-3">
+                <Folder size={28} className="text-primary" />
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={e => { e.stopPropagation(); setEditingFolder(folder) }}
+                    className="flex rounded-md p-1.5 text-muted-foreground hover:bg-accent transition-colors"
+                  >
+                    <Pencil size={14} />
+                  </button>
+                  <button
+                    onClick={e => { e.stopPropagation(); setDeletingFolder(folder) }}
+                    className="flex rounded-md p-1.5 text-red-500 hover:bg-red-500/10 transition-colors"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               </div>
-              <p style={{ color: muted, fontSize: 11, margin: "6px 0 0" }}>{t("common.fileCount", { count: folder.file_count })}</p>
+              <h4 className="text-foreground text-sm font-medium truncate">{folder.name}</h4>
+              <p className="text-muted-foreground text-xs mt-1">{t("common.fileCount", { count: folder.file_count })}</p>
             </div>
           ))}
         </div>
@@ -328,55 +313,46 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
 
       {/* Imported Folders */}
       <div data-tour="subj-imported">
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>{t("subject.importedFoldersHeading")}</span>
+      <div className="flex items-center mb-3">
+        <span className="text-muted-foreground text-[10px] font-semibold uppercase tracking-wider flex-shrink-0">{t("subject.importedFoldersHeading")}</span>
+        <div className="h-px flex-1 mx-4 bg-border" />
       </div>
 
       {importedFolders.length === 0 ? (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 0", marginBottom: 28 }}>
+        <div className="flex flex-col items-center rounded-xl border border-dashed border-border py-10 mb-7">
           <FolderInput size={40} color={muted} />
-          <p style={{ color: fg, fontSize: 15, fontWeight: 500, marginTop: 12, marginBottom: 4 }}>{t("subject.noImportedTitle")}</p>
-          <p style={{ color: muted, fontSize: 13, margin: 0 }}>{t("subject.noImportedSubtitle")}</p>
+          <p className="text-foreground text-[15px] font-medium mt-3 mb-1">{t("subject.noImportedTitle")}</p>
+          <p className="text-muted-foreground text-[13px] m-0">{t("subject.noImportedSubtitle")}</p>
           <button
             onClick={handleImportFolder}
             disabled={importing}
-            style={{
-              background: card, border: `1px solid ${border}`, borderRadius: 10,
-              color: fg, fontSize: 14, padding: "10px 20px", marginTop: 16,
-              display: "flex", alignItems: "center", gap: 6, cursor: "pointer",
-            }}
+            className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors mt-4 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <FolderInput size={14} />
             {t("subject.importFolder")}
           </button>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 240px))", gap: 12, marginBottom: 28 }}>
+        <div className="grid gap-3 mb-7" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(200px, 240px))" }}>
           {importedFolders.map(folder => (
             <div
               key={folder.id}
-              onMouseEnter={() => setHoveredImportedId(folder.id)}
-              onMouseLeave={() => setHoveredImportedId(null)}
               onClick={() => onSelectImportedFolder(folder)}
-              style={{ background: card, border: `1px solid ${border}`, borderRadius: 14, padding: 16, cursor: "pointer", position: "relative" }}
+              className="group relative rounded-xl border border-dashed border-border bg-background p-4 cursor-pointer hover:border-amber-500/60 transition-colors"
             >
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                  <FolderInput size={15} color={muted} style={{ flexShrink: 0 }} />
-                  <span style={{ color: fg, fontSize: 13, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{folder.name}</span>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
-                  {hoveredImportedId === folder.id && (
-                    <button
-                      onClick={e => { e.stopPropagation(); setDeletingImported(folder) }}
-                      style={{ background: "none", border: "none", cursor: "pointer", padding: 4, borderRadius: 6, display: "flex" }}
-                    >
-                      <Trash2 size={13} color="#ef4444" />
-                    </button>
-                  )}
+              <div className="flex items-start justify-between mb-2">
+                <FolderInput size={28} className="text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                  <button
+                    onClick={e => { e.stopPropagation(); setDeletingImported(folder) }}
+                    className="flex rounded-md p-1.5 text-red-500 hover:bg-red-500/10 transition-colors"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               </div>
-              <p style={{ color: muted, fontSize: 11, margin: "6px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <h4 className="text-foreground text-sm font-medium truncate">{folder.name}</h4>
+              <p className="text-muted-foreground text-xs mt-1 truncate">
                 {t("common.fileCount", { count: folder.file_count })} · {folder.original_path}
               </p>
             </div>
@@ -387,39 +363,36 @@ export function SubjectDashboard({ subjectId, semester, year, onBack, onBackToYe
 
       {/* Recently Opened */}
       {recentEntries.length > 0 && (
-        <div data-tour="subj-recent">
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-            <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>{t("common.recentlyOpened")}</span>
+        <div data-tour="subj-recent" className="pb-10">
+          <div className="flex items-center mb-3">
+            <span className="text-muted-foreground text-[10px] font-semibold uppercase tracking-wider flex-shrink-0">{t("common.recentlyOpened")}</span>
+            <div className="h-px flex-1 mx-4 bg-border" />
           </div>
-          <div style={{ marginBottom: 28 }}>
+          <div className="space-y-2">
             {recentEntries.map(entry => (
               <div
                 key={`${entry.kind}-${entry.file.id}`}
                 onClick={() => handleOpenRecentEntry(entry)}
-                style={{
-                  display: "flex", alignItems: "center", justifyContent: "space-between",
-                  borderBottom: `1px solid ${border}`, padding: "10px 0", cursor: "pointer",
-                }}
+                className="group flex items-center justify-between rounded-lg bg-card border border-border p-4 cursor-pointer hover:bg-accent transition-colors"
               >
-                <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-                  <FileText size={16} color={muted} style={{ flexShrink: 0 }} />
-                  <span style={{ color: fg, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {entry.file.file_name}
-                  </span>
+                <div className="flex items-center gap-3 min-w-0">
+                  <FileText size={18} className="text-primary flex-shrink-0" />
+                  <span className="text-foreground text-sm truncate">{entry.file.file_name}</span>
                 </div>
-                <span style={{ color: muted, fontSize: 11, display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+                <div className="flex items-center gap-4 flex-shrink-0">
                   {entry.kind === "imported" ? (
-                    <>
+                    <span className="hidden sm:flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-700 dark:text-amber-400">
                       <FolderInput size={12} />
                       {entry.file.folder_name}
-                    </>
+                    </span>
                   ) : (
-                    <>
+                    <span className="hidden sm:flex items-center gap-1.5 rounded-full border border-border bg-secondary/40 px-3 py-1 text-xs font-medium text-foreground">
                       <Folder size={12} />
                       {folders.find(f => f.id === entry.file.folder_id)?.name ?? t("common.noFolder")}
-                    </>
+                    </span>
                   )}
-                </span>
+                  <ExternalLink size={16} className="text-muted-foreground group-hover:text-primary transition-colors" />
+                </div>
               </div>
             ))}
           </div>

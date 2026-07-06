@@ -19,6 +19,8 @@
     "recentlyOpened": "Recently Opened",
     "format": "Format",
     "type": "Type",
+    "size": "Size",
+    "actions": "Actions",
     "all": "All",
     "ofCount": "{{filtered}} of {{total}}",
     "fileCount_one": "{{count}} file",

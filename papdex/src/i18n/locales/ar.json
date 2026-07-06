@@ -19,6 +19,8 @@
     "recentlyOpened": "فُتحت مؤخرًا",
     "format": "الصيغة",
     "type": "النوع",
+    "size": "الحجم",
+    "actions": "الإجراءات",
     "all": "الكل",
     "ofCount": "{{filtered}} من {{total}}",
     "fileCount_zero": "لا توجد ملفات",

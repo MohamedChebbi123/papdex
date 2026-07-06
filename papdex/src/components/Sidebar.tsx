@@ -202,22 +202,22 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
       onConfirmed={handleDelete}
     />
     <Sidebar side={isRTL ? "right" : "left"}>
-      <SidebarHeader className="px-4 py-3 border-b space-y-2">
-        <div className="flex items-center gap-2">
-          <GraduationCap className="size-5 text-primary" />
+      <SidebarHeader className="px-4 py-3 border-b space-y-3">
+        <div className="flex items-center gap-2 px-1">
+          <GraduationCap className="size-7 text-primary" />
           <div className="flex-1">
-            <p className="text-sm font-semibold">Papdex</p>
-            <p className="text-xs text-muted-foreground">{new Date().toLocaleDateString(i18n.language)}</p>
+            <p className="text-lg font-bold tracking-tight text-primary leading-none">Papdex</p>
+            <p className="text-xs text-muted-foreground mt-1">{new Date().toLocaleDateString(i18n.language)}</p>
           </div>
         </div>
         <div className="relative">
           <div className="relative">
-            <Search className="pointer-events-none absolute start-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Search className="pointer-events-none absolute start-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
             <input
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder={t("sidebar.searchPlaceholder")}
-              className="w-full rounded-md border border-input bg-background ps-8 pe-2 py-1.5 text-xs outline-none focus:ring-1 focus:ring-ring"
+              className="w-full rounded-lg border border-input bg-card ps-9 pe-2 py-2 text-xs outline-none transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
           </div>
 
@@ -236,10 +236,10 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
                     ? t("sidebar.searchAllSemesters")
                     : `${(searchFilterOptions?.semesters ?? []).find(s => s.id === searchSemesterId)?.year_name} · ${(searchFilterOptions?.semesters ?? []).find(s => s.id === searchSemesterId)?.name}`
                 }
-                className={`w-full min-w-0 appearance-none truncate rounded-md border py-1 ps-5 pe-4 text-[10px] outline-none transition-colors focus:ring-1 focus:ring-ring ${
+                className={`w-full min-w-0 appearance-none truncate rounded-full border py-1 ps-5 pe-4 text-[10px] outline-none transition-colors focus:ring-2 focus:ring-primary/20 ${
                   searchSemesterId !== ""
-                    ? "border-primary/40 bg-primary/10 font-medium text-foreground"
-                    : "border-input bg-background text-muted-foreground"
+                    ? "border-primary/50 bg-primary/15 font-semibold text-primary"
+                    : "border-input bg-card text-muted-foreground"
                 }`}
               >
                 <option value="">{t("sidebar.searchAllSemesters")}</option>
@@ -260,10 +260,10 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
                     ? t("sidebar.searchAllSubjects")
                     : filteredSearchSubjects.find(s => s.id === searchSubjectId)?.name
                 }
-                className={`w-full min-w-0 appearance-none truncate rounded-md border py-1 ps-5 pe-4 text-[10px] outline-none transition-colors focus:ring-1 focus:ring-ring ${
+                className={`w-full min-w-0 appearance-none truncate rounded-full border py-1 ps-5 pe-4 text-[10px] outline-none transition-colors focus:ring-2 focus:ring-primary/20 ${
                   searchSubjectId !== ""
-                    ? "border-primary/40 bg-primary/10 font-medium text-foreground"
-                    : "border-input bg-background text-muted-foreground"
+                    ? "border-primary/50 bg-primary/15 font-semibold text-primary"
+                    : "border-input bg-card text-muted-foreground"
                 }`}
               >
                 <option value="">{t("sidebar.searchAllSubjects")}</option>
@@ -280,10 +280,10 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
                 value={searchFileType}
                 onChange={e => setSearchFileType(e.target.value)}
                 title={searchFileType === "" ? t("sidebar.searchAllTypes") : categoryLabel(t, searchFileType)}
-                className={`w-full min-w-0 appearance-none truncate rounded-md border py-1 ps-5 pe-4 text-[10px] outline-none transition-colors focus:ring-1 focus:ring-ring ${
+                className={`w-full min-w-0 appearance-none truncate rounded-full border py-1 ps-5 pe-4 text-[10px] outline-none transition-colors focus:ring-2 focus:ring-primary/20 ${
                   searchFileType !== ""
-                    ? "border-primary/40 bg-primary/10 font-medium text-foreground"
-                    : "border-input bg-background text-muted-foreground"
+                    ? "border-primary/50 bg-primary/15 font-semibold text-primary"
+                    : "border-input bg-card text-muted-foreground"
                 }`}
               >
                 <option value="">{t("sidebar.searchAllTypes")}</option>
@@ -298,7 +298,7 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
               <button
                 onClick={clearSearchFilters}
                 title={t("sidebar.searchClearFilters")}
-                className="flex-shrink-0 rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                className="flex-shrink-0 rounded-full p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
               >
                 <X className="size-3" />
               </button>
@@ -352,11 +352,11 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="flex items-center justify-between">
+          <SidebarGroupLabel className="flex items-center justify-between uppercase tracking-wider text-[11px] font-semibold">
             {t("sidebar.academicYears")}
             <button
               onClick={() => setShowCreateYear(true)}
-              className="rounded p-0.5 hover:bg-accent transition-colors"
+              className="rounded-full p-0.5 hover:bg-sidebar-accent hover:text-primary transition-colors"
             >
               <Plus className="size-3.5" />
             </button>
@@ -384,7 +384,7 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
                           }
                         </button>
                         <BookOpen className="size-4 flex-shrink-0" />
-                        <span className="flex-1 truncate">{year.name}</span>
+                        <span className="flex-1 truncate font-medium">{year.name}</span>
                         {hoveredYearId === year.id && (
                           <div className="flex items-center gap-1">
                             <button
@@ -486,7 +486,7 @@ export const AppSidebar = forwardRef<AppSidebarHandle, Props>(function AppSideba
           className="flex w-full items-center gap-3 rounded-md p-1 -m-1 hover:bg-accent transition-colors"
         >
           {/* Avatar */}
-          <div className="size-8 rounded-full overflow-hidden flex-shrink-0 bg-muted flex items-center justify-center">
+          <div className="size-9 rounded-full overflow-hidden flex-shrink-0 bg-muted border-2 border-primary/25 ring-2 ring-background flex items-center justify-center">
             {user?.avatar_path ? (
               <img src={user.avatar_path} alt={t("common.avatarAlt")} className="size-full object-cover" />
             ) : (

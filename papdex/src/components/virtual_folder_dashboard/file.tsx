@@ -46,16 +46,14 @@ function CategoryBadge({ category }: { category: string }) {
   const { t } = useTranslation()
   const c = CATEGORY_COLORS[category]
   if (!c) return (
-    <span style={{
+    <span className="rounded text-[10px] font-bold uppercase px-2 py-0.5" style={{
       background: "var(--muted)", color: "var(--muted-foreground)",
-      border: "1px solid var(--border)", borderRadius: 6,
-      fontSize: 10, padding: "2px 8px",
+      border: "1px solid var(--border)",
     }}>{categoryLabel(t, category)}</span>
   )
   return (
-    <span style={{
+    <span className="rounded text-[10px] font-bold uppercase px-2 py-0.5" style={{
       background: c.bg, color: c.text, border: `1px solid ${c.border}`,
-      borderRadius: 6, fontSize: 10, padding: "2px 8px", fontWeight: 500,
     }}>{categoryLabel(t, category)}</span>
   )
 }
@@ -123,7 +121,6 @@ export function VirtualFolderDashboard({
   const [deletingFile, setDeletingFile] = useState<AppFile | null>(null)
   const [renamingFile, setRenamingFile] = useState<AppFile | null>(null)
   const [movingFile, setMovingFile] = useState<AppFile | null>(null)
-  const [hoveredFileId, setHoveredFileId] = useState<number | null>(null)
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
   const [bulkMoveOpen, setBulkMoveOpen] = useState(false)
   const [bulkRecategorizeOpen, setBulkRecategorizeOpen] = useState(false)
@@ -201,7 +198,6 @@ export function VirtualFolderDashboard({
 
   const muted  = "var(--muted-foreground)"
   const border = "var(--border)"
-  const card   = "var(--card)"
   const fg     = "var(--foreground)"
 
   const allExts       = [...new Set(files.map(f => f.file_name.split(".").pop()?.toLowerCase() ?? "").filter(Boolean))].sort()
@@ -248,132 +244,87 @@ export function VirtualFolderDashboard({
       <TourGuide steps={tourSteps} run={runTour} onFinish={() => setRunTour(false)} />
 
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28 }}>
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-            <Folder size={22} color={muted} />
-            <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0, lineHeight: 1.2, color: fg }}>
+      <div className="flex items-start justify-between gap-6 mb-7">
+        <div className="flex items-center gap-4">
+          <div className="flex size-12 flex-shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/10">
+            <Folder size={24} className="text-primary" />
+          </div>
+          <div>
+            <h1 className="text-[24px] font-bold leading-tight text-foreground m-0">
               {folder?.name ?? t("common.loading")}
             </h1>
+            <p className="text-muted-foreground text-[13px] mt-1 m-0">
+              {subject.name} · {semester.name} · {t("common.fileCount", { count: files.length })}
+            </p>
           </div>
-          <p style={{ color: muted, fontSize: 13, margin: 0 }}>
-            {subject.name} · {semester.name} · {t("common.fileCount", { count: files.length })}
-          </p>
         </div>
 
-        <div data-tour="vf-actions" style={{ display: "flex", gap: 8 }}>
-          <button
-            onClick={() => setAddFileOpen(true)}
-            style={{
-              background: card, border: `1px solid ${border}`, borderRadius: 10,
-              color: fg, fontSize: 14, padding: "10px 20px",
-              display: "flex", alignItems: "center", gap: 6, cursor: "pointer",
-            }}
-          >
-            <Plus size={14} />
-            {t("virtualFolder.addFiles")}
-          </button>
+        <div data-tour="vf-actions" className="flex items-center gap-2 flex-shrink-0">
           <button
             onClick={() => setRenameOpen(true)}
-            style={{
-              background: card, border: `1px solid ${border}`, borderRadius: 10,
-              color: fg, fontSize: 14, padding: "10px 20px",
-              display: "flex", alignItems: "center", gap: 6, cursor: "pointer",
-            }}
+            className="flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors"
           >
             <Pencil size={14} />
             {t("common.rename")}
           </button>
           <button
             onClick={() => setDeleteOpen(true)}
-            style={{
-              background: "transparent", border: "1px solid #ef4444", borderRadius: 10,
-              color: "#ef4444", fontSize: 14, padding: "10px 20px",
-              display: "flex", alignItems: "center", gap: 6, cursor: "pointer",
-            }}
+            className="flex items-center gap-2 rounded-lg border border-red-500/50 px-4 py-2 text-sm text-red-500 hover:bg-red-500/10 transition-colors"
           >
             <Trash2 size={14} />
             {t("common.delete")}
           </button>
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div style={{ marginBottom: 28 }}>
-        <div style={{ background: card, borderRadius: 12, padding: 20, border: `1px solid ${border}`, display: "inline-block" }}>
-          <div style={{ fontSize: 28, fontWeight: 700, color: fg }}>{files.length}</div>
-          <div style={{ color: muted, fontSize: 12, marginTop: 2 }}>{t("virtualFolder.statFiles")}</div>
+          <button
+            onClick={() => setAddFileOpen(true)}
+            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground shadow-sm hover:opacity-90 transition-opacity"
+          >
+            <Plus size={14} />
+            {t("virtualFolder.addFiles")}
+          </button>
         </div>
       </div>
 
       {/* Files */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          {filteredFiles.length > 0 && (
-            <input
-              type="checkbox"
-              checked={filteredFiles.every(f => selectedIds.has(f.id))}
-              onChange={toggleSelectAllFiltered}
-              style={{ cursor: "pointer" }}
-              aria-label={t("virtualFolder.selectAll")}
-            />
-          )}
-          <span style={{ color: muted, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>{t("virtualFolder.filesHeading")}</span>
-        </div>
-        <span style={{ color: muted, fontSize: 11 }}>
+      <div className="flex items-center justify-between mb-2.5">
+        <span className="text-muted-foreground text-[10px] font-semibold uppercase tracking-wider">{t("virtualFolder.filesHeading")}</span>
+        <span className="text-muted-foreground text-[11px]">
           {t("common.ofCount", { filtered: filteredFiles.length, total: files.length })}
         </span>
       </div>
 
       {/* Bulk actions bar */}
       {selectedIds.size > 0 && (
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          background: "var(--muted)", border: `1px solid ${border}`, borderRadius: 10,
-          padding: "8px 14px", marginBottom: 10,
-        }}>
-          <span style={{ color: fg, fontSize: 12, fontWeight: 500 }}>
+        <div className="flex items-center justify-between rounded-lg border border-border bg-muted px-3.5 py-2 mb-2.5">
+          <span className="text-foreground text-xs font-medium">
             {t("virtualFolder.selectedCount", { count: selectedIds.size })}
           </span>
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <div className="flex items-center gap-1.5">
             <button
               onClick={() => setBulkMoveOpen(true)}
-              style={{
-                background: card, border: `1px solid ${border}`, borderRadius: 8,
-                color: fg, fontSize: 12, padding: "6px 12px",
-                display: "flex", alignItems: "center", gap: 6, cursor: "pointer",
-              }}
+              className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs text-foreground hover:bg-accent transition-colors"
             >
               <FolderInput size={13} />
               {t("virtualFolder.bulkMove")}
             </button>
             <button
               onClick={() => setBulkRecategorizeOpen(true)}
-              style={{
-                background: card, border: `1px solid ${border}`, borderRadius: 8,
-                color: fg, fontSize: 12, padding: "6px 12px",
-                display: "flex", alignItems: "center", gap: 6, cursor: "pointer",
-              }}
+              className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs text-foreground hover:bg-accent transition-colors"
             >
               <Tag size={13} />
               {t("virtualFolder.bulkRecategorize")}
             </button>
             <button
               onClick={() => setBulkDeleteOpen(true)}
-              style={{
-                background: "transparent", border: "1px solid #ef4444", borderRadius: 8,
-                color: "#ef4444", fontSize: 12, padding: "6px 12px",
-                display: "flex", alignItems: "center", gap: 6, cursor: "pointer",
-              }}
+              className="flex items-center gap-1.5 rounded-md border border-red-500/50 px-3 py-1.5 text-xs text-red-500 hover:bg-red-500/10 transition-colors"
             >
               <Trash2 size={13} />
               {t("common.delete")}
             </button>
             <button
               onClick={() => setSelectedIds(new Set())}
-              style={{ background: "none", border: "none", cursor: "pointer", padding: 6, display: "flex", borderRadius: 6 }}
+              className="flex rounded-md p-1.5 text-muted-foreground hover:bg-accent transition-colors"
             >
-              <X size={14} color={muted} />
+              <X size={14} />
             </button>
           </div>
         </div>
@@ -381,22 +332,20 @@ export function VirtualFolderDashboard({
 
       {/* Filter chips */}
       {files.length > 0 && (
-        <div data-tour="vf-filters" style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
+        <div data-tour="vf-filters" className="flex flex-col gap-2 mb-3.5">
           {/* Extension row */}
           {allExts.length > 0 && (
-            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-              <span style={{ color: muted, fontSize: 10, minWidth: 52 }}>{t("common.format")}</span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-muted-foreground text-[10px] min-w-[52px]">{t("common.format")}</span>
               {["all", ...allExts].map(ext => (
                 <button
                   key={ext}
                   onClick={() => setExtFilter(ext)}
-                  style={{
-                    background: extFilter === ext ? "var(--primary)" : "var(--muted)",
-                    color: extFilter === ext ? "var(--primary-foreground)" : muted,
-                    border: `1px solid ${extFilter === ext ? "var(--primary)" : border}`,
-                    borderRadius: 6, fontSize: 10, padding: "2px 10px",
-                    cursor: "pointer", textTransform: "uppercase", fontWeight: extFilter === ext ? 600 : 400,
-                  }}
+                  className={`rounded-full border px-3 py-1 text-[10px] uppercase transition-colors ${
+                    extFilter === ext
+                      ? "bg-primary text-primary-foreground border-primary font-semibold"
+                      : "border-border text-muted-foreground hover:border-primary"
+                  }`}
                 >
                   {ext === "all" ? t("common.all") : ext}
                 </button>
@@ -405,8 +354,8 @@ export function VirtualFolderDashboard({
           )}
           {/* Category row */}
           {allCategories.length > 0 && (
-            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-              <span style={{ color: muted, fontSize: 10, minWidth: 52 }}>{t("common.type")}</span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-muted-foreground text-[10px] min-w-[52px]">{t("common.type")}</span>
               {["all", ...allCategories].map(cat => {
                 const c = cat !== "all" ? CATEGORY_COLORS[cat] : null
                 const active = categoryFilter === cat
@@ -414,12 +363,13 @@ export function VirtualFolderDashboard({
                   <button
                     key={cat}
                     onClick={() => setCategoryFilter(cat)}
-                    style={{
-                      background: active ? (c?.bg ?? "var(--primary)") : "var(--muted)",
-                      color:      active ? (c?.text ?? "var(--primary-foreground)") : muted,
-                      border:     `1px solid ${active ? (c?.border ?? "var(--primary)") : border}`,
-                      borderRadius: 6, fontSize: 10, padding: "2px 10px",
-                      cursor: "pointer", fontWeight: active ? 600 : 400,
+                    className="rounded-full border px-3 py-1 text-[10px] font-medium transition-colors"
+                    style={active ? {
+                      background: c?.bg ?? "var(--primary)",
+                      color: c?.text ?? "var(--primary-foreground)",
+                      borderColor: c?.border ?? "var(--primary)",
+                    } : {
+                      borderColor: border, color: muted,
                     }}
                   >
                     {cat === "all" ? t("common.all") : categoryLabel(t, cat)}
@@ -435,123 +385,122 @@ export function VirtualFolderDashboard({
       {files.length === 0 ? (
         <div
           onClick={() => setAddFileOpen(true)}
-          style={{
-            display: "flex", flexDirection: "column", alignItems: "center",
-            padding: "60px 0", background: card, borderRadius: 14,
-            border: `1px dashed ${border}`, cursor: "pointer",
-          }}
+          className="flex flex-col items-center rounded-xl border border-dashed border-border bg-card py-14 cursor-pointer hover:border-primary transition-colors"
         >
-          <Plus size={36} color={muted} />
-          <p style={{ color: fg, fontSize: 15, fontWeight: 500, marginTop: 12, marginBottom: 4 }}>{t("virtualFolder.addFilesEmptyTitle")}</p>
-          <p style={{ color: muted, fontSize: 13, margin: 0 }}>{t("virtualFolder.addFilesEmptySubtitle")}</p>
+          <Plus size={36} className="text-muted-foreground" />
+          <p className="text-foreground text-[15px] font-medium mt-3 mb-1">{t("virtualFolder.addFilesEmptyTitle")}</p>
+          <p className="text-muted-foreground text-[13px] m-0">{t("virtualFolder.addFilesEmptySubtitle")}</p>
         </div>
       ) : filteredFiles.length === 0 ? (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 0", color: muted }}>
+        <div className="flex flex-col items-center py-10 text-muted-foreground">
           <File size={32} />
-          <p style={{ marginTop: 10, fontSize: 13 }}>{t("virtualFolder.noMatch")}</p>
+          <p className="mt-2.5 text-[13px]">{t("virtualFolder.noMatch")}</p>
         </div>
       ) : (
-        <div style={{ background: card, borderRadius: 14, border: `1px solid ${border}`, overflow: "hidden" }}>
-          {filteredFiles.map((file, i) => (
-            <div
-              key={file.id}
-              onMouseEnter={() => setHoveredFileId(file.id)}
-              onMouseLeave={() => setHoveredFileId(null)}
-              style={{
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                padding: "11px 16px",
-                borderBottom: i < filteredFiles.length - 1 ? `1px solid ${border}` : "none",
-                background: previewFile?.id === file.id ? "var(--muted)" : undefined,
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-                <input
-                  type="checkbox"
-                  checked={selectedIds.has(file.id)}
-                  onChange={e => toggleSelect(file.id, e.target.checked)}
-                  style={{
-                    cursor: "pointer", flexShrink: 0,
-                    opacity: selectedIds.size > 0 || hoveredFileId === file.id ? 1 : 0,
-                  }}
-                />
-                <span style={{ color: muted, flexShrink: 0 }}>
-                  <FileIcon type={file.file_type} />
-                </span>
-                <span style={{ color: fg, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {file.file_name}
-                </span>
-                {!file.exists && (
-                  <span
-                    title={t("common.fileMissingTooltip")}
-                    style={{
-                      display: "flex", alignItems: "center", gap: 4, flexShrink: 0,
-                      color: "#ef4444", fontSize: 10, fontWeight: 500,
-                      background: "rgba(239, 68, 68, 0.1)", border: "1px solid #ef4444",
-                      borderRadius: 6, padding: "2px 6px",
-                    }}
-                  >
-                    <AlertTriangle size={10} />
-                    {t("common.fileMissing")}
-                  </span>
-                )}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
-                {file.file_type
-                  ? <CategoryBadge category={file.file_type} />
-                  : <span style={{ color: muted, fontSize: 10 }}>—</span>
-                }
-                <span style={{ color: muted, fontSize: 12, minWidth: 52, textAlign: "end" }}>
-                  {formatSize(file.file_size)}
-                </span>
-                {hoveredFileId === file.id ? (
-                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                    {canPreview(file) && file.exists && (
+        <div className="rounded-xl border border-border bg-card overflow-hidden">
+          <table className="w-full border-collapse text-left">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="w-10 py-2.5 pl-4">
+                  <input
+                    type="checkbox"
+                    checked={filteredFiles.every(f => selectedIds.has(f.id))}
+                    onChange={toggleSelectAllFiltered}
+                    className="cursor-pointer"
+                    aria-label={t("virtualFolder.selectAll")}
+                  />
+                </th>
+                <th className="py-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{t("common.name")}</th>
+                <th className="py-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{t("common.type")}</th>
+                <th className="py-2.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground text-right">{t("common.size")}</th>
+                <th className="py-2.5 pr-4 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground text-right">{t("common.actions")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredFiles.map(file => (
+                <tr
+                  key={file.id}
+                  className={`group border-b border-border last:border-0 transition-colors hover:bg-accent ${previewFile?.id === file.id ? "bg-primary/5" : ""}`}
+                >
+                  <td className="py-3 pl-4">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(file.id)}
+                      onChange={e => toggleSelect(file.id, e.target.checked)}
+                      className="cursor-pointer"
+                    />
+                  </td>
+                  <td className="py-3 min-w-0">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="text-muted-foreground flex-shrink-0">
+                        <FileIcon type={file.file_type} />
+                      </span>
+                      <span className="text-foreground text-[13px] truncate">{file.file_name}</span>
+                      {!file.exists && (
+                        <span
+                          title={t("common.fileMissingTooltip")}
+                          className="flex items-center gap-1 flex-shrink-0 rounded-md border border-red-500 bg-red-500/10 px-1.5 py-0.5 text-[10px] font-medium text-red-500"
+                        >
+                          <AlertTriangle size={10} />
+                          {t("common.fileMissing")}
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="py-3">
+                    {file.file_type
+                      ? <CategoryBadge category={file.file_type} />
+                      : <span className="text-muted-foreground text-[10px]">—</span>
+                    }
+                  </td>
+                  <td className="py-3 text-muted-foreground text-xs text-right">
+                    {formatSize(file.file_size)}
+                  </td>
+                  <td className="py-3 pr-4">
+                    <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {canPreview(file) && file.exists && (
+                        <button
+                          onClick={() => {
+                            setPreviewFile(prev => prev?.id === file.id ? null : file)
+                            if (previewFile?.id !== file.id) markFileOpened(file.id)
+                          }}
+                          className="flex rounded-md p-1.5 hover:bg-background transition-colors"
+                        >
+                          <Eye size={14} className={previewFile?.id === file.id ? "text-primary" : "text-muted-foreground"} />
+                        </button>
+                      )}
                       <button
-                        onClick={() => {
-                          setPreviewFile(prev => prev?.id === file.id ? null : file)
-                          if (previewFile?.id !== file.id) markFileOpened(file.id)
-                        }}
-                        style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex", borderRadius: 6 }}
+                        onClick={() => { if (!file.exists) return; openFile(file.file_path); markFileOpened(file.id) }}
+                        disabled={!file.exists}
+                        title={!file.exists ? t("common.fileMissingTooltip") : undefined}
+                        className="flex rounded-md p-1.5 text-muted-foreground hover:bg-background transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                       >
-                        <Eye size={13} color={previewFile?.id === file.id ? "var(--primary)" : muted} />
+                        <ExternalLink size={14} />
                       </button>
-                    )}
-                    <button
-                      onClick={() => { if (!file.exists) return; openFile(file.file_path); markFileOpened(file.id) }}
-                      disabled={!file.exists}
-                      title={!file.exists ? t("common.fileMissingTooltip") : undefined}
-                      style={{
-                        background: "none", border: "none", padding: 4, display: "flex", borderRadius: 6,
-                        cursor: file.exists ? "pointer" : "not-allowed", opacity: file.exists ? 1 : 0.4,
-                      }}
-                    >
-                      <ExternalLink size={13} color={muted} />
-                    </button>
-                    <button
-                      onClick={() => setRenamingFile(file)}
-                      style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex", borderRadius: 6 }}
-                    >
-                      <Pencil size={13} color={muted} />
-                    </button>
-                    <button
-                      onClick={() => setMovingFile(file)}
-                      style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex", borderRadius: 6 }}
-                    >
-                      <FolderInput size={13} color={muted} />
-                    </button>
-                    <button
-                      onClick={() => setDeletingFile(file)}
-                      style={{ background: "none", border: "none", cursor: "pointer", padding: 4, display: "flex", borderRadius: 6 }}
-                    >
-                      <Trash2 size={13} color="#ef4444" />
-                    </button>
-                  </div>
-                ) : (
-                  <div style={{ width: 94 }} />
-                )}
-              </div>
-            </div>
-          ))}
+                      <button
+                        onClick={() => setRenamingFile(file)}
+                        className="flex rounded-md p-1.5 text-muted-foreground hover:bg-background transition-colors"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      <button
+                        onClick={() => setMovingFile(file)}
+                        className="flex rounded-md p-1.5 text-muted-foreground hover:bg-background transition-colors"
+                      >
+                        <FolderInput size={14} />
+                      </button>
+                      <button
+                        onClick={() => setDeletingFile(file)}
+                        className="flex rounded-md p-1.5 text-red-500 hover:bg-red-500/10 transition-colors"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
       </div>

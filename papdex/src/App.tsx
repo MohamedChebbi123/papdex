@@ -224,19 +224,27 @@ function App() {
             onOpenFile={handleOpenRecentFile}
           />
         ) : (
-          <div className="flex h-full flex-col items-center justify-center gap-3 text-center px-6">
-            <div className="rounded-full bg-muted p-4">
-              <GraduationCap className="size-8 text-muted-foreground" />
+          <div className="relative flex h-full flex-col items-center justify-center overflow-hidden px-6">
+            <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-30">
+              <div className="absolute -top-[10%] -right-[5%] size-[400px] rounded-full bg-primary/30 blur-[120px]" />
             </div>
-            <div>
-              <p className="text-sm font-medium">{t("app.noYearTitle")}</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {t("app.noYearSubtitle")}
-              </p>
+            <div className="relative z-10 flex flex-col items-center gap-3 text-center max-w-sm">
+              <div className="inline-flex items-center justify-center size-16 rounded-2xl bg-muted border border-border">
+                <GraduationCap className="size-7 text-muted-foreground/60" />
+              </div>
+              <div className="space-y-1.5">
+                <p className="text-xl font-bold tracking-tight">{t("app.noYearTitle")}</p>
+                <p className="text-sm text-muted-foreground">
+                  {t("app.noYearSubtitle")}
+                </p>
+              </div>
+              <Button
+                className="mt-2 shadow-lg shadow-primary/20"
+                onClick={() => sidebarRef.current?.openCreateYear()}
+              >
+                {t("app.createYear")}
+              </Button>
             </div>
-            <Button size="sm" onClick={() => sidebarRef.current?.openCreateYear()}>
-              {t("app.createYear")}
-            </Button>
           </div>
         )}
       </main>
