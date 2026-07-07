@@ -10,6 +10,7 @@ import { file_handlers } from './handlers/files_handlers'
 import { user_handlers } from './handlers/user_handler'
 import { imported_folder_handlers } from './handlers/imported_folders_handler'
 import { data_handlers } from './handlers/data_handlers'
+import { shell_handlers } from './handlers/shell_handlers'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 
@@ -32,6 +33,7 @@ file_handlers()
 user_handlers()
 imported_folder_handlers()
 data_handlers()
+shell_handlers()
 function createWindow() {
   Menu.setApplicationMenu(null)
 

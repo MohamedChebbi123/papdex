@@ -1,11 +1,23 @@
 import { useState, useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { X } from "lucide-react"
-import { readFileBuffer, type AppFile } from "@/components/file_service/file"
+import { readFileBuffer, openExternalLink, type AppFile } from "@/components/file_service/file"
 import type { Highlighter } from "shiki"
 import PdfViewerInner from "@/components/inputs/pdf_viewer_inner"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
+
+const SAFE_LINK_PROTOCOLS = new Set(["http:", "https:", "mailto:"])
+const SAFE_IMAGE_PROTOCOLS = new Set(["http:", "https:"])
+
+function isSafeUrl(url: string | undefined, allowed: Set<string>): boolean {
+  if (!url) return false
+  try {
+    return allowed.has(new URL(url).protocol)
+  } catch {
+    return false
+  }
+}
 
 const IMAGE_TYPES = new Set(["png", "jpg", "jpeg", "gif", "webp", "svg", "bmp"])
 const VIDEO_TYPES = new Set(["mp4", "mov", "avi", "mkv", "webm"])
@@ -77,7 +89,21 @@ function MarkdownViewer({ content }: { content: string }) {
             h3: ({ children }) => <h3 style={{ fontSize: 18, fontWeight: 600, margin: "24px 0 8px" }}>{children}</h3>,
             h4: ({ children }) => <h4 style={{ fontSize: 15, fontWeight: 600, margin: "20px 0 6px" }}>{children}</h4>,
             p: ({ children }) => <p style={{ margin: "0 0 14px" }}>{children}</p>,
-            a: ({ href, children }) => <a href={href} style={{ color: "var(--primary)", textDecoration: "underline" }}>{children}</a>,
+            a: ({ href, children }) => {
+              if (!isSafeUrl(href, SAFE_LINK_PROTOCOLS)) {
+                return <span style={{ color: "var(--muted-foreground)", textDecoration: "line-through" }} title="Blocked unsafe link">{children}</span>
+              }
+              return (
+                <a
+                  href={href}
+                  rel="noopener noreferrer"
+                  style={{ color: "var(--primary)", textDecoration: "underline", cursor: "pointer" }}
+                  onClick={e => { e.preventDefault(); openExternalLink(href!) }}
+                >
+                  {children}
+                </a>
+              )
+            },
             ul: ({ children }) => <ul style={{ margin: "0 0 14px", paddingInlineStart: 24 }}>{children}</ul>,
             ol: ({ children }) => <ol style={{ margin: "0 0 14px", paddingInlineStart: 24 }}>{children}</ol>,
             li: ({ children }) => <li style={{ margin: "4px 0" }}>{children}</li>,
@@ -93,7 +119,10 @@ function MarkdownViewer({ content }: { content: string }) {
             table: ({ children }) => <div style={{ overflowX: "auto", margin: "0 0 14px" }}><table style={{ borderCollapse: "collapse", width: "100%" }}>{children}</table></div>,
             th: ({ children }) => <th style={{ border: "1px solid var(--border)", padding: "8px 12px", background: "var(--muted)", fontWeight: 600, textAlign: "start" }}>{children}</th>,
             td: ({ children }) => <td style={{ border: "1px solid var(--border)", padding: "8px 12px" }}>{children}</td>,
-            img: ({ src, alt }) => <img src={src} alt={alt} style={{ maxWidth: "100%", borderRadius: 8, margin: "8px 0" }} />,
+            img: ({ src, alt }) => {
+              if (typeof src !== "string" || !isSafeUrl(src, SAFE_IMAGE_PROTOCOLS)) return null
+              return <img src={src} alt={alt} style={{ maxWidth: "100%", borderRadius: 8, margin: "8px 0" }} />
+            },
           }}
         >
           {content}

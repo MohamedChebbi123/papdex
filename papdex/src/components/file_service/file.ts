@@ -77,6 +77,10 @@ export async function openFile(file_path: string): Promise<void> {
   await window.ipcRenderer.invoke('files:open', file_path)
 }
 
+export async function openExternalLink(url: string): Promise<void> {
+  await window.ipcRenderer.invoke('shell:openExternal', url)
+}
+
 export async function readFileBuffer(file_path: string): Promise<Uint8Array> {
   return await window.ipcRenderer.invoke('files:readBuffer', file_path)
 }

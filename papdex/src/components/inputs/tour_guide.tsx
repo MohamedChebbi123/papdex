@@ -24,7 +24,7 @@ export function TourGuide({ steps, run, onFinish }: Props) {
         skip: t("tour.skip"),
       }}
       options={{
-        primaryColor: "#6366f1",
+        primaryColor: "#0f766e",
         backgroundColor: "var(--card)",
         textColor: "var(--foreground)",
         arrowColor: "var(--card)",
